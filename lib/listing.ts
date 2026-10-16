@@ -73,7 +73,7 @@ export function assessListing(model: Model, price: ListingMarket, input: Listing
   if (overLimit) flags.push({ tone: "bad", text: "Не рассматривать: пробег выше порога этой модели." });
   if (age >= 8 && ratio < 0.5) {
     let text = `Подозрительно мало для ${yearsAfter(age, "года", "лет", "лет")}. Проверьте историю пробега в отчёте по VIN.`;
-    if (input.owners >= 4) text += " Каждая смена владельца — повод для скрутки. Сверьте 9 отметок о пробеге.";
+    if (input.owners >= 4) text += " Каждая смена владельца — повод для скрутки. Сверьте отметки о пробеге в отчёте по VIN.";
     flags.push({ tone: "warn", text });
   } else if (ratio > 1.3 || perYear > TAXI_KM_PER_YEAR) {
     flags.push({ tone: "warn", text: "Похоже на такси или каршеринг." });

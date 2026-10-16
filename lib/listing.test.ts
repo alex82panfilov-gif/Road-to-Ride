@@ -13,12 +13,55 @@ function mileageText(year: number, mileageKm: number, owners = 1) {
     .join(" ");
 }
 
+function numbersFromInputs(
+  model: Model,
+  market: { p25: number; median: number; p75: number },
+  input: { year: number; mileageKm: number; priceRub: number; owners: number },
+  asOfYear: number,
+): Set<string> {
+  const allowed = new Set<string>();
+  const add = (value: number) => {
+    allowed.add(String(value));
+    if (!Number.isInteger(value)) allowed.add(String(value).replace(".", ","));
+  };
+  add(input.year);
+  add(input.mileageKm);
+  add(input.priceRub);
+  add(input.owners);
+  add(asOfYear);
+  add(Math.max(1, asOfYear - input.year));
+  for (const year of model.years) add(year);
+  add(market.p25);
+  add(market.median);
+  add(market.p75);
+  for (const base of [market.median, market.p25, market.p75]) {
+    if (base <= 0) continue;
+    const rounded = Math.round(Math.abs(input.priceRub / base - 1) * 1000) / 10;
+    allowed.add(Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(1).replace(".", ","));
+  }
+  return allowed;
+}
+
 test("a 2005 Elantra with 118 thousand km and four owners is too low for its age", () => {
   const text = mileageText(2005, 117_894, 4);
   assert.match(text, /Подозрительно мало для 21 года/);
   assert.match(text, /Каждая смена владельца — повод для скрутки/);
+  assert.match(text, /Сверьте отметки о пробеге в отчёте по VIN/);
   assert.match(text, /машине 21 год/);
   assert.doesNotMatch(text, /Обычный для возраста/);
+  assert.doesNotMatch(text, /9 отметок/);
+});
+
+test("listing text has no digits that were not in the inputs", () => {
+  const input = { year: 2005, mileageKm: 117_894, priceRub: 289_000, owners: 4 };
+  const asOfYear = 2026;
+  const text = assessListing(elantra, price, input, asOfYear)
+    .map((flag) => flag.text)
+    .join(" ");
+  const allowed = numbersFromInputs(elantra, price, input, asOfYear);
+  for (const token of text.match(/\d+(?:[.,]\d+)?/g) ?? []) {
+    assert.ok(allowed.has(token), `цифра «${token}» не следует из входных данных`);
+  }
 });
 
 test("a 2015 car with 450 thousand km looks like a taxi", () => {
