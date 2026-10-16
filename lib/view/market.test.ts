@@ -82,8 +82,20 @@ test("at 800000 Almera is a full point above Octavia and worth the short wait", 
   assert.equal(almost?.item.slug, "nissan-almera-g15");
   assert.ok(today && almost);
   assert.ok(almost.item.score - today.score >= ALMOST_WAIT_SCORE);
-  const text = almostNote(almost.item, almost.gap, 20_000, today.score);
-  assert.match(text, /За .* — оценка 6,9 вместо 5,6\. Стоит подождать/);
+  const months = purchaseQuote({
+    median: almost.item.median,
+    hp: almost.item.hp,
+    driver: { age: 20, experienceYears: 0 },
+    licenseDate: null,
+    onParentPolicy: false,
+    saved: 800_000,
+    monthly: 20_000,
+    inflation: 0.007,
+    asOf: "2026-10-16",
+  }).months;
+  assert.equal(months, 2);
+  const text = almostNote(almost.item, almost.gap, 20_000, today.score, months);
+  assert.match(text, /За .* это около 2 мес\., оценка 6,9 вместо 5,6\. Стоит подождать/);
 });
 
 test("at 320000 today is not Fusion because the real price is higher", () => {

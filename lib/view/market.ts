@@ -149,14 +149,21 @@ export function almostAffordable(
   return { item: candidates[0].item, gap: candidates[0].gap };
 }
 
-export function almostNote(item: CatalogItem, gap: number, monthly: number, todayScore: number | null = null): string {
+export function almostNote(
+  item: CatalogItem,
+  gap: number,
+  monthly: number,
+  todayScore: number | null = null,
+  months: number | null = null,
+): string {
   if (todayScore !== null) {
     const delta = item.score - todayScore;
     if (delta < ALMOST_SAME_SCORE) {
       return `${displayName(item)} почти по карману, но по оценке почти не отличается. Выбирайте по конкретному объявлению`;
     }
     if (delta >= ALMOST_WAIT_SCORE) {
-      return `За ${approxRub(gap)} — оценка ${scoreText(item.score)} вместо ${scoreText(todayScore)}. Стоит подождать`;
+      const wait = months !== null && months > 0 ? `, это около ${months} мес.` : "";
+      return `За ${approxRub(gap)}${wait}, оценка ${scoreText(item.score)} вместо ${scoreText(todayScore)}. Стоит подождать`;
     }
   }
   const reason = gap <= monthly ? "это меньше одного взноса" : "это меньше 3% цены";

@@ -86,7 +86,6 @@ export function RoadFork({ items }: { items: CatalogItem[] }) {
   const inflation = inflationOf(data);
   const today = bestSafeAt(items, amount, driver);
   const almost = almostAffordable(items, amount, data.monthly, driver);
-  const almostText = almost ? almostNote(almost.item, almost.gap, data.monthly, today?.score ?? null) : null;
   const family = familyContribution(data.deposits);
   const remainder = leftForCar(amount, today, driver);
   const jump = nextJumpAfter(items, amount, driver);
@@ -109,6 +108,10 @@ export function RoadFork({ items }: { items: CatalogItem[] }) {
       asOf,
     });
   const todayQuote = today ? quoteOf(today) : null;
+  const almostQuote = almost ? quoteOf(almost.item) : null;
+  const almostText = almost
+    ? almostNote(almost.item, almost.gap, data.monthly, today?.score ?? null, almostQuote?.months ?? null)
+    : null;
   const nearestQuote = nearestAim ? quoteOf(nearestAim) : null;
   const decentQuote = decentAim ? quoteOf(decentAim) : null;
   const jumpQuote = jumpCar ? quoteOf(jumpCar) : null;
