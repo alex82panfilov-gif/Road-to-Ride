@@ -56,8 +56,9 @@ export function Shell({ items, children }: { items: CatalogItem[]; children: Rea
       </a>
       <header className="bar-blur sticky top-0 z-30 border-b border-line">
         <div className="mx-auto flex h-16 max-w-5xl items-center gap-4 px-4">
-          <Link href="/" className="font-semibold text-ink no-underline">
-            {labels.siteName}
+          <Link href="/" className="leading-tight no-underline">
+            <span className="block font-semibold text-ink">{labels.siteName}</span>
+            <span className="hidden text-xs font-normal text-muted md:block">{labels.tagline}</span>
           </Link>
           <nav className="ml-4 hidden items-center gap-4 text-sm md:flex" aria-label="Разделы">
             {labels.nav.map((item) => (

@@ -18,7 +18,8 @@ export default function OpenGraphImage() {
         fontFamily: "sans-serif",
       }}
     >
-      <div style={{ fontSize: 28 }}>Первая машина</div>
+      <div style={{ fontSize: 28 }}>Road to Ride</div>
+      <div style={{ fontSize: 22, color: "#6e6e73" }}>Путь к своей машине</div>
       <div style={{ fontSize: 68, lineHeight: 1.15, maxWidth: 900 }}>Накопить на спокойный автомат и понять, чего ждать</div>
     </div>,
     size,

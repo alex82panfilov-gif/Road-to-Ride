@@ -25,7 +25,7 @@ export default async function TierImage({ params }: { params: Promise<{ amount: 
         fontFamily: "sans-serif",
       }}
     >
-      <div style={{ fontSize: 28, color: "#6e6e73" }}>Первая машина</div>
+      <div style={{ fontSize: 28, color: "#6e6e73" }}>Road to Ride</div>
       <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
         <div style={{ fontSize: 72 }}>{title}</div>
         <div style={{ fontSize: 36 }}>{best ? `${best.brand} ${best.model}` : "В каталоге пока пусто"}</div>

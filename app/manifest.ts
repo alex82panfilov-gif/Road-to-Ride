@@ -2,8 +2,8 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Первая машина",
-    short_name: "Первая машина",
+    name: "Road to Ride — Путь к своей машине",
+    short_name: "Road to Ride",
     description: "Накопить на надёжную машину с автоматом и не ошибиться при покупке.",
     start_url: "/",
     display: "standalone",

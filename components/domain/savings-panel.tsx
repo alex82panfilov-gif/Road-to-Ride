@@ -10,7 +10,7 @@ import { monthsToGoal } from "@/lib/forecast";
 import { plural, rub, todayIso } from "@/lib/format";
 import { realPrice } from "@/lib/meta";
 import { displayName, type CatalogItem } from "@/lib/market";
-import { buildIcs, inflationOf, parseImport, type ContributorId } from "@/lib/storage";
+import { backupFilename, buildIcs, exportPayload, inflationOf, parseImport, type ContributorId } from "@/lib/storage";
 import { useEffect, useMemo, useState } from "react";
 
 export function SavingsPanel({ items }: { items: CatalogItem[] }) {
@@ -68,7 +68,7 @@ export function SavingsPanel({ items }: { items: CatalogItem[] }) {
         <Card className="flex flex-wrap items-center justify-between gap-3">
           <p className="text-sm">Сохраните копию копилки. В браузере она может пропасть после очистки.</p>
           <div className="flex gap-2">
-            <Button variant="secondary" onClick={() => download("kopilka.json", JSON.stringify(data, null, 2), "application/json")}>
+            <Button variant="secondary" onClick={() => download(backupFilename(todayIso()), JSON.stringify(exportPayload(data), null, 2), "application/json")}>
               Экспортировать
             </Button>
             <Button variant="ghost" onClick={() => update((current) => ({ ...current, backupReminderMonth: month }))}>
@@ -163,7 +163,7 @@ export function SavingsPanel({ items }: { items: CatalogItem[] }) {
       </ul>
 
       <div className="flex flex-wrap gap-2">
-        <Button variant="secondary" onClick={() => download("kopilka.json", JSON.stringify(data, null, 2), "application/json")}>
+        <Button variant="secondary" onClick={() => download(backupFilename(todayIso()), JSON.stringify(exportPayload(data), null, 2), "application/json")}>
           Экспортировать
         </Button>
         <label className="inline-flex h-12 cursor-pointer items-center rounded-full bg-canvas-secondary px-5 text-sm font-medium">

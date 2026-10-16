@@ -1,7 +1,8 @@
 import type { Model } from "./schema";
 
 export const labels = {
-  siteName: "Первая машина",
+  siteName: "Road to Ride",
+  tagline: "Путь к своей машине",
   nav: [
     { href: "/", label: "Главная" },
     { href: "/cars", label: "Машины" },

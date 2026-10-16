@@ -1,8 +1,10 @@
 import { z } from "zod";
 import { DEFAULT_DRIVER, meta, type DriverProfile } from "./meta";
 
-export const STORAGE_KEY = "fm:v1";
-export const THEME_KEY = "fm:theme";
+export const STORAGE_KEY = "rtr:v1";
+export const THEME_KEY = "rtr:theme";
+const LEGACY_KEYS = ["fm:v1"];
+const LEGACY_THEME_KEY = "fm:theme";
 
 export const contributorIds = ["me", "dad", "mom", "gift", "other"] as const;
 export type ContributorId = (typeof contributorIds)[number];
@@ -107,9 +109,18 @@ function migrate(raw: unknown): UserData {
 export function loadUser(): UserData {
   if (typeof window === "undefined") return defaultUser();
   try {
+    const theme = window.localStorage.getItem(THEME_KEY) ?? window.localStorage.getItem(LEGACY_THEME_KEY);
+    if (theme && !window.localStorage.getItem(THEME_KEY)) window.localStorage.setItem(THEME_KEY, theme);
     const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (!raw) return defaultUser();
-    return migrate(JSON.parse(raw));
+    if (raw) return migrate(JSON.parse(raw));
+    for (const key of LEGACY_KEYS) {
+      const old = window.localStorage.getItem(key);
+      if (!old) continue;
+      window.localStorage.setItem(STORAGE_KEY, old);
+      window.localStorage.removeItem(key);
+      return migrate(JSON.parse(old));
+    }
+    return defaultUser();
   } catch {
     return defaultUser();
   }
@@ -121,9 +132,26 @@ export function saveUser(data: UserData): void {
 }
 
 export function parseImport(raw: string): UserData {
-  const parsed = UserSchema.safeParse(JSON.parse(raw));
+  const json = JSON.parse(raw) as Record<string, unknown>;
+  if (!json || typeof json !== "object" || Array.isArray(json)) throw new Error("Файл копилки не подошёл");
+  if ("app" in json) {
+    if (json.app !== "road-to-ride" && json.app !== "first-machine") throw new Error("Файл копилки не подошёл");
+    delete json.app;
+  }
+  if (!Array.isArray(json.deposits)) throw new Error("Файл копилки не подошёл");
+  const base = defaultUser();
+  const driver = json.driver && typeof json.driver === "object" ? (json.driver as object) : {};
+  const parsed = UserSchema.safeParse({ ...base, ...json, version: 1, driver: { ...base.driver, ...driver } });
   if (!parsed.success) throw new Error("Файл копилки не подошёл");
   return parsed.data;
+}
+
+export function exportPayload(data: UserData) {
+  return { app: "road-to-ride" as const, ...data };
+}
+
+export function backupFilename(day: string): string {
+  return `road-to-ride-backup-${day}.json`;
 }
 
 export function buildIcs(dayOfMonth = 5): string {
@@ -134,15 +162,15 @@ export function buildIcs(dayOfMonth = 5): string {
   return [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
-    "PRODID:-//Pervaya Mashina//Kopilka//RU",
+    "PRODID:-//Road to Ride//RU",
     "CALSCALE:GREGORIAN",
     "BEGIN:VEVENT",
-    `UID:savings-${stamp}@pervaya-mashina`,
+    `UID:savings-${stamp}@road-to-ride`,
     `DTSTAMP:${stamp}`,
     `DTSTART;VALUE=DATE:${start}`,
     "RRULE:FREQ=MONTHLY;BYMONTHDAY=5",
-    "SUMMARY:Пополнить копилку",
-    "DESCRIPTION:Напоминание сайта «Первая машина». Push-уведомлений нет — только ваш календарь.",
+    "SUMMARY:Пополнить копилку · Road to Ride",
+    "DESCRIPTION:Напоминание сайта Road to Ride. Push-уведомлений нет — только ваш календарь.",
     "END:VEVENT",
     "END:VCALENDAR",
     "",
