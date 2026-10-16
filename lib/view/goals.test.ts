@@ -18,6 +18,7 @@ test("goal list names the generation and keeps avoid at the end", () => {
     assert.deepEqual(prices, [...prices].sort((left, right) => left - right));
   }
   const focuses = labels.concat(groups.flatMap((group) => group.items).filter((item) => item.model === "Focus").map((item) => goalLabel(item)));
+  assert.equal(groups.some((group) => group.items.some((item) => item.slug === "kia-cerato-1")), false);
   assert.ok(focuses.some((label) => label.includes("II")));
   assert.ok(focuses.some((label) => label.includes("III")));
 });

@@ -45,6 +45,12 @@ const near = (a: number, b: number, tol = QUANTILE_TOLERANCE) => Math.abs(a - b)
 const TYPO_MILEAGE_KM = 1_000;
 const TYPO_MILEAGE_YEARS = 3;
 
+/** Пробег на пороге «не рассматривать» и выше в выборку не входит. */
+export function mileageAboveAvoid(mileageKm: number, avoidFrom: number): string | null {
+  if (mileageKm >= avoidFrom) return `пробег ${mileageKm} км выше порога «не рассматривать» (${avoidFrom} км)`;
+  return null;
+}
+
 /** «2004 год, 290 км»: почти новая цифра пробега у старой машины — ошибка ввода, не рынок. */
 export function mileageTypo(year: number, mileageKm: number, nowYear: number): string | null {
   if (mileageKm < TYPO_MILEAGE_KM && nowYear - year > TYPO_MILEAGE_YEARS) {
@@ -79,11 +85,14 @@ function validateSnapshot(issues: Issue[], snapshot: TSnapshot, model: TModel, p
 
   const nowYear = Number(fileMonth.slice(0, 4));
   for (const listing of snapshot.listings ?? []) {
-    const typo = mileageTypo(listing.year, listing.mileageKm, nowYear);
-    if (!typo) continue;
     const tag = `${listing.platform}:${listing.id}`;
-    err(`${tag}: ${typo}`);
-    warn(`${tag}: ${typo}. Объявление отброшено`);
+    const typo = mileageTypo(listing.year, listing.mileageKm, nowYear);
+    if (typo) {
+      err(`${tag}: ${typo}`);
+      warn(`${tag}: ${typo}. Объявление отброшено`);
+    }
+    const far = mileageAboveAvoid(listing.mileageKm, model.mileage.avoidFrom);
+    if (far) err(`${tag}: ${far}`);
   }
 
   if (!isSeed) {
@@ -124,21 +133,22 @@ function validateSnapshot(issues: Issue[], snapshot: TSnapshot, model: TModel, p
       if (gearbox) err(`${tag}: ${gearbox}`);
       const kmPerYear = listing.mileageKm / Math.max(0.5, nowYear - listing.year + 0.5);
       if (kmPerYear > TAXI_KM_PER_YEAR) warn(`${tag}: ${Math.round(kmPerYear / 1000)} тыс. км/год — возможно такси`);
-      if (listing.mileageKm >= model.mileage.avoidFrom) warn(`${tag}: пробег выше порога «не рассматривать» (${model.mileage.avoidFrom} км)`);
     }
 
-    const prices = listings.map((listing) => listing.priceRub);
-    const calc = {
-      p25: quantile(prices, 0.25),
-      median: quantile(prices, 0.5),
-      p75: quantile(prices, 0.75),
-      medianMileageKm: quantile(listings.map((listing) => listing.mileageKm), 0.5),
-      medianYear: quantile(listings.map((listing) => listing.year), 0.5),
-    };
-    for (const key of ["p25", "median", "p75", "medianMileageKm"] as const) {
-      if (!near(snapshot[key], calc[key])) err(`${key}: заявлено ${snapshot[key]}, по объявлениям ${calc[key]}`);
+    if (listings.length >= MIN_PUBLISH) {
+      const prices = listings.map((listing) => listing.priceRub);
+      const calc = {
+        p25: quantile(prices, 0.25),
+        median: quantile(prices, 0.5),
+        p75: quantile(prices, 0.75),
+        medianMileageKm: quantile(listings.map((listing) => listing.mileageKm), 0.5),
+        medianYear: quantile(listings.map((listing) => listing.year), 0.5),
+      };
+      for (const key of ["p25", "median", "p75", "medianMileageKm"] as const) {
+        if (!near(snapshot[key], calc[key])) err(`${key}: заявлено ${snapshot[key]}, по объявлениям ${calc[key]}`);
+      }
+      if (Math.abs(snapshot.medianYear - calc.medianYear) > 0.5) err(`medianYear: заявлено ${snapshot.medianYear}, по объявлениям ${calc.medianYear}`);
     }
-    if (Math.abs(snapshot.medianYear - calc.medianYear) > 0.5) err(`medianYear: заявлено ${snapshot.medianYear}, по объявлениям ${calc.medianYear}`);
 
     const platforms = new Set(listings.map((listing) => listing.platform));
     if (listings.length < MIN_MEDIUM && snapshot.confidence !== "low") err(`${listings.length} объявл. — уверенность должна быть low`);

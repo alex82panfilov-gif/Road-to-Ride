@@ -22,6 +22,14 @@
       "fuel": "petrol",
       "timing": "chain",
       "recommended": true
+    },
+    {
+      "code": "QG18 114",
+      "volumeL": 1.8,
+      "hp": 114,
+      "fuel": "petrol",
+      "timing": "chain",
+      "recommended": true
     }
   ],
   "gearboxes": [
@@ -30,7 +38,8 @@
       "name": "4АКПП",
       "verdict": "recommended",
       "engineCodes": [
-        "QG18"
+        "QG18",
+        "QG18 114"
       ],
       "note": "Простая коробка. На тесте не должно быть пинков на прогретой машине."
     }
@@ -74,7 +83,7 @@
     "Машины с гнилыми порогами и без ПТС на руках"
   ],
   "listingRules": [
-    "В выборку только 1.8 с 4АКПП."
+    "В выборку только 1.8 на 114–116 л.с. с 4АКПП."
   ],
   "checklist": [
     "Сверить VIN на кузове, в ПТС и на табличке",

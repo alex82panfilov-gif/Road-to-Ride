@@ -87,6 +87,16 @@ test("Elantra XD seed has no model floor and keeps 105–107 hp, not the HD's 12
   assert.match(result.caption, /1\.6 105–107 л\.с\./);
 });
 
+test("Almera N16 automatic search spans 1.8 at 114–116 hp", () => {
+  const result = searchLinks(load("nissan-almera-n16"), { median: 200_000, isSeed: true, confidence: "low" });
+  assert.deepEqual(result.power, { from: 114, to: 116 });
+  assert.deepEqual(result.volumes, [1.8]);
+  assert.match(result.links.drom, /mv=1\.8&xv=1\.8/);
+  assert.match(result.links.drom, /minpower=114&maxpower=116/);
+  assert.match(result.links.drom, /transmission\[\]=2&transmission\[\]=5/);
+  assert.doesNotMatch(result.links.drom, /\/sedan\//);
+});
+
 test("Solaris at 800 000 keeps a piggy-bank link because that budget clears the taxi floor", () => {
   const result = searchLinks(load("hyundai-solaris-1"), { median: 820_000, savings: 800_000 });
   assert.equal(result.priceFrom, 650_000);
@@ -98,6 +108,21 @@ test("Solaris at 800 000 keeps a piggy-bank link because that budget clears the 
     assert.match(result.savings.links.drom, /minprice=650000&maxprice=800000/);
     assert.match(result.savings.links.autoru, /price_from=650000&price_to=800000/);
   }
+});
+
+test("Fusion search stays the European 1.6 through 2012 and does not open the US sedan", () => {
+  const result = searchLinks(load("ford-fusion"), { median: 300_000, isSeed: true, confidence: "low" });
+  assert.deepEqual(result.years, [2002, 2012]);
+  assert.deepEqual(result.volumes, [1.6]);
+  assert.deepEqual(result.power, { from: 100, to: 100 });
+  assert.deepEqual(result.engines.map((engine) => engine.hp), [100]);
+  assert.match(result.links.drom, /maxyear=2012/);
+  assert.match(result.links.drom, /mv=1\.6&xv=1\.6/);
+  assert.match(result.links.drom, /minpower=100&maxpower=100/);
+  assert.match(result.links.drom, /transmission\[\]=2&transmission\[\]=5/);
+  assert.doesNotMatch(result.links.drom, /maxyear=2020|mv=1\.4|mv=1\.5|mv=2\.0|mv=2\.5/);
+  assert.match(result.links.autoru, /year_to=2012/);
+  assert.match(result.links.autoru, /displacement_from=1600&displacement_to=1600/);
 });
 
 test("Focus III search is only the 1.5 EcoBoost automatic from 2015 to 2019", () => {

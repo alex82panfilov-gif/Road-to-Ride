@@ -23,6 +23,15 @@
       "timing": "belt",
       "recommended": true,
       "years": [2001, 2015]
+    },
+    {
+      "code": "0.8 52",
+      "volumeL": 0.8,
+      "hp": 52,
+      "fuel": "petrol",
+      "timing": "belt",
+      "recommended": true,
+      "years": [2001, 2015]
     }
   ],
   "gearboxes": [
@@ -30,7 +39,7 @@
       "type": "AT",
       "name": "4АКПП",
       "verdict": "acceptable",
-      "engineCodes": ["0.8"],
+      "engineCodes": ["0.8", "0.8 52"],
       "years": [2001, 2015],
       "note": "Автоматов мало. Берите только если коробка переключается без толчков на прогретой машине."
     }

@@ -1,5 +1,6 @@
 import { adviseFor, type AdviceModel } from "../advice";
 import { scoreText } from "../cn";
+import { MIN_LIVE_LISTINGS } from "../prices";
 import { monthsToGoal } from "../forecast";
 import { approxRub } from "../format";
 import { DEFAULT_DRIVER, meta, osagoRange, realPrice, type DriverProfile } from "../meta";
@@ -80,9 +81,32 @@ export function priceBreakdown(item: CatalogItem, driver: DriverProfile = DEFAUL
   };
 }
 
+/** Меньше пяти объявлений в Москве и области: цена ещё из ориентира, модель в развилку не ставим. */
+export function rareInMoscow(item: { isSeed: boolean; sampleSize: number }): boolean {
+  return item.isSeed && item.sampleSize > 0 && item.sampleSize < MIN_LIVE_LISTINGS;
+}
+
+export function listingsWord(count: number): string {
+  const mod10 = count % 10;
+  const mod100 = count % 100;
+  if (mod10 === 1 && mod100 !== 11) return "объявление";
+  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) return "объявления";
+  return "объявлений";
+}
+
+export function rareLine(count: number): string {
+  return `Редко в Москве: ${count} ${listingsWord(count)} за месяц`;
+}
+
+/** Цены вне Москвы, которые перегон не отменяет. Пока это одна модель с проверенной выдачей. */
+export function regionTransferNote(slug: string): string | null {
+  if (slug === "kia-cerato-1") return "В регионах 330–480 тыс. ₽ — перегон добавит расходы";
+  return null;
+}
+
 function openModels(items: CatalogItem[], driver: DriverProfile): CatalogItem[] {
   const models = items.map(toAdvice);
-  return items.filter((item, index) => item.median > 0 && !blocked(item, models[index], models));
+  return items.filter((item, index) => item.median > 0 && !rareInMoscow(item) && !blocked(item, models[index], models));
 }
 
 function soonest(items: CatalogItem[], amount: number, driver: DriverProfile): CatalogItem | null {
@@ -107,6 +131,12 @@ export function aimContrast(earlierMonths: number, earlierScore: number, laterMo
   const months = laterMonths - earlierMonths;
   if (months <= 0) return null;
   return `+${months} мес. — и оценка ${scoreText(laterScore)} вместо ${scoreText(earlierScore)}`;
+}
+
+/** Лучшая цель дороже меньше чем на два взноса: вторая карточка говорит копить сразу на неё. */
+export function directSaveLine(betterName: string, extraRub: number, extraMonths: number, monthly: number): string | null {
+  if (monthly <= 0 || extraRub <= 0 || extraRub >= monthly * 2 || extraMonths <= 0) return null;
+  return `Копи сразу на ${betterName}: всего ${approxRub(extraRub)} и около ${extraMonths} мес. сверху`;
 }
 
 /** Ближайшая модель с оценкой не ниже DECENT_SCORE, по realPrice. */
@@ -173,7 +203,7 @@ export function almostNote(
 export function bestSafeAt(items: CatalogItem[], amount: number, driver: DriverProfile = DEFAULT_DRIVER): CatalogItem | null {
   const models = items.map(toAdvice);
   const priced = new Set(affordableReal(items, amount, driver).map((item) => item.slug));
-  const safe = items.filter((item, index) => priced.has(item.slug) && !blocked(item, models[index], models));
+  const safe = items.filter((item, index) => priced.has(item.slug) && !rareInMoscow(item) && !blocked(item, models[index], models));
   return bestAt(safe, amount);
 }
 
@@ -188,7 +218,7 @@ export function qualityJumped(current: CatalogItem | null, next: CatalogItem | n
 function watchAmounts(items: CatalogItem[], driver: DriverProfile): number[] {
   const values = new Set<number>(tierAmounts());
   for (const item of items) {
-    if (item.median <= 0) continue;
+    if (item.median <= 0 || rareInMoscow(item)) continue;
     values.add(purchasePrice(item, driver));
   }
   return [...values].sort((left, right) => left - right);
@@ -295,9 +325,10 @@ export function leftForCar(saved: number, car: CatalogItem | null, driver: Drive
   return saved - (realPrice(car.median, car.hp, driver) - car.median);
 }
 
-export function priceStatus(item: { isSeed: boolean; isFallback: boolean; confidence: string }): string[] {
+export function priceStatus(item: { isSeed: boolean; isFallback: boolean; confidence: string; sampleSize?: number }): string[] {
   const lines: string[] = [];
-  if (item.isSeed) lines.push("Стартовый ориентир");
+  if (item.sampleSize !== undefined && rareInMoscow({ isSeed: item.isSeed, sampleSize: item.sampleSize })) lines.push(rareLine(item.sampleSize));
+  else if (item.isSeed) lines.push("Стартовый ориентир");
   if (item.confidence === "low") lines.push("Мало данных");
   if (item.isFallback) lines.push("Цена прошлого месяца");
   return lines;
@@ -316,6 +347,10 @@ export function catalogBands(
   const skip: CatalogItem[] = [];
   const later: CatalogItem[] = [];
   items.forEach((item, index) => {
+    if (rareInMoscow(item)) {
+      later.push(item);
+      return;
+    }
     const avoid = blocked(item, models[index], models);
     const price = item.median > 0 ? purchasePrice(item, driver) : Number.POSITIVE_INFINITY;
     if (price <= saved && avoid) {

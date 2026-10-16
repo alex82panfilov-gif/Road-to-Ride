@@ -4,12 +4,12 @@ import { catalog } from "../data.ts";
 import { bestSafeAt } from "./market.ts";
 import { setbackLine, withdrawalError } from "./ledger.ts";
 
-test("300000 minus 50000 changes today and does not invent a penalty", () => {
-  const before = bestSafeAt(catalog, 300_000);
-  const after = bestSafeAt(catalog, 250_000);
-  assert.ok(before);
-  assert.notEqual(after?.slug, before.slug);
-  const line = setbackLine(before, 250_000);
+test("400000 down to 320000 changes today and does not invent a penalty", () => {
+  const before = bestSafeAt(catalog, 400_000);
+  const after = bestSafeAt(catalog, 320_000);
+  assert.equal(before?.slug, "hyundai-elantra-xd");
+  assert.equal(after?.slug, "daewoo-matiz");
+  const line = setbackLine(before, 320_000);
   assert.match(line ?? "", /^Бывает\. До .+ снова ≈ /);
   assert.doesNotMatch(line ?? "", /штраф|уровень/i);
 });

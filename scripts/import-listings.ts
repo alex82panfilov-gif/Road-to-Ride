@@ -8,12 +8,13 @@
 import fs from "node:fs";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
+import { MIN_LIVE_LISTINGS } from "../lib/prices.ts";
 import { Model, SnapshotFile, type TListing, type TModel, type TSnapshotFile } from "../lib/schema.ts";
 import { isMoscowRegionCity } from "./moscow-region.ts";
-import { gearboxCheck, reviewRaw } from "./validate-data.ts";
+import { gearboxCheck, mileageAboveAvoid, reviewRaw } from "./validate-data.ts";
 
 const PHONE_RE = /(\+7|\b8)[\s(-]*9\d{2}[\s)-]*\d{3}[\s-]*\d{2}[\s-]*\d{2}/;
-const COLUMNS = ["slug", "platform", "listingId", "year", "mileageKm", "priceRub", "engine", "gearbox", "city"] as const;
+const COLUMNS = ["slug", "platform", "listingId", "year", "mileageKm", "priceRub", "engine", "gearbox", "city", "hp"] as const;
 
 const PLATFORM_URL: Record<TListing["platform"], string> = {
   drom: "https://auto.drom.ru/",
@@ -31,6 +32,7 @@ export type ManualRow = {
   priceRub: number;
   engine: string;
   gearbox: string;
+  hp: number;
 };
 
 export function parseCsv(text: string): string[][] {
@@ -110,21 +112,35 @@ export function rowsFromCsv(text: string): { rows: ManualRow[]; errors: string[]
   const errors: string[] = [];
   table.slice(1).forEach((cells, index) => {
     const line = index + 2;
-    const [slug, platformRaw, listingId, yearRaw, mileageRaw, priceRaw, engine, gearbox, city] = cells;
+    const [slug, platformRaw, listingId, yearRaw, mileageRaw, priceRaw, engine, gearbox, city, hpRaw] = cells;
     const platform = platformOf(platformRaw ?? "");
     const year = Number(yearRaw);
     const mileageKm = Number(mileageRaw);
     const priceRub = Number(String(priceRaw).replace(/\s/g, ""));
+    const hp = Number(hpRaw);
     const cityOk = Boolean(city) && isMoscowRegionCity(city);
     if (!slug || !listingId || !engine || !gearbox) errors.push(`Строка ${line}: пустое обязательное поле.`);
     if (!platform) errors.push(`Строка ${line}: площадка «${platformRaw}» не из drom, autoru, avito, other.`);
     if (!Number.isInteger(year) || year < 1980 || year > 2035) errors.push(`Строка ${line}: год не похож на год.`);
     if (!Number.isInteger(mileageKm) || mileageKm < 0) errors.push(`Строка ${line}: пробег должен быть целым.`);
     if (!Number.isInteger(priceRub) || priceRub <= 0) errors.push(`Строка ${line}: цена должна быть целым числом рублей.`);
+    if (!Number.isInteger(hp) || hp <= 0) errors.push(`Строка ${line}: мощность должна быть целым числом л.с.`);
     if (!city) errors.push(`Строка ${line}: нет города.`);
     else if (!cityOk) errors.push(`Строка ${line}: город «${city}» вне Москвы и Московской области.`);
-    if (platform && slug && listingId && Number.isInteger(year) && Number.isInteger(mileageKm) && Number.isInteger(priceRub) && engine && gearbox && cityOk) {
-      rows.push({ slug, platform, listingId, year, mileageKm, priceRub, engine, gearbox });
+    if (
+      platform &&
+      slug &&
+      listingId &&
+      Number.isInteger(year) &&
+      Number.isInteger(mileageKm) &&
+      Number.isInteger(priceRub) &&
+      Number.isInteger(hp) &&
+      hp > 0 &&
+      engine &&
+      gearbox &&
+      cityOk
+    ) {
+      rows.push({ slug, platform, listingId, year, mileageKm, priceRub, engine, gearbox, hp });
     }
   });
   return { rows, errors };
@@ -144,7 +160,9 @@ export function toListing(row: ManualRow, model: TModel): { listing: TListing | 
   const gearboxType = gearboxTypeOf(row.gearbox);
   if (!gearboxType) return { listing: null, error: `${row.slug} ${row.listingId}: коробку «${row.gearbox}» не удалось отнести к AT, CVT, DCT, AMT или MT.` };
   const sameVolume = model.engines.filter((engine) => Math.abs(engine.volumeL - engineL) < 0.05);
-  const hp = sameVolume.length === 1 ? sameVolume[0].hp : undefined;
+  if (sameVolume.length && !sameVolume.some((engine) => engine.hp === row.hp)) {
+    return { listing: null, error: `${row.slug} ${row.listingId}: мощность ${row.hp} л.с. не сходится с мотором ${engineL} л` };
+  }
   const listing: TListing = {
     id: row.listingId,
     platform: row.platform,
@@ -152,7 +170,7 @@ export function toListing(row: ManualRow, model: TModel): { listing: TListing | 
     mileageKm: row.mileageKm,
     priceRub: row.priceRub,
     engineL,
-    ...(hp ? { hp } : {}),
+    hp: row.hp,
     gearboxType,
     gearboxRaw: row.gearbox,
   };
@@ -168,8 +186,13 @@ function confidenceOf(listings: TListing[]): "low" | "medium" | "high" {
   return "low";
 }
 
-export function applyRows(file: TSnapshotFile, rows: ManualRow[], models: Map<string, TModel>): { file: TSnapshotFile; errors: string[] } {
+export function applyRows(
+  file: TSnapshotFile,
+  rows: ManualRow[],
+  models: Map<string, TModel>,
+): { file: TSnapshotFile; errors: string[]; dropped: string[] } {
   const errors: string[] = [];
+  const dropped: string[] = [];
   const bySlug = new Map<string, ManualRow[]>();
   const seen = new Set<string>();
   for (const row of rows) {
@@ -179,19 +202,32 @@ export function applyRows(file: TSnapshotFile, rows: ManualRow[], models: Map<st
     seen.add(`${row.slug}:${key}`);
     bySlug.set(row.slug, [...(bySlug.get(row.slug) ?? []), row]);
   }
-  if (errors.length) return { file, errors };
+  if (errors.length) return { file, errors, dropped };
 
   const snapshots = file.snapshots.map((snapshot) => {
     const group = bySlug.get(snapshot.slug);
     if (!group) return snapshot;
     const model = models.get(snapshot.slug)!;
     const listings: TListing[] = [];
+    const modelDropped: string[] = [];
+    let hard = false;
     for (const row of group) {
       const built = toListing(row, model);
-      if (built.error || !built.listing) errors.push(built.error ?? `${row.slug}: объявление не собралось.`);
+      if (built.error || !built.listing) {
+        errors.push(built.error ?? `${row.slug}: объявление не собралось.`);
+        hard = true;
+        continue;
+      }
+      const far = mileageAboveAvoid(row.mileageKm, model.mileage.avoidFrom);
+      if (far) modelDropped.push(`${row.slug} ${row.listingId}: ${far}`);
       else listings.push(built.listing);
     }
-    if (!listings.length || listings.length !== group.length) return snapshot;
+    if (hard) return snapshot;
+    dropped.push(...modelDropped);
+    if (!listings.length) return snapshot;
+    if (listings.length < MIN_LIVE_LISTINGS) {
+      return { ...snapshot, sampleSize: listings.length, listings };
+    }
     const prices = listings.map((listing) => listing.priceRub);
     const platforms = [...new Set(listings.map((listing) => listing.platform))];
     return {
@@ -214,6 +250,7 @@ export function applyRows(file: TSnapshotFile, rows: ManualRow[], models: Map<st
   return {
     file: { ...file, schemaVersion: 2, snapshots },
     errors,
+    dropped,
   };
 }
 
@@ -269,6 +306,7 @@ function main() {
     process.exit(1);
   }
   fs.writeFileSync(snapPath, JSON.stringify(applied.file, null, 2) + "\n");
+  for (const line of applied.dropped) console.log(`Отброшено: ${line}`);
   console.log(`Обновлены модели: ${slugs.join(", ")}. Файл остаётся стартовым, пока в нём есть модели без объявлений.`);
   console.log("Объявления этих моделей уже проверены теми же правилами, что и валидатор. npm run validate пока подпишет месяц как стартовый ориентир.");
 }

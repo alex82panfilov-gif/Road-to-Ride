@@ -4,7 +4,7 @@ import { approxRub } from "../format";
 import { DEFAULT_DRIVER, type DriverProfile } from "../meta";
 import type { CatalogItem } from "../market";
 import { isAvoidCar } from "./advice";
-import { purchasePrice } from "./market";
+import { purchasePrice, rareInMoscow } from "./market";
 
 export const goalBandOrder = ["pocket", "three", "year", "longer", "million", "avoid"] as const;
 export type GoalBand = (typeof goalBandOrder)[number];
@@ -41,6 +41,7 @@ export function goalGroups(
   };
   const priced = items.filter((item) => item.median > 0).sort((left, right) => purchasePrice(left, driver) - purchasePrice(right, driver));
   for (const item of priced) {
+    if (rareInMoscow(item)) continue;
     if (isAvoidCar(item, items)) {
       buckets.avoid.push(item);
       continue;

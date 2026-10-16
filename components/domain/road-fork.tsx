@@ -19,6 +19,7 @@ import {
   almostAffordable,
   almostNote,
   bestSafeAt,
+  directSaveLine,
   collapseRoadPosts,
   DECENT_SCORE,
   familyContribution,
@@ -182,6 +183,15 @@ export function RoadFork({ items }: { items: CatalogItem[] }) {
   const laterQuote = laterCar ? quoteOf(laterCar) : null;
   const nearestMonths = nearestQuote?.months ?? null;
   const decentMonths = decentQuote?.months ?? null;
+  const direct =
+    showPair && nearestAim && decentAim && nearestMonths !== null && decentMonths !== null
+      ? directSaveLine(
+          decentAim.model,
+          purchasePrice(decentAim, driver) - purchasePrice(nearestAim, driver),
+          decentMonths - nearestMonths,
+          data.monthly,
+        )
+      : null;
   const months = jumpQuote?.months ?? null;
   const laterMonths = laterQuote?.months ?? null;
   const window = roadWindow(preview, expanded);
@@ -313,7 +323,7 @@ export function RoadFork({ items }: { items: CatalogItem[] }) {
           {showPair && nearestAim && decentAim ? (
             <>
               <p className="text-sm text-muted">Две цели</p>
-              <h2 className="mt-1 text-xl font-semibold">Ближайшая или заметно лучше</h2>
+              <h2 className="mt-1 text-xl font-semibold">{direct ?? "Ближайшая или заметно лучше"}</h2>
               <p className="mt-3 text-sm">
                 <Link href={`/cars/${nearestAim.slug}`}>{displayName(nearestAim)}</Link> — {approxRub(nearestQuote?.total ?? purchasePrice(nearestAim, driver))}, {waitLine(nearestMonths, data.monthly)}. Оценка {scoreText(nearestAim.score)}.
               </p>
@@ -321,7 +331,7 @@ export function RoadFork({ items }: { items: CatalogItem[] }) {
               <p className="mt-3 text-sm">
                 <Link href={`/cars/${decentAim.slug}`}>{displayName(decentAim)}</Link> — {approxRub(decentQuote?.total ?? purchasePrice(decentAim, driver))}, {waitLine(decentMonths, data.monthly)}. Оценка {scoreText(decentAim.score)}. Это заметно лучше машина.
               </p>
-              {nearestMonths !== null && decentMonths !== null && aimContrast(nearestMonths, nearestAim.score, decentMonths, decentAim.score) ? (
+              {direct ? null : nearestMonths !== null && decentMonths !== null && aimContrast(nearestMonths, nearestAim.score, decentMonths, decentAim.score) ? (
                 <p className="mt-2 text-sm font-medium">{aimContrast(nearestMonths, nearestAim.score, decentMonths, decentAim.score)}</p>
               ) : null}
               {decentQuote ? <PriceFacts item={decentAim} quote={decentQuote} /> : null}

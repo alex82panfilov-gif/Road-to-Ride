@@ -14,17 +14,85 @@
       "month": "2026-10",
       "slug": "daewoo-matiz",
       "region": "moscow",
-      "sampleSize": 0,
-      "p25": 150000,
-      "median": 150000,
-      "p75": 190000,
-      "medianMileageKm": 110000,
-      "medianYear": 2008,
+      "sampleSize": 6,
+      "p25": 160750,
+      "median": 230000,
+      "p75": 315000,
+      "medianMileageKm": 130000,
+      "medianYear": 2007,
       "confidence": "low",
       "sources": [
-        "https://www.autostat.ru/"
+        "https://auto.drom.ru/"
       ],
-      "notes": "Стартовый ориентир, не подсчёт объявлений. Замените снимок по docs/AGENT_PROMPT.md."
+      "notes": "Полуручной сбор: строки из CSV, без имён и телефонов. Проверьте выборку валидатором.",
+      "listings": [
+        {
+          "id": "453463560",
+          "platform": "drom",
+          "year": 2007,
+          "mileageKm": 127000,
+          "priceRub": 330000,
+          "engineL": 0.8,
+          "hp": 51,
+          "gearboxType": "AT",
+          "gearboxRaw": "4АКПП"
+        },
+        {
+          "id": "732767525",
+          "platform": "drom",
+          "year": 2007,
+          "mileageKm": 141000,
+          "priceRub": 151000,
+          "engineL": 0.8,
+          "hp": 51,
+          "gearboxType": "AT",
+          "gearboxRaw": "4АКПП"
+        },
+        {
+          "id": "646710184",
+          "platform": "drom",
+          "year": 2006,
+          "mileageKm": 149345,
+          "priceRub": 190000,
+          "engineL": 0.8,
+          "hp": 52,
+          "gearboxType": "AT",
+          "gearboxRaw": "4АКПП"
+        },
+        {
+          "id": "719132954",
+          "platform": "drom",
+          "year": 2006,
+          "mileageKm": 130000,
+          "priceRub": 115000,
+          "engineL": 0.8,
+          "hp": 51,
+          "gearboxType": "AT",
+          "gearboxRaw": "4АКПП"
+        },
+        {
+          "id": "634693714",
+          "platform": "drom",
+          "year": 2005,
+          "mileageKm": 130000,
+          "priceRub": 400000,
+          "engineL": 0.8,
+          "hp": 52,
+          "gearboxType": "AT",
+          "gearboxRaw": "4АКПП"
+        },
+        {
+          "id": "800209774",
+          "platform": "drom",
+          "year": 2007,
+          "mileageKm": 118000,
+          "priceRub": 270000,
+          "engineL": 0.8,
+          "hp": 51,
+          "gearboxType": "AT",
+          "gearboxRaw": "4АКПП"
+        }
+      ]
     },
     {
       "month": "2026-10",
@@ -49,6 +117,7 @@
           "mileageKm": 250000,
           "priceRub": 250000,
           "engineL": 1.6,
+          "hp": 107,
           "gearboxType": "AT",
           "gearboxRaw": "4АКПП"
         },
@@ -59,6 +128,7 @@
           "mileageKm": 189408,
           "priceRub": 315000,
           "engineL": 1.6,
+          "hp": 105,
           "gearboxType": "AT",
           "gearboxRaw": "4АКПП"
         },
@@ -69,6 +139,7 @@
           "mileageKm": 183200,
           "priceRub": 250000,
           "engineL": 1.6,
+          "hp": 107,
           "gearboxType": "AT",
           "gearboxRaw": "4АКПП"
         },
@@ -79,6 +150,7 @@
           "mileageKm": 267000,
           "priceRub": 300000,
           "engineL": 1.6,
+          "hp": 105,
           "gearboxType": "AT",
           "gearboxRaw": "4АКПП"
         },
@@ -89,6 +161,7 @@
           "mileageKm": 180000,
           "priceRub": 225000,
           "engineL": 1.6,
+          "hp": 105,
           "gearboxType": "AT",
           "gearboxRaw": "4АКПП"
         },
@@ -99,6 +172,7 @@
           "mileageKm": 220000,
           "priceRub": 220000,
           "engineL": 1.6,
+          "hp": 105,
           "gearboxType": "AT",
           "gearboxRaw": "4АКПП"
         }
@@ -108,23 +182,113 @@
       "month": "2026-10",
       "slug": "nissan-almera-n16",
       "region": "moscow",
-      "sampleSize": 0,
-      "p25": 190000,
-      "median": 200000,
-      "p75": 240000,
-      "medianMileageKm": 180000,
-      "medianYear": 2004,
+      "sampleSize": 8,
+      "p25": 380000,
+      "median": 395000,
+      "p75": 650000,
+      "medianMileageKm": 225500,
+      "medianYear": 2005,
       "confidence": "low",
       "sources": [
-        "https://www.autostat.ru/"
+        "https://auto.drom.ru/"
       ],
-      "notes": "Стартовый ориентир, не подсчёт объявлений. Замените снимок по docs/AGENT_PROMPT.md."
+      "notes": "Полуручной сбор: строки из CSV, без имён и телефонов. Проверьте выборку валидатором.",
+      "listings": [
+        {
+          "id": "180614140",
+          "platform": "drom",
+          "year": 2006,
+          "mileageKm": 159673,
+          "priceRub": 650000,
+          "engineL": 1.8,
+          "hp": 116,
+          "gearboxType": "AT",
+          "gearboxRaw": "4АКПП"
+        },
+        {
+          "id": "945057354",
+          "platform": "drom",
+          "year": 2006,
+          "mileageKm": 250000,
+          "priceRub": 400000,
+          "engineL": 1.8,
+          "hp": 116,
+          "gearboxType": "AT",
+          "gearboxRaw": "4АКПП"
+        },
+        {
+          "id": "266175133",
+          "platform": "drom",
+          "year": 2005,
+          "mileageKm": 111000,
+          "priceRub": 750000,
+          "engineL": 1.8,
+          "hp": 116,
+          "gearboxType": "AT",
+          "gearboxRaw": "4АКПП"
+        },
+        {
+          "id": "305127596",
+          "platform": "drom",
+          "year": 2004,
+          "mileageKm": 181000,
+          "priceRub": 650000,
+          "engineL": 1.8,
+          "hp": 116,
+          "gearboxType": "AT",
+          "gearboxRaw": "4АКПП"
+        },
+        {
+          "id": "193996138",
+          "platform": "drom",
+          "year": 2006,
+          "mileageKm": 275000,
+          "priceRub": 390000,
+          "engineL": 1.8,
+          "hp": 116,
+          "gearboxType": "AT",
+          "gearboxRaw": "4АКПП"
+        },
+        {
+          "id": "599388977",
+          "platform": "drom",
+          "year": 2005,
+          "mileageKm": 240000,
+          "priceRub": 380000,
+          "engineL": 1.8,
+          "hp": 116,
+          "gearboxType": "AT",
+          "gearboxRaw": "4АКПП"
+        },
+        {
+          "id": "114210765",
+          "platform": "drom",
+          "year": 2005,
+          "mileageKm": 231000,
+          "priceRub": 330000,
+          "engineL": 1.8,
+          "hp": 116,
+          "gearboxType": "AT",
+          "gearboxRaw": "4АКПП"
+        },
+        {
+          "id": "195376696",
+          "platform": "drom",
+          "year": 2004,
+          "mileageKm": 220000,
+          "priceRub": 380000,
+          "engineL": 1.8,
+          "hp": 116,
+          "gearboxType": "AT",
+          "gearboxRaw": "4АКПП"
+        }
+      ]
     },
     {
       "month": "2026-10",
       "slug": "kia-cerato-1",
       "region": "moscow",
-      "sampleSize": 0,
+      "sampleSize": 1,
       "p25": 230000,
       "median": 250000,
       "p75": 290000,
@@ -134,7 +298,20 @@
       "sources": [
         "https://www.autostat.ru/"
       ],
-      "notes": "Стартовый ориентир, не подсчёт объявлений. Замените снимок по docs/AGENT_PROMPT.md."
+      "notes": "Стартовый ориентир, не подсчёт объявлений. Замените снимок по docs/AGENT_PROMPT.md.",
+      "listings": [
+        {
+          "id": "348728138",
+          "platform": "drom",
+          "year": 2005,
+          "mileageKm": 239992,
+          "priceRub": 360000,
+          "engineL": 1.6,
+          "hp": 105,
+          "gearboxType": "AT",
+          "gearboxRaw": "4АКПП"
+        }
+      ]
     },
     {
       "month": "2026-10",
@@ -156,17 +333,85 @@
       "month": "2026-10",
       "slug": "ford-fusion",
       "region": "moscow",
-      "sampleSize": 0,
-      "p25": 280000,
-      "median": 300000,
-      "p75": 350000,
-      "medianMileageKm": 140000,
+      "sampleSize": 6,
+      "p25": 434500,
+      "median": 474000,
+      "p75": 537500,
+      "medianMileageKm": 187250,
       "medianYear": 2008,
       "confidence": "low",
       "sources": [
-        "https://www.autostat.ru/"
+        "https://auto.drom.ru/"
       ],
-      "notes": "Стартовый ориентир, не подсчёт объявлений. Замените снимок по docs/AGENT_PROMPT.md."
+      "notes": "Полуручной сбор: строки из CSV, без имён и телефонов. Проверьте выборку валидатором.",
+      "listings": [
+        {
+          "id": "458629056",
+          "platform": "drom",
+          "year": 2008,
+          "mileageKm": 222000,
+          "priceRub": 400000,
+          "engineL": 1.6,
+          "hp": 100,
+          "gearboxType": "AT",
+          "gearboxRaw": "4АКПП"
+        },
+        {
+          "id": "204601831",
+          "platform": "drom",
+          "year": 2007,
+          "mileageKm": 195000,
+          "priceRub": 550000,
+          "engineL": 1.6,
+          "hp": 100,
+          "gearboxType": "AT",
+          "gearboxRaw": "4АКПП"
+        },
+        {
+          "id": "353250695",
+          "platform": "drom",
+          "year": 2008,
+          "mileageKm": 98871,
+          "priceRub": 709000,
+          "engineL": 1.6,
+          "hp": 100,
+          "gearboxType": "AT",
+          "gearboxRaw": "4АКПП"
+        },
+        {
+          "id": "536073264",
+          "platform": "drom",
+          "year": 2006,
+          "mileageKm": 179798,
+          "priceRub": 448000,
+          "engineL": 1.6,
+          "hp": 100,
+          "gearboxType": "AT",
+          "gearboxRaw": "4АКПП"
+        },
+        {
+          "id": "876635422",
+          "platform": "drom",
+          "year": 2007,
+          "mileageKm": 180000,
+          "priceRub": 430000,
+          "engineL": 1.6,
+          "hp": 100,
+          "gearboxType": "AT",
+          "gearboxRaw": "4АКПП"
+        },
+        {
+          "id": "382850911",
+          "platform": "drom",
+          "year": 2008,
+          "mileageKm": 194500,
+          "priceRub": 500000,
+          "engineL": 1.6,
+          "hp": 100,
+          "gearboxType": "AT",
+          "gearboxRaw": "4АКПП"
+        }
+      ]
     },
     {
       "month": "2026-10",

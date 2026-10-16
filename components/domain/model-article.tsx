@@ -16,7 +16,7 @@ import type { PickedPrice } from "@/lib/prices";
 import type { Model } from "@/lib/schema";
 import { tierAmounts } from "@/lib/tiers";
 import { avoidExcuse, cheaperTrap } from "@/lib/view/advice";
-import { priceStatus } from "@/lib/view/market";
+import { priceStatus, rareInMoscow, regionTransferNote } from "@/lib/view/market";
 import { searchLinks } from "@/lib/view/search";
 import { MarketSearch } from "@/components/domain/search-links";
 import { TermText } from "@/components/domain/term-text";
@@ -37,6 +37,8 @@ export function ModelArticle({
   const { data, saved, ready } = useUser();
   const [copied, setCopied] = useState(false);
   const [adviceOpen, setAdviceOpen] = useState(true);
+  const rare = rareInMoscow(price);
+  const transfer = rare ? regionTransferNote(model.slug) : null;
   const advice = useMemo(() => {
     const models = items.map((item) => ({
       slug: item.slug,
@@ -120,7 +122,7 @@ export function ModelArticle({
           {priceStatus(price).join(" · ") || labels.confidence[price.confidence]}
           {" · "}
           обновлено {price.month}
-          {price.sampleSize ? ` · ${price.sampleSize} объявлений` : " · без подсчёта объявлений"}
+          {rare ? "" : price.sampleSize ? ` · ${price.sampleSize} объявлений` : " · без подсчёта объявлений"}
         </p>
         {price.isFallback ? <p className="text-sm">В этом месяце мало объявлений, показана цена за {price.month}.</p> : null}
       </section>
@@ -217,10 +219,11 @@ export function ModelArticle({
       <section>
         <h2 className="text-lg font-semibold">Ориентир цены</h2>
         {history.length >= 2 ? <PriceChart points={history} /> : <p className="mt-2 text-sm text-muted">Истории цен пока нет: стартовые ориентиры на график не выводятся.</p>}
-        {price.isSeed ? <p className="mt-2 text-sm text-muted">Это стартовый ориентир, не подсчёт объявлений.</p> : null}
+        {transfer ? <p className="mt-2 text-sm">{transfer}</p> : null}
+        {price.isSeed && !rare ? <p className="mt-2 text-sm text-muted">Это стартовый ориентир, не подсчёт объявлений.</p> : null}
         {price.isFallback ? <p className="mt-2 text-sm">В этом месяце мало объявлений, показана цена за {price.month}.</p> : null}
         {price.median > 1_000_000 ? <p className="mt-2 text-sm">Пока вне бюджета: медиана выше 1 000 000 ₽.</p> : null}
-        {price.notes ? <p className="mt-2 text-sm text-muted">{price.notes}</p> : null}
+        {price.notes && !rare ? <p className="mt-2 text-sm text-muted">{price.notes}</p> : null}
         <div className="mt-3">
           <MarketSearch
             result={searchLinks(model, {
