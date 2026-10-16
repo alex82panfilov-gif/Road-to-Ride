@@ -18,6 +18,7 @@ import { tierAmounts } from "@/lib/tiers";
 import { priceStatus } from "@/lib/view/market";
 import { autoruSearchUrl, dromSearchUrl } from "@/lib/view/search-links";
 import { SearchLinks } from "@/components/domain/search-links";
+import { TermText } from "@/components/domain/term-text";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 
@@ -55,7 +56,6 @@ export function ModelArticle({
   const osago = osagoRange(hp, driver);
   const reserve = Math.round(price.median * meta.reserveRate);
   const tier = tierAmounts().find((amount) => amount >= price.median) ?? tierAmounts().at(-1)!;
-  const expert = data.mode === "expert";
 
   return (
     <article className="space-y-8">
@@ -69,13 +69,16 @@ export function ModelArticle({
       </header>
 
       <section className="space-y-3" aria-label="Вердикт">
-        {model.summary ? <p>{model.summary}</p> : null}
+        {model.summary ? (
+          <p>
+            <TermText text={model.summary} />
+          </p>
+        ) : null}
         <h2 className="text-lg font-semibold">Коробка</h2>
         <ul className="space-y-2 text-sm">
           {model.gearboxes.map((box) => (
             <li key={box.name}>
-              {expert ? box.name : labels.gearbox[box.type]} — {labels.verdict[box.verdict]}
-              {box.note ? <span className="text-muted"> {box.note}</span> : null}
+              <TermText text={`${labels.gearbox[box.type]} — ${labels.verdict[box.verdict]}`} />
             </li>
           ))}
         </ul>
@@ -129,26 +132,54 @@ export function ModelArticle({
         Я у машины
       </Link>
 
-      <section>
-        <h2 className="text-lg font-semibold">Моторы и коробки</h2>
-        <ul className="mt-3 space-y-2 text-sm">
-          {model.engines.map((engine) => (
-            <li key={engine.code}>
-              {engine.volumeL} л, {engine.hp} л.с., {engine.fuel === "petrol" ? "бензин" : engine.fuel},{" "}
-              {engine.timing === "belt" ? "ремень ГРМ" : "цепь ГРМ"}
-              {engine.recommended ? " — предпочтительный" : ""}
-              {expert ? ` · ${engine.code}` : ""}
-            </li>
-          ))}
-          {model.gearboxes.map((box) => (
-            <li key={box.name}>
-              {expert ? box.name : labels.gearbox[box.type]} — {labels.verdict[box.verdict]}
-              {expert ? ` · ${labels.gearbox[box.type]}` : ""}
-              {box.note ? <span className="text-muted"> {box.note}</span> : null}
-            </li>
-          ))}
-        </ul>
-      </section>
+      <details className="card p-4">
+        <summary className="cursor-pointer font-semibold">Технические подробности</summary>
+        <div className="mt-4 space-y-4 text-sm">
+          <div>
+            <h2 className="font-semibold">Моторы и коробки</h2>
+            <ul className="mt-2 space-y-2">
+              {model.engines.map((engine) => (
+                <li key={engine.code}>
+                  {engine.code}: {engine.volumeL} л, {engine.hp} л.с., {engine.fuel === "petrol" ? "бензин" : engine.fuel},{" "}
+                  {engine.timing === "belt" ? "ремень ГРМ" : "цепь ГРМ"}
+                  {engine.recommended ? " — предпочтительный" : ""}
+                </li>
+              ))}
+              {model.gearboxes.map((box) => (
+                <li key={box.name}>
+                  <TermText text={`${box.name} — ${labels.verdict[box.verdict]} · ${labels.gearbox[box.type]}${box.note ? `. ${box.note}` : ""}`} />
+                </li>
+              ))}
+            </ul>
+          </div>
+          {model.listingRules?.length ? (
+            <div>
+              <h2 className="font-semibold">Как собирается выборка</h2>
+              <ul className="mt-2 list-disc space-y-1 pl-4">
+                {model.listingRules.map((rule) => (
+                  <li key={rule}>
+                    <TermText text={rule} />
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
+          <div>
+            <h2 className="font-semibold">Оценки по частям</h2>
+            <div className="mt-2 space-y-2">
+              {Object.entries(labels.scoreNames).map(([key, title]) => (
+                <p key={key}>
+                  <span className="font-medium">
+                    {title}: {model.subScores[key as keyof typeof model.subScores]} из 10.
+                  </span>{" "}
+                  {model.subScoreNotes[key]}
+                </p>
+              ))}
+              <p className="text-muted">Итоговое число считает сайт, не автор карточки. Веса — на странице методики.</p>
+            </div>
+          </div>
+        </div>
+      </details>
 
       <section>
         <h2 className="text-lg font-semibold">Пробег</h2>
@@ -173,17 +204,6 @@ export function ModelArticle({
             dromHref={dromSearchUrl(model, { priceTo: budget, yearFrom: model.years[0], yearTo: model.years[1] })}
           />
         </div>
-      </section>
-
-      <section className="space-y-3">
-        <h2 className="text-lg font-semibold">Оценки по частям</h2>
-        {Object.entries(labels.scoreNames).map(([key, title]) => (
-          <p key={key} className="text-sm">
-            <span className="font-medium">{title}: {model.subScores[key as keyof typeof model.subScores]} из 10.</span>{" "}
-            {model.subScoreNotes[key]}
-          </p>
-        ))}
-        <p className="text-sm text-muted">Итоговое число считает сайт, не автор карточки. Веса — на странице методики.</p>
       </section>
 
       <ListingForm model={model} price={price} />

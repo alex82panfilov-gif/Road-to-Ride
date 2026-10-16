@@ -68,15 +68,6 @@ export function Shell({ items, children }: { items: CatalogItem[]; children: Rea
             ))}
           </nav>
           <div className="ml-auto flex items-center gap-2">
-            <div className="flex items-center gap-1 rounded-full bg-canvas-secondary p-1 text-xs" role="group" aria-label="Режим">
-              <span className="px-2 text-muted">Режим</span>
-              <button type="button" className={`rounded-full px-2 py-1 ${data.mode === "beginner" ? "bg-canvas font-semibold text-ink" : "text-muted"}`} aria-pressed={data.mode === "beginner"} onClick={() => update((current) => ({ ...current, mode: "beginner" }))}>
-                Новичок
-              </button>
-              <button type="button" className={`rounded-full px-2 py-1 ${data.mode === "expert" ? "bg-canvas font-semibold text-ink" : "text-muted"}`} aria-pressed={data.mode === "expert"} onClick={() => update((current) => ({ ...current, mode: "expert" }))}>
-                Знаток
-              </button>
-            </div>
             <button
               type="button"
               className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-canvas-secondary"
