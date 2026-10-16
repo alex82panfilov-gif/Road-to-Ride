@@ -341,6 +341,28 @@ export function catalogBands(
   return { pocket, soon, skip, later };
 }
 
+export type RoadSpan = { from: number; to: number; slug: string | null; you: boolean };
+
+/** Соседние столбы с одной машиной склеиваются. Пустой столб не получает подпись. */
+export function collapseRoadPosts(posts: { amount: number; you: boolean }[], carOf: (amount: number) => string | null): RoadSpan[] {
+  const spans: RoadSpan[] = [];
+  let index = 0;
+  while (index < posts.length) {
+    const post = posts[index];
+    if (post.you) {
+      spans.push({ from: post.amount, to: post.amount, slug: carOf(post.amount), you: true });
+      index += 1;
+      continue;
+    }
+    const slug = carOf(post.amount);
+    let end = index;
+    while (end + 1 < posts.length && !posts[end + 1].you && carOf(posts[end + 1].amount) === slug) end += 1;
+    spans.push({ from: posts[index].amount, to: posts[end].amount, slug, you: false });
+    index = end + 1;
+  }
+  return spans;
+}
+
 export function choiceDiffs(items: CatalogItem[], amounts: number[], driver: DriverProfile = DEFAULT_DRIVER) {
   return amounts.flatMap((amount) => {
     const raw = bestAt(items, amount);

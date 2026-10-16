@@ -16,9 +16,9 @@ import {
   almostAffordable,
   almostNote,
   bestSafeAt,
+  collapseRoadPosts,
   DECENT_SCORE,
   familyContribution,
-  leftForCar,
   nextDecentAt,
   nextJumpAfter,
   nextQualityAt,
@@ -38,7 +38,8 @@ function shortAmount(amount: number): string {
 }
 
 function waitLine(months: number | null, monthly: number): string {
-  if (months === null) return "срок появится, когда укажешь взнос в месяц";
+  if (monthly <= 0) return "срок появится, когда укажешь взнос в месяц";
+  if (months === null) return `при ${rub(monthly)} в месяц за 10 лет цель не догоняет рост цен`;
   return `около ${months} мес. при ${rub(monthly)} в месяц`;
 }
 
@@ -88,7 +89,6 @@ export function RoadFork({ items }: { items: CatalogItem[] }) {
   const today = bestSafeAt(items, amount, driver);
   const almost = almostAffordable(items, amount, data.monthly, driver);
   const family = familyContribution(data.deposits);
-  const remainder = leftForCar(amount, today, driver);
   const jump = nextJumpAfter(items, amount, driver);
   const later = nextQualityAt(items, amount, driver);
   const jumpCar = jump === null ? null : bestSafeAt(items, jump, driver);
@@ -158,14 +158,13 @@ export function RoadFork({ items }: { items: CatalogItem[] }) {
         <p className="text-sm text-muted">В копилке</p>
         <h1 className="num text-4xl leading-none font-semibold tracking-tight md:text-6xl">{rub(amount)}</h1>
         {family > 0 ? <p className="text-family font-medium">Из них {rub(family)} — вклад семьи</p> : null}
-        {today && remainder !== null ? (
+        {today && todayQuote ? (
           <p className="text-sm">
-            {remainder >= 0
-              ? <>На машину остаётся {rub(remainder)}. Старт — разница между реальной ценой и медианой {displayName(today)}.</>
-              : <>На машину пока не остаётся: старт для {displayName(today)} больше копилки на {rub(Math.abs(remainder))}.</>}
+            {displayName(today)} {approxRub(todayQuote.total)} с ОСАГО и учётом.{" "}
+            {amount >= todayQuote.total ? <>Останется {approxRub(amount - todayQuote.total)}.</> : <>Не хватает {approxRub(todayQuote.total - amount)}.</>}
           </p>
         ) : (
-          <p className="text-sm">Пока нет машины, от которой считать старт. Дорога уже нарисована.</p>
+          <p className="text-sm">Пока нет машины, от которой считать цену. Дорога уже нарисована.</p>
         )}
         {rolledBack ? <p className="text-sm">{rolledBack}</p> : null}
         <div className="flex flex-wrap gap-2">
@@ -195,18 +194,20 @@ export function RoadFork({ items }: { items: CatalogItem[] }) {
           </button>
         </div>
         <ul className={`road-scroll ${expanded ? "is-full" : ""} ${seedRoad ? "is-seed-road" : ""}`}>
-          {posts.map((post) => {
-            const car = bestSafeAt(items, post.amount, driver);
+          {collapseRoadPosts(posts, (value) => bestSafeAt(items, value, driver)?.slug ?? null).map((span) => {
+            const car = span.slug ? items.find((item) => item.slug === span.slug) ?? null : null;
             const seed = !car || car.isSeed;
-            const snapped = pulse?.amount === post.amount;
+            const snapped = pulse !== null && pulse.amount >= span.from && pulse.amount <= span.to;
+            const label = span.from === span.to ? shortAmount(span.from) : `${shortAmount(span.from)}–${shortAmount(span.to)}`;
+            const name = span.you && preview === amount ? "ты здесь" : car ? displayName(car) : null;
             return (
               <li
-                key={`${post.you ? "you" : "post"}-${post.amount}`}
-                className={`road-post ${seed ? "is-seed" : ""} ${post.you ? "is-you" : ""} ${snapped ? "is-snap road-snap" : ""}`}
+                key={`${span.you ? "you" : "post"}-${span.from}-${span.to}`}
+                className={`road-post ${seed ? "is-seed" : ""} ${span.you ? "is-you" : ""} ${snapped ? "is-snap road-snap" : ""}`}
               >
                 <span key={pulse && snapped ? pulse.token : "dot"} className="road-dot" />
-                <span className="num block">{shortAmount(post.amount)}</span>
-                <span className={`road-name ${post.you && preview === amount ? "whitespace-nowrap" : ""}`}>{post.you && preview === amount ? "ты здесь" : car ? displayName(car) : "пока пусто"}</span>
+                <span className="num block">{label}</span>
+                {name ? <span className={`road-name ${span.you && preview === amount ? "whitespace-nowrap" : ""}`}>{name}</span> : null}
               </li>
             );
           })}
@@ -223,7 +224,7 @@ export function RoadFork({ items }: { items: CatalogItem[] }) {
                 <Link href={`/cars/${today.slug}`}>{displayName(today)}</Link>
               </h2>
               <p className="mt-2 text-sm">
-                Оценка {scoreText(today.score)}. {labels.verdict[today.bestGearbox]}.
+                {scoreText(today.score)} · {labels.verdict[today.bestGearbox]}
               </p>
               <p className="mt-2 text-sm text-muted">
                 Медиана {rub(today.median)}. С расходами {approxRub(todayQuote?.total ?? purchasePrice(today, driver))}. {priceStatus(today).join(" · ")}
@@ -268,10 +269,10 @@ export function RoadFork({ items }: { items: CatalogItem[] }) {
               <h2 className="mt-1 text-xl font-semibold">{jumpCar ? <Link href={`/cars/${jumpCar.slug}`}>{displayName(jumpCar)}</Link> : "На этой отметке"}</h2>
               {jumpCar ? (
                 <p className="mt-2 text-sm">
-                  Оценка {scoreText(jumpCar.score)}. {labels.verdict[jumpCar.bestGearbox]}.
+                  {scoreText(jumpCar.score)} · {labels.verdict[jumpCar.bestGearbox]}
                 </p>
               ) : null}
-              <p className="mt-2 text-sm">{months === null ? "Срок появится, когда укажешь взнос в месяц." : `Около ${months} мес. при ${rub(data.monthly)} в месяц.`}</p>
+              <p className="mt-2 text-sm">{data.monthly <= 0 ? "Срок появится, когда укажешь взнос в месяц." : months === null ? `При ${rub(data.monthly)} в месяц за 10 лет цель не догоняет рост цен.` : `Около ${months} мес. при ${rub(data.monthly)} в месяц.`}</p>
               {jumpCar && jumpQuote ? <PriceFacts item={jumpCar} quote={jumpQuote} /> : null}
             </>
           ) : (
@@ -284,9 +285,11 @@ export function RoadFork({ items }: { items: CatalogItem[] }) {
                 {later !== null && laterCar ? (
                   <>
                     {today ? <>Лучше этой машины до {approxRub(later)} не будет. Там {displayName(laterCar)}</> : <>До {displayName(laterCar)} нужно {approxRub(later)}</>}
-                    {laterMonths === null
+                    {data.monthly <= 0
                       ? ". Срок появится, когда укажешь взнос в месяц."
-                      : `: около ${laterMonths} мес. при ${rub(data.monthly)} в месяц.`}
+                      : laterMonths === null
+                        ? `. При ${rub(data.monthly)} в месяц за 10 лет цель не догоняет рост цен.`
+                        : `: около ${laterMonths} мес. при ${rub(data.monthly)} в месяц.`}
                     {today && laterMonths !== null && laterMonths > 12 ? " Можно брать сегодняшнюю." : ""}
                   </>
                 ) : (

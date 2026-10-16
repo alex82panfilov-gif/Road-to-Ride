@@ -13,6 +13,7 @@ import {
   almostNote,
   bestSafeAt,
   catalogBands,
+  collapseRoadPosts,
   DECENT_SCORE,
   nextDecentAt,
   nextJumpAfter,
@@ -166,6 +167,24 @@ test("a purchase target rounds to thousands and the breakdown sums to the real p
   const parts = priceBreakdown(matiz);
   assert.equal(parts.median + parts.osago + parts.registration + parts.diagnostic + parts.service + parts.reserve, parts.total);
   assert.equal(parts.total, price);
+});
+
+test("empty road posts stay unlabeled and the same neighbour is one span", () => {
+  const posts = [150_000, 200_000, 400_000, 450_000].map((amount) => ({ amount, you: false }));
+  const spans = collapseRoadPosts(posts, (amount) => (amount >= 400_000 ? "ford-fusion" : null));
+  assert.equal(spans.length, 2);
+  assert.equal(spans[0].slug, null);
+  assert.equal(spans[0].from, 150_000);
+  assert.equal(spans[0].to, 200_000);
+  assert.equal(spans[1].slug, "ford-fusion");
+  assert.equal(spans[1].from, 400_000);
+  assert.equal(spans[1].to, 450_000);
+  const withYou = collapseRoadPosts(
+    [{ amount: 150_000, you: false }, { amount: 300_000, you: true }, { amount: 350_000, you: false }],
+    () => "hyundai-elantra-xd",
+  );
+  assert.equal(withYou.length, 3);
+  assert.equal(withYou[1].you, true);
 });
 
 test("the Solaris 9.9 fixture still separates bestAt from bestSafeAt", () => {
