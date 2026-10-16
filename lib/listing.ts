@@ -12,6 +12,18 @@ export type ListingFlag = {
   text: string;
 };
 
+const KM_PER_YEAR = 15_000;
+const TAXI_KM_PER_YEAR = 30_000;
+
+function yearsAfter(age: number, one: string, few: string, many: string): string {
+  const mod100 = age % 100;
+  const mod10 = age % 10;
+  if (mod100 > 10 && mod100 < 20) return `${age} ${many}`;
+  if (mod10 === 1) return `${age} ${one}`;
+  if (mod10 >= 2 && mod10 <= 4) return `${age} ${few}`;
+  return `${age} ${many}`;
+}
+
 export function assessListing(model: Model, price: Pick<PriceSnapshot, "p25" | "p75" | "median">, input: ListingInput, asOfYear: number): ListingFlag[] {
   const flags: ListingFlag[] = [];
   const [yearFrom, yearTo] = model.years;
@@ -20,19 +32,25 @@ export function assessListing(model: Model, price: Pick<PriceSnapshot, "p25" | "
   }
 
   const age = Math.max(1, asOfYear - input.year);
-  if (input.mileageKm < age * 5_000 && age >= 6) {
+  const expected = age * KM_PER_YEAR;
+  const ratio = input.mileageKm / expected;
+  const perYear = input.mileageKm / age;
+  const overLimit = input.mileageKm >= model.mileage.avoidFrom;
+  if (overLimit) flags.push({ tone: "bad", text: "Не рассматривать: пробег выше порога этой модели." });
+  if (age >= 8 && ratio < 0.5) {
+    let text = `Подозрительно мало для ${yearsAfter(age, "года", "лет", "лет")}. Проверьте историю пробега в отчёте по VIN.`;
+    if (input.owners >= 4) text += " Каждая смена владельца — повод для скрутки. Сверьте 9 отметок о пробеге.";
+    flags.push({ tone: "warn", text });
+  } else if (ratio > 1.3 || perYear > TAXI_KM_PER_YEAR) {
+    flags.push({ tone: "warn", text: "Похоже на такси или каршеринг." });
+  } else if (!overLimit) {
+    flags.push({ tone: "ok", text: "Обычный для возраста." });
+  }
+  if (age >= 15) {
     flags.push({
       tone: "warn",
-      text: `Пробег подозрительно мал для ${input.year} года: около ${Math.round(input.mileageKm / age / 1000)} тыс. км в год.`,
+      text: `Возраст важнее пробега: машине ${yearsAfter(age, "год", "года", "лет")}. Резина, сальники, проводка и печка стареют независимо от пробега.`,
     });
-  } else if (input.mileageKm >= model.mileage.avoidFrom) {
-    flags.push({ tone: "bad", text: "Пробег выше порога, после которого эту модель лучше не рассматривать." });
-  } else if (input.mileageKm > model.mileage.okMax) {
-    flags.push({ tone: "warn", text: "Пробег уже высокий: заложите ремонт сверх цены в объявлении." });
-  } else if (input.mileageKm <= model.mileage.goodMax) {
-    flags.push({ tone: "ok", text: "Пробег в хорошем диапазоне для этой модели." });
-  } else {
-    flags.push({ tone: "ok", text: "Пробег обычный для возраста. Смотрите обслуживание, а не одну цифру." });
   }
 
   if (price.p25 > 0 && input.priceRub < price.p25 * 0.75) {

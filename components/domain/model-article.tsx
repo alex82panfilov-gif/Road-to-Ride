@@ -147,7 +147,7 @@ export function ModelArticle({
       <section>
         <h2 className="text-lg font-semibold">Пробег</h2>
         <p className="mt-2 text-sm">
-          Хорошо до {km(model.mileage.goodMax)}. Ещё терпимо до {km(model.mileage.okMax)}. Выше {km(model.mileage.avoidFrom)} лучше искать другую машину.
+          Норма — около 15 тыс. км в год. У машины от 8 лет пробег меньше половины этой нормы подозрителен. Выше {km(model.mileage.avoidFrom)} эту модель лучше не рассматривать.
           В типичном объявлении сейчас около {km(price.medianMileageKm)}, год около {price.medianYear}.
         </p>
       </section>
