@@ -1,0 +1,103 @@
+{
+  "slug": "ford-fusion",
+  "aliases": [
+    "fusion"
+  ],
+  "brand": "Ford",
+  "model": "Fusion",
+  "generation": "I (Европа)",
+  "years": [
+    2002,
+    2012
+  ],
+  "body": "hatchback",
+  "fuelLPer100": 7.8,
+  "summary": "Высокий городской хэтчбек. Берите 1.6 с автоматом 4F27E и не путайте с роботом Durashift на моторе 1.4.",
+  "engines": [
+    {
+      "code": "1.6",
+      "volumeL": 1.6,
+      "hp": 100,
+      "fuel": "petrol",
+      "timing": "belt",
+      "recommended": true
+    },
+    {
+      "code": "1.4",
+      "volumeL": 1.4,
+      "hp": 80,
+      "fuel": "petrol",
+      "timing": "belt",
+      "recommended": false
+    }
+  ],
+  "gearboxes": [
+    {
+      "type": "AT",
+      "name": "4АКПП 4F27E",
+      "verdict": "recommended",
+      "engineCodes": [
+        "1.6"
+      ],
+      "note": "Классический автомат только с мотором 1.6."
+    },
+    {
+      "type": "AMT",
+      "name": "Робот Durashift",
+      "verdict": "avoid",
+      "engineCodes": [
+        "1.4"
+      ],
+      "note": "На 1.4 это робот, даже если в объявлении написано «автомат»."
+    }
+  ],
+  "mileage": {
+    "goodMax": 130000,
+    "okMax": 190000,
+    "avoidFrom": 260000
+  },
+  "subScores": {
+    "reliability": 6,
+    "safety": 4,
+    "ownershipCost": 5,
+    "purchaseRisk": 5,
+    "liquidity": 5
+  },
+  "subScoreNotes": {
+    "reliability": "Связка 1.6 и 4F27E простая. Робот на 1.4 в эту оценку не входит.",
+    "safety": "Для города нормально, звёзд современного краш-теста ждать не стоит.",
+    "ownershipCost": "Запчасти Ford тех лет есть, но уже не копеечные.",
+    "purchaseRisk": "Главная ошибка — купить 1.4 с роботом вместо автомата.",
+    "liquidity": "Машину узнают, продать в городе реально."
+  },
+  "risks": [
+    {
+      "title": "Робот Durashift на моторе 1.4",
+      "severity": "critical",
+      "stage": "purchase",
+      "howToCheck": "По ПТС мотор 1.6 и коробка 4F27E. 1.4 с «автоматом» не брать",
+      "repairCostRub": [
+        30000,
+        90000
+      ],
+      "sources": [
+        "https://www.zr.ru/",
+        "https://www.drom.ru/"
+      ]
+    }
+  ],
+  "avoid": [
+    "Любой Fusion 1.4 с «автоматом»: это робот Durashift"
+  ],
+  "listingRules": [
+    "В выборку только мотор 1.6 с 4АКПП 4F27E.",
+    "Объявления 1.4 не включать, даже если написано «автомат»."
+  ],
+  "checklist": [
+    "Сверить VIN на кузове, в ПТС и на табличке",
+    "Проверить ограничения и залог",
+    "Толщиномер по аркам, порогам и крыше",
+    "Холодный запуск и переключения автомата без толчков",
+    "Проехать 10–15 минут, в том числе в медленной пробке"
+  ]
+}

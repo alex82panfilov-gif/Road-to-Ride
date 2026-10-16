@@ -38,6 +38,30 @@ export const Risk = z
 
 const Score = z.number().min(0).max(10);
 
+export const BudgetRule = z
+  .object({
+    from: z.number(),
+    to: z.number(),
+    verdict: z.enum(["caution", "avoid"]),
+    reason: z.string(),
+    insteadSlugs: z.array(z.string()).optional(),
+  })
+  .strict();
+
+export const Trap = z
+  .object({
+    id: z.string(),
+    title: z.string(),
+    priceRange: z.tuple([z.number(), z.number()]),
+    verdict: z.enum(["caution", "avoid"]),
+    reason: z.string(),
+    howToSpot: z.string(),
+    insteadSlugs: z.array(z.string()).default([]),
+  })
+  .strict();
+
+export const TrapsFile = z.array(Trap);
+
 export const Model = z
   .object({
     slug: z.string().regex(/^[a-z0-9-]+$/),
@@ -66,6 +90,7 @@ export const Model = z
     avoid: z.array(z.string()),
     checklist: z.array(z.string()),
     listingRules: z.array(z.string()).optional(),
+    budgetRules: z.array(BudgetRule).optional(),
   })
   .strict();
 
@@ -129,3 +154,5 @@ export type PriceSnapshot = z.infer<typeof Snapshot>;
 export type TSnapshot = PriceSnapshot;
 export type SnapshotFile = z.infer<typeof SnapshotFile>;
 export type TSnapshotFile = SnapshotFile;
+export type TTrap = z.infer<typeof Trap>;
+export type BudgetRule = z.infer<typeof BudgetRule>;

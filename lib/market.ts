@@ -29,6 +29,9 @@ export type CatalogItem = {
   isSeed: boolean;
   isFallback: boolean;
   bestGearbox: Model["gearboxes"][number]["verdict"];
+  budgetRules: Model["budgetRules"];
+  mileage: Model["mileage"];
+  gearboxes: { type: string; verdict: string }[];
 };
 
 export type PricePoint = {

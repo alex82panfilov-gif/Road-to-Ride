@@ -10,7 +10,7 @@
     "validate": "tsx scripts/validate-data.ts",
     "validate:fix": "tsx scripts/validate-data.ts --write",
     "agent:input": "tsx scripts/build-agent-input.ts",
-    "test": "tsx --test lib/score.test.ts lib/forecast.test.ts lib/tiers.test.ts lib/listing.test.ts scripts/validate-data.test.ts"
+    "test": "tsx --test lib/score.test.ts lib/forecast.test.ts lib/tiers.test.ts lib/listing.test.ts lib/advice.test.ts lib/view/market.test.ts scripts/validate-data.test.ts"
   },
   "dependencies": {
     "@vercel/analytics": "^2.0.1",

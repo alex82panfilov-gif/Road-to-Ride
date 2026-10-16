@@ -1,0 +1,98 @@
+{
+  "slug": "renault-megane-2",
+  "aliases": [
+    "megane-2"
+  ],
+  "brand": "Renault",
+  "model": "Megane",
+  "generation": "II",
+  "years": [
+    2002,
+    2009
+  ],
+  "body": "hatchback",
+  "fuelLPer100": 8,
+  "summary": "Автомат DP0 перегревается. Брать только с историей ремонта коробки.",
+  "engines": [
+    {
+      "code": "K4M",
+      "volumeL": 1.6,
+      "hp": 113,
+      "fuel": "petrol",
+      "timing": "belt",
+      "recommended": true
+    }
+  ],
+  "gearboxes": [
+    {
+      "type": "AT",
+      "name": "4АКПП DP0",
+      "verdict": "acceptable",
+      "engineCodes": [
+        "K4M"
+      ],
+      "note": "Капризная к перегреву. Нужны чеки на масло и радиатор коробки."
+    }
+  ],
+  "mileage": {
+    "goodMax": 120000,
+    "okMax": 180000,
+    "avoidFrom": 250000
+  },
+  "subScores": {
+    "reliability": 4,
+    "safety": 5,
+    "ownershipCost": 4,
+    "purchaseRisk": 3,
+    "liquidity": 4
+  },
+  "subScoreNotes": {
+    "reliability": "Мотор обычный, коробка DP0 — нет. Без обслуживания она уходит в аварию.",
+    "safety": "Для своих лет кузов крепче Матиза и многих седанов той цены.",
+    "ownershipCost": "Ремонт DP0 съедает выгоду низкой цены.",
+    "purchaseRisk": "Короткий тест скрывает перегрев. Нужна длинная поездка и история.",
+    "liquidity": "Меган знают, но грамотный покупатель торгуется из-за коробки."
+  },
+  "risks": [
+    {
+      "title": "Перегрев автомата DP0",
+      "severity": "high",
+      "stage": "purchase",
+      "howToCheck": "Чеки на масло и радиатор АКПП, длинная поездка без аварийного режима",
+      "repairCostRub": [
+        40000,
+        120000
+      ],
+      "sources": [
+        "https://www.zr.ru/",
+        "https://www.drom.ru/"
+      ]
+    }
+  ],
+  "avoid": [
+    "DP0 без истории замены масла",
+    "Машина уже вставала в аварийный режим"
+  ],
+  "budgetRules": [
+    {
+      "from": 150000,
+      "to": 1000000,
+      "verdict": "caution",
+      "reason": "Автомат DP0 перегревается. Брать только с историей ремонта коробки",
+      "insteadSlugs": [
+        "hyundai-elantra-xd",
+        "kia-cerato-1"
+      ]
+    }
+  ],
+  "listingRules": [
+    "В выборку только 1.6 с автоматом DP0, не с механикой."
+  ],
+  "checklist": [
+    "Сверить VIN на кузове, в ПТС и на табличке",
+    "Проверить ограничения и залог",
+    "Толщиномер по аркам, порогам и крыше",
+    "Холодный запуск и переключения автомата без толчков",
+    "Проехать 10–15 минут, в том числе в медленной пробке"
+  ]
+}

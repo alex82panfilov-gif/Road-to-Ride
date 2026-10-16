@@ -3,7 +3,7 @@
 import { Sheet } from "@/components/ui/sheet";
 import { ToastProvider, useToast } from "@/components/ui/toast";
 import { labels } from "@/lib/content";
-import { todayIso } from "@/lib/format";
+import { groupRubles, parseRubles, todayIso } from "@/lib/format";
 import {
   defaultUser,
   loadUser,
@@ -14,7 +14,7 @@ import {
   type Deposit,
   type UserData,
 } from "@/lib/storage";
-import { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { createContext, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 
 type UserApi = {
   ready: boolean;
@@ -127,10 +127,31 @@ function DepositSheet({ open, onClose }: { open: boolean; onClose: () => void })
   const [date, setDate] = useState("");
   const [by, setBy] = useState<ContributorId>("me");
   const [note, setNote] = useState("");
+  const [amountError, setAmountError] = useState("");
+  const amountRef = useRef<HTMLInputElement>(null);
+  const caretDigits = useRef<number | null>(null);
 
   useEffect(() => {
     setDate(todayIso());
   }, []);
+
+  useLayoutEffect(() => {
+    const input = amountRef.current;
+    const digitsBefore = caretDigits.current;
+    if (!input || digitsBefore === null || document.activeElement !== input) return;
+    let seen = 0;
+    let position = amount.length;
+    for (let index = 0; index < amount.length; index += 1) {
+      if (/\d/.test(amount[index])) seen += 1;
+      if (seen === digitsBefore) {
+        position = index + 1;
+        break;
+      }
+    }
+    if (digitsBefore === 0) position = 0;
+    input.setSelectionRange(position, position);
+    caretDigits.current = null;
+  }, [amount]);
 
   return (
     <Sheet open={open} title={data.deposits.length ? "Новый взнос" : "Первый взнос"} onClose={onClose}>
@@ -138,9 +159,13 @@ function DepositSheet({ open, onClose }: { open: boolean; onClose: () => void })
         className="space-y-4"
         onSubmit={(event) => {
           event.preventDefault();
-          const value = Number(amount);
-          if (!Number.isFinite(value) || value <= 0) return;
-          addDeposit({ amount: Math.round(value), date, by, note: note.trim() || undefined });
+          const value = parseRubles(amount);
+          if (value === null) {
+            setAmountError("Напишите сумму цифрами, например 300 000.");
+            return;
+          }
+          setAmountError("");
+          addDeposit({ amount: value, date, by, note: note.trim() || undefined });
           setAmount("");
           setNote("");
           onClose();
@@ -149,12 +174,24 @@ function DepositSheet({ open, onClose }: { open: boolean; onClose: () => void })
         <label className="block text-sm">
           Сумма, ₽
           <input
+            ref={amountRef}
             inputMode="numeric"
             required
             value={amount}
-            onChange={(event) => setAmount(event.target.value)}
-            className="mt-1 h-12 w-full rounded-2xl bg-canvas-secondary px-4"
+            aria-invalid={amountError ? true : undefined}
+            onChange={(event) => {
+              const raw = event.target.value;
+              const selection = event.target.selectionStart ?? raw.length;
+              const digits = raw.replace(/\D/g, "");
+              const removedZeros = digits.length - digits.replace(/^0+(?=\d)/, "").length;
+              const digitsBefore = raw.slice(0, selection).replace(/\D/g, "").length;
+              caretDigits.current = Math.max(0, digitsBefore - removedZeros);
+              setAmount(groupRubles(raw));
+              if (amountError) setAmountError("");
+            }}
+            className="num mt-1 h-12 w-full rounded-2xl bg-canvas-secondary px-4"
           />
+          {amountError ? <span className="mt-1 block text-danger">{amountError}</span> : null}
         </label>
         <label className="block text-sm">
           Дата

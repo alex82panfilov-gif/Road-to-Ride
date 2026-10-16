@@ -1,5 +1,5 @@
 import { ImageResponse } from "next/og";
-import { bestAt } from "@/lib/market";
+import { bestSafeAt } from "@/lib/view/market";
 import { catalog } from "@/lib/data";
 import { isTierAmount } from "@/lib/tiers";
 
@@ -9,7 +9,7 @@ export const contentType = "image/png";
 export default async function TierImage({ params }: { params: Promise<{ amount: string }> }) {
   const { amount } = await params;
   const budget = Number(amount);
-  const best = isTierAmount(budget) ? bestAt(catalog, budget) : null;
+  const best = isTierAmount(budget) ? bestSafeAt(catalog, budget) : null;
   const title = isTierAmount(budget) ? `${budget.toLocaleString("ru-RU")} ₽` : "Уровень";
   return new ImageResponse(
     <div

@@ -1,32 +1,52 @@
 "use client";
 
+import { AdviceMark } from "@/components/domain/advice-mark";
 import { PriceChart } from "@/components/domain/price-chart";
 import { RiskItem } from "@/components/domain/risk-item";
 import { ScorePill } from "@/components/domain/score-pill";
 import { ListingForm } from "@/components/domain/listing-form";
 import { useUser } from "@/components/providers";
 import { Card } from "@/components/ui/card";
+import { adviseFor, markBest } from "@/lib/advice";
 import { labels, sellerScript } from "@/lib/content";
 import { km, rub } from "@/lib/format";
 import { realPrice, osagoRange, meta } from "@/lib/meta";
-import { displayName, type PricePoint } from "@/lib/market";
+import { displayName, type CatalogItem, type PricePoint } from "@/lib/market";
 import type { PickedPrice } from "@/lib/prices";
 import type { Model } from "@/lib/schema";
 import { tierAmounts } from "@/lib/tiers";
+import { priceStatus } from "@/lib/view/market";
 import Link from "next/link";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 export function ModelArticle({
   model,
   price,
   history,
+  items,
 }: {
   model: Model;
   price: PickedPrice;
   history: PricePoint[];
+  items: CatalogItem[];
 }) {
-  const { data } = useUser();
+  const { data, saved, ready } = useUser();
   const [copied, setCopied] = useState(false);
+  const [adviceOpen, setAdviceOpen] = useState(true);
+  const budget = ready && saved > 0 ? saved : price.median;
+  const advice = useMemo(() => {
+    const models = items.map((item) => ({
+      slug: item.slug,
+      budgetRules: item.budgetRules,
+      gearboxes: item.gearboxes,
+      mileage: item.mileage,
+      subScores: item.subScores,
+      price: { median: item.median, medianMileageKm: item.medianMileageKm },
+    }));
+    const paired = items.map((item, index) => ({ item, m: models[index], advice: adviseFor(models[index], budget, models) }));
+    markBest(paired, budget);
+    return paired.find((row) => row.item.slug === model.slug)?.advice ?? null;
+  }, [items, budget, model.slug]);
   const hp = model.engines.find((engine) => engine.recommended)?.hp ?? model.engines[0].hp;
   const purchase = realPrice(price.median, hp, data.driver);
   const osago = osagoRange(hp, data.driver);
@@ -43,13 +63,36 @@ export function ModelArticle({
         <h1 className="text-[2rem] leading-tight font-semibold">
           {displayName(model)} <span className="text-muted">{model.generation}</span>
         </h1>
+      </header>
+
+      <section className="space-y-3" aria-label="Вердикт">
+        <h2 className="text-lg font-semibold">Коробка</h2>
+        <ul className="space-y-2 text-sm">
+          {model.gearboxes.map((box) => (
+            <li key={box.name}>
+              {expert ? box.name : labels.gearbox[box.type]} — {labels.verdict[box.verdict]}
+              {box.note ? <span className="text-muted"> {box.note}</span> : null}
+            </li>
+          ))}
+        </ul>
+        {advice ? (
+          <AdviceMark advice={advice} items={items} open={adviceOpen} onToggle={() => setAdviceOpen((value) => !value)} />
+        ) : null}
         <ScorePill score={scoreOf(model)} />
         <p>{model.summary}</p>
+      </section>
+
+      <section className="space-y-2">
+        <h2 className="text-lg font-semibold">Цена</h2>
+        <p className="num text-3xl font-semibold">{rub(price.median)}</p>
         <p className="text-sm text-muted">
-          Медиана {rub(price.median)} · {labels.confidence[price.confidence]} · обновлено {price.month}
+          {priceStatus(price).join(" · ") || labels.confidence[price.confidence]}
+          {" · "}
+          обновлено {price.month}
           {price.sampleSize ? ` · ${price.sampleSize} объявлений` : " · без подсчёта объявлений"}
         </p>
-      </header>
+        {price.isFallback ? <p className="text-sm">В этом месяце мало объявлений, показана цена за {price.month}.</p> : null}
+      </section>
 
       <Card>
         <h2 className="text-lg font-semibold">Реальная цена</h2>
@@ -64,10 +107,21 @@ export function ModelArticle({
         <p className="mt-3 text-sm text-muted">{meta.osago.note}</p>
         <div className="mt-4 flex flex-wrap gap-4 text-sm">
           <Link href={`/cost/${model.slug}`}>Калькулятор года владения</Link>
-          <Link href={`/check/${model.slug}`}>Чек-лист осмотра</Link>
           <Link href={`/tiers/${tier}`}>Что ещё есть за {rub(tier)}</Link>
         </div>
       </Card>
+
+      <section className="space-y-3">
+        <h2 className="text-lg font-semibold">На что смотреть</h2>
+        {model.risks.map((risk) => (
+          <RiskItem key={risk.title} risk={risk} />
+        ))}
+        {model.avoid.length ? <p className="text-sm">Лучше обходить: {model.avoid.join("; ")}.</p> : null}
+      </section>
+
+      <Link href={`/check/${model.slug}`} className="inline-flex h-12 items-center justify-center rounded-full bg-accent px-5 font-medium text-accent-ink no-underline">
+        Я у машины
+      </Link>
 
       <section>
         <h2 className="text-lg font-semibold">Моторы и коробки</h2>
@@ -105,18 +159,6 @@ export function ModelArticle({
         {price.isFallback ? <p className="mt-2 text-sm">В этом месяце мало объявлений, показана цена за {price.month}.</p> : null}
         {price.median > 1_000_000 ? <p className="mt-2 text-sm">Пока вне бюджета: медиана выше 1 000 000 ₽.</p> : null}
         {price.notes ? <p className="mt-2 text-sm text-muted">{price.notes}</p> : null}
-      </section>
-
-      <section className="space-y-3">
-        <h2 className="text-lg font-semibold">На что смотреть</h2>
-        {model.risks.map((risk) => (
-          <RiskItem key={risk.title} risk={risk} />
-        ))}
-        {model.avoid.length ? (
-          <p className="text-sm">
-            Лучше обходить: {model.avoid.join("; ")}.
-          </p>
-        ) : null}
       </section>
 
       <section className="space-y-3">

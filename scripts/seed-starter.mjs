@@ -638,23 +638,60 @@ function writeJson(file, data) {
   fs.writeFileSync(file, `${JSON.stringify(data, null, 2)}\n`);
 }
 
+const keepCards = new Set([
+  "ford-focus-3",
+  "mitsubishi-lancer-10",
+  "daewoo-matiz",
+  "hyundai-elantra-xd",
+  "nissan-almera-n16",
+  "kia-cerato-1",
+  "renault-megane-2",
+  "ford-fusion",
+  "opel-astra-h",
+  "hyundai-solaris-1",
+  "kia-rio-3",
+  "volkswagen-polo-sedan",
+  "nissan-qashqai-j10",
+  "chevrolet-lacetti",
+]);
+
 const modelDir = path.join(root, "data", "models");
+const snapshotDir = path.join(root, "data", "snapshots");
+const stashedModels = new Map();
+if (fs.existsSync(modelDir)) {
+  for (const slug of keepCards) {
+    const file = path.join(modelDir, `${slug}.json`);
+    if (fs.existsSync(file)) stashedModels.set(slug, fs.readFileSync(file, "utf8"));
+  }
+}
+const knownSlugs = new Set(models.map((item) => item.slug));
+const extraSnapshots = new Map();
+if (fs.existsSync(snapshotDir)) {
+  for (const name of fs.readdirSync(snapshotDir)) {
+    if (!/^\d{4}-\d{2}\.json$/.test(name)) continue;
+    const data = JSON.parse(fs.readFileSync(path.join(snapshotDir, name), "utf8"));
+    const extra = (data.snapshots ?? []).filter((snapshot) => !knownSlugs.has(snapshot.slug));
+    if (extra.length) extraSnapshots.set(name.slice(0, 7), extra);
+  }
+}
+
 fs.rmSync(modelDir, { recursive: true, force: true });
 fs.mkdirSync(modelDir, { recursive: true });
 
-const keepCards = new Set(["ford-focus-3", "mitsubishi-lancer-10"]);
 for (const item of models) {
   const { median, medianMileageKm, medianYear, ...model } = item;
   if (keepCards.has(model.slug)) continue;
   writeJson(path.join(modelDir, `${model.slug}.json`), model);
 }
+for (const [slug, raw] of stashedModels) {
+  fs.writeFileSync(path.join(modelDir, `${slug}.json`), raw.endsWith("\n") ? raw : `${raw}\n`);
+}
 
 const months = ["2026-05", "2026-06", "2026-07", "2026-08", "2026-09", "2026-10"];
-const snapshotDir = path.join(root, "data", "snapshots");
 fs.rmSync(snapshotDir, { recursive: true, force: true });
 
 for (const [index, month] of months.entries()) {
-  const snapshots = models.map((item) => {
+  const snapshots = [...extraSnapshots.get(month) ?? [], ...models.map((item) => {
     const median = roundThousands(item.median * Math.pow(1.007, index - (months.length - 1)));
     return {
       month,
@@ -670,7 +707,7 @@ for (const [index, month] of months.entries()) {
       sources: ["https://www.autostat.ru/"],
       notes: note,
     };
-  });
+  })];
   writeJson(path.join(snapshotDir, `${month}.json`), {
     schemaVersion: 2,
     seed: true,

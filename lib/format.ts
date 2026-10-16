@@ -36,6 +36,20 @@ export function plural(count: number, one: string, few: string, many: string): s
   return many;
 }
 
+export function groupRubles(raw: string): string {
+  const digits = raw.replace(/\D/g, "").replace(/^0+(?=\d)/, "");
+  if (!digits) return "";
+  return digits.replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+}
+
+export function parseRubles(raw: string): number | null {
+  const cleaned = raw.replace(/[₽\s\u00A0\u202F\u2009]/g, "").replace(",", ".");
+  if (!/^\d+(\.\d+)?$/.test(cleaned)) return null;
+  const value = Number(cleaned);
+  if (!Number.isFinite(value) || value <= 0) return null;
+  return Math.round(value);
+}
+
 export function todayIso(date = new Date()): string {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, "0");

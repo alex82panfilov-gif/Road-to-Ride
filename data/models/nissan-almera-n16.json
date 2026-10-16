@@ -1,0 +1,85 @@
+{
+  "slug": "nissan-almera-n16",
+  "aliases": [
+    "almera-n16"
+  ],
+  "brand": "Nissan",
+  "model": "Almera",
+  "generation": "N16",
+  "years": [
+    2000,
+    2006
+  ],
+  "body": "sedan",
+  "fuelLPer100": 8.2,
+  "summary": "Предшественник Almera Classic с той же простой техникой. Брать из-за автомата, а не из-за возраста кузова.",
+  "engines": [
+    {
+      "code": "QG18",
+      "volumeL": 1.8,
+      "hp": 116,
+      "fuel": "petrol",
+      "timing": "chain",
+      "recommended": true
+    }
+  ],
+  "gearboxes": [
+    {
+      "type": "AT",
+      "name": "4АКПП",
+      "verdict": "recommended",
+      "engineCodes": [
+        "QG18"
+      ],
+      "note": "Простая коробка. На тесте не должно быть пинков на прогретой машине."
+    }
+  ],
+  "mileage": {
+    "goodMax": 150000,
+    "okMax": 210000,
+    "avoidFrom": 280000
+  },
+  "subScores": {
+    "reliability": 5,
+    "safety": 3,
+    "ownershipCost": 6,
+    "purchaseRisk": 4,
+    "liquidity": 4
+  },
+  "subScoreNotes": {
+    "reliability": "Мотор 1.8 с цепью и 4АКПП — спокойная связка для города.",
+    "safety": "Конструкция 2000 года, набор подушек скромный.",
+    "ownershipCost": "Запчасти известные и недорогие.",
+    "purchaseRisk": "Возраст 20 лет: смотрите днище, арки и документы, а не только пробег.",
+    "liquidity": "Имя Almera помогает продать, но очередь из покупателей небольшая."
+  },
+  "risks": [
+    {
+      "title": "Возраст кузова",
+      "severity": "high",
+      "stage": "purchase",
+      "howToCheck": "Арки, пороги, пол багажника и места под ковриками",
+      "repairCostRub": [
+        15000,
+        70000
+      ],
+      "sources": [
+        "https://www.zr.ru/",
+        "https://www.drom.ru/"
+      ]
+    }
+  ],
+  "avoid": [
+    "Машины с гнилыми порогами и без ПТС на руках"
+  ],
+  "listingRules": [
+    "В выборку только 1.8 с 4АКПП."
+  ],
+  "checklist": [
+    "Сверить VIN на кузове, в ПТС и на табличке",
+    "Проверить ограничения и залог",
+    "Толщиномер по аркам, порогам и крыше",
+    "Холодный запуск и переключения автомата без толчков",
+    "Проехать 10–15 минут, в том числе в медленной пробке"
+  ]
+}
