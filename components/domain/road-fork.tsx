@@ -12,6 +12,7 @@ import type { DriverProfile } from "@/lib/meta";
 import { inflationOf } from "@/lib/storage";
 import { TIER_MAX } from "@/lib/tiers";
 import {
+  aimContrast,
   bestSafeAt,
   DECENT_SCORE,
   familyContribution,
@@ -206,8 +207,8 @@ export function RoadFork({ items }: { items: CatalogItem[] }) {
               <p className="mt-3 text-sm">
                 <Link href={`/cars/${decentAim.slug}`}>{displayName(decentAim)}</Link> — {approxRub(purchasePrice(decentAim, driver))}, {waitLine(decentMonths, data.monthly)}. Оценка {scoreText(decentAim.score)}. Это заметно лучше машина.
               </p>
-              {nearestMonths !== null && decentMonths !== null && decentMonths > nearestMonths ? (
-                <p className="mt-2 text-sm text-muted">До неё на {decentMonths - nearestMonths} мес. дольше, чем до {displayName(nearestAim)}.</p>
+              {nearestMonths !== null && decentMonths !== null && aimContrast(nearestMonths, nearestAim.score, decentMonths, decentAim.score) ? (
+                <p className="mt-2 text-sm font-medium">{aimContrast(nearestMonths, nearestAim.score, decentMonths, decentAim.score)}</p>
               ) : null}
               <PriceFacts item={decentAim} driver={driver} />
             </>

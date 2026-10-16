@@ -2,10 +2,12 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { catalog } from "../data.ts";
 import { bestAt } from "../market.ts";
+import { monthsToGoal } from "../forecast.ts";
 import { roundToThousands } from "../format.ts";
 import { realPrice } from "../meta.ts";
 import { tierFloor } from "../tiers.ts";
 import {
+  aimContrast,
   bestSafeAt,
   catalogBands,
   DECENT_SCORE,
@@ -89,10 +91,15 @@ test("at 0 the fork names Matiz and a car scored at least 4.5", () => {
   const decent = nextDecentAt(catalog, 0);
   assert.equal(nearest?.slug, "daewoo-matiz");
   assert.ok(decent);
+  assert.ok(nearest);
   assert.ok(decent.score >= DECENT_SCORE);
   assert.notEqual(decent.slug, "daewoo-matiz");
-  assert.ok(purchasePrice(decent) > purchasePrice(nearest!));
+  assert.ok(purchasePrice(decent) > purchasePrice(nearest));
   assert.equal(DECENT_SCORE, 4.5);
+  const earlier = monthsToGoal(0, 20_000, purchasePrice(nearest), 0.007);
+  const later = monthsToGoal(0, 20_000, purchasePrice(decent), 0.007);
+  assert.ok(earlier !== null && later !== null);
+  assert.equal(aimContrast(earlier, nearest.score, later, decent.score), "+4 мес. — и оценка 4,6 вместо 2,9");
 });
 
 test("a purchase target rounds to thousands and the breakdown sums to the real price", () => {
