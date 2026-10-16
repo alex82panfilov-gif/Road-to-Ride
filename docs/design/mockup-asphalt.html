@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Макет А — Асфальт</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #f5f5f7;
+      --card: #fff;
+      --ink: #1d1d1f;
+      --muted: #6e6e73;
+      --line: rgba(0,0,0,.08);
+      --blue: #0066cc;
+      --yellow: #f5c518;
+      --asphalt: #3a3d42;
+      --family: #b86e00;
+      --shadow: 0 1px 2px rgba(0,0,0,.04), 0 12px 32px rgba(0,0,0,.06);
+    }
+    html[data-theme="dark"] {
+      --bg: #121418;
+      --card: #1c1f24;
+      --ink: #f5f5f7;
+      --muted: #a1a1a6;
+      --line: rgba(255,255,255,.12);
+      --blue: #4da3ff;
+      --yellow: #f5c518;
+      --asphalt: #2a2e34;
+      --family: #f5b942;
+      --shadow: 0 12px 32px rgba(0,0,0,.35);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: Onest, "Segoe UI", sans-serif;
+      font-variant-numeric: tabular-nums;
+    }
+    .wrap { max-width: 1120px; margin: 0 auto; padding: 28px 20px 64px; }
+    header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 28px; }
+    .mark { font-weight: 700; letter-spacing: -0.03em; }
+    .mark i { color: var(--blue); font-style: normal; }
+    .kicker { color: var(--muted); font-size: 13px; }
+    .sum { font-size: clamp(56px, 10vw, 92px); font-weight: 700; letter-spacing: -0.045em; line-height: .95; margin: 0; }
+    .family { color: var(--family); font-weight: 600; margin: 8px 0 0; }
+    .note { color: var(--muted); margin: 12px 0 0; max-width: 36rem; overflow-wrap: break-word; }
+    .road { margin: 28px 0; background: var(--card); border-radius: 24px; box-shadow: var(--shadow); padding: 22px 18px 8px; }
+    .actions { display: flex; gap: 10px; margin-top: 18px; }
+    button, .ghost {
+      border: 0; border-radius: 999px; height: 48px; padding: 0 18px;
+      font: inherit; font-weight: 600; background: var(--blue); color: #fff;
+    }
+    .ghost { background: transparent; color: var(--ink); box-shadow: inset 0 0 0 1px var(--line); }
+    .grid { display: grid; gap: 16px; }
+    @media (min-width: 900px) { .grid { grid-template-columns: 1.4fr .8fr; align-items: start; } }
+    .today, .next { background: var(--card); border-radius: 24px; box-shadow: var(--shadow); padding: 22px; }
+    .today h2 { font-size: 32px; letter-spacing: -0.03em; margin: 8px 0; }
+    .next { opacity: .92; }
+    .next h2 { font-size: 22px; margin: 8px 0; }
+    .meta { color: var(--muted); font-size: 14px; }
+    .score { font-weight: 700; }
+    .dot { display: inline-block; width: 8px; height: 8px; border-radius: 99px; background: var(--yellow); margin-right: 6px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="mark">Road<i>to</i>Ride</div>
+      <div class="kicker">Макет А · асфальт</div>
+    </header>
+    <p class="kicker">В копилке</p>
+    <p class="sum">300 000 ₽</p>
+    <p class="family">Из них 40 000 ₽ — вклад семьи</p>
+    <p class="note">Elantra ≈ 265 000 ₽ с ОСАГО и учётом. Останется ≈ 35 000 ₽.</p>
+    <div class="actions">
+      <button>Добавить взнос</button>
+      <button class="ghost">Снять</button>
+    </div>
+    <section class="road" aria-label="Дорога">
+      <svg viewBox="0 0 1040 180" width="100%" role="img" aria-label="Полоса асфальта. Позади сплошная разметка, впереди пунктир. Машина на 300 тысячах.">
+        <rect x="0" y="78" width="1040" height="46" rx="8" fill="var(--asphalt)" />
+        <line x1="24" y1="101" x2="470" y2="101" stroke="var(--yellow)" stroke-width="4" />
+        <line x1="500" y1="101" x2="1016" y2="101" stroke="var(--yellow)" stroke-width="4" stroke-dasharray="16 14" />
+        <g fill="var(--card)" font-family="Onest, sans-serif" font-size="13">
+          <rect x="70" y="28" width="78" height="36" rx="8" />
+          <text x="109" y="51" text-anchor="middle" fill="var(--ink)">150</text>
+          <rect x="250" y="28" width="92" height="36" rx="8" />
+          <text x="296" y="51" text-anchor="middle" fill="var(--ink)">Fusion</text>
+          <rect x="620" y="28" width="92" height="36" rx="8" />
+          <text x="666" y="51" text-anchor="middle" fill="var(--ink)">Almera</text>
+        </g>
+        <g transform="translate(430,118)">
+          <path d="M8 28h78c6 0 10-4 12-10l8-16c2-4 6-6 10-6h22c8 0 14 6 14 14v18h8c4 0 8 4 8 8v8H0v-8c0-4 4-8 8-8z" fill="var(--blue)" />
+          <circle cx="28" cy="36" r="7" fill="#1d1d1f" />
+          <circle cx="96" cy="36" r="7" fill="#1d1d1f" />
+        </g>
+      </svg>
+    </section>
+    <div class="grid">
+      <article class="today">
+        <p class="kicker">Сегодня</p>
+        <h2>Hyundai Elantra</h2>
+        <p><span class="score">4,6 · можно брать</span></p>
+        <p class="meta"><span class="dot" title="Стартовый ориентир, мало данных"></span>Медиана 200 000 ₽. С расходами ≈ 265 000 ₽.</p>
+      </article>
+      <article class="next">
+        <p class="kicker">Накопить до ≈ 350 000 ₽</p>
+        <h2>Kia Cerato</h2>
+        <p class="meta">Около 3 мес. при 20 000 ₽ в месяц.</p>
+      </article>
+    </div>
+  </div>
+  <script>
+    const theme = new URLSearchParams(location.search).get("theme");
+    if (theme === "dark" || (!theme && matchMedia("(prefers-color-scheme: dark)").matches)) {
+      document.documentElement.dataset.theme = "dark";
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Макет Б — Крупная цифра</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #f5f5f7;
+      --card: #fff;
+      --ink: #1d1d1f;
+      --muted: #6e6e73;
+      --line: rgba(0,0,0,.1);
+      --blue: #0066cc;
+      --yellow: #e2b100;
+      --family: #9a6700;
+    }
+    html[data-theme="dark"] {
+      --bg: #0e1013;
+      --card: #181b20;
+      --ink: #f5f5f7;
+      --muted: #a1a1a6;
+      --line: rgba(255,255,255,.14);
+      --blue: #69b4ff;
+      --yellow: #f5c518;
+      --family: #f5b942;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--ink); font-family: Manrope, "Segoe UI", sans-serif; font-variant-numeric: tabular-nums; }
+    .wrap { max-width: 880px; margin: 0 auto; padding: 36px 20px 72px; }
+    .top { display: flex; justify-content: space-between; font-size: 14px; color: var(--muted); }
+    h1 { font-size: clamp(64px, 14vw, 120px); line-height: .88; letter-spacing: -0.05em; font-weight: 800; margin: 18px 0 8px; }
+    .family { color: var(--family); font-weight: 700; }
+    .lead { font-size: 22px; font-weight: 600; letter-spacing: -0.02em; max-width: 28rem; overflow-wrap: break-word; }
+    @media (max-width: 420px) { .lead { font-size: 18px; } h1 { font-size: 52px; } }
+    .rail { display: flex; gap: 0; margin: 28px 0; }
+    .stop { flex: 1; border-top: 3px solid var(--yellow); padding-top: 10px; font-size: 13px; color: var(--muted); }
+    .stop.on { border-top-style: solid; color: var(--ink); font-weight: 700; }
+    .stop.off { border-top-style: dashed; }
+    .today { margin-top: 8px; padding-top: 22px; border-top: 1px solid var(--line); }
+    .today h2 { font-size: 40px; letter-spacing: -0.04em; margin: 0 0 8px; }
+    .aside { margin-top: 28px; color: var(--muted); }
+    .aside strong { color: var(--ink); font-weight: 700; }
+    .row { display: flex; gap: 10px; margin-top: 22px; }
+    button { font: inherit; font-weight: 700; height: 52px; padding: 0 20px; border-radius: 14px; border: 0; background: var(--ink); color: var(--bg); }
+    .quiet { background: transparent; color: var(--ink); box-shadow: inset 0 0 0 1.5px var(--line); }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="top"><span>Road to Ride</span><span>Макет Б · крупная цифра</span></div>
+    <h1>300 000 ₽</h1>
+    <p class="family">40 000 ₽ — вклад семьи</p>
+    <p class="lead">Сейчас Elantra. 4,6 · можно брать. С ОСАГО и учётом ≈ 265 000 ₽, останется ≈ 35 000 ₽.</p>
+    <div class="rail" aria-label="Дорога">
+      <div class="stop">150</div>
+      <div class="stop on">ты<br>Elantra</div>
+      <div class="stop off">350<br>Cerato</div>
+      <div class="stop off">700<br>Almera</div>
+    </div>
+    <section class="today">
+      <p style="color:var(--muted);margin:0 0 6px">Сегодня</p>
+      <h2>Hyundai Elantra</h2>
+      <p>Классический автомат. <span title="Стартовый ориентир, мало данных" style="display:inline-block;width:10px;height:10px;border-radius:99px;background:var(--yellow)"></span></p>
+    </section>
+    <p class="aside">Накопить до <strong>Cerato</strong> — ещё около 3 месяцев при 20 000 ₽.</p>
+    <div class="row">
+      <button>Добавить взнос</button>
+      <button class="quiet">Снять</button>
+    </div>
+  </div>
+  <script>
+    const theme = new URLSearchParams(location.search).get("theme");
+    if (theme === "dark" || (!theme && matchMedia("(prefers-color-scheme: dark)").matches)) {
+      document.documentElement.dataset.theme = "dark";
+    }
+  </script>
+</body>
+</html>
