@@ -14,6 +14,7 @@ import type { TTrap } from "@/lib/schema";
 import { TIER_MAX } from "@/lib/tiers";
 import { inflationOf } from "@/lib/storage";
 import { realPrice } from "@/lib/meta";
+import { cheaperTrap } from "@/lib/view/advice";
 import { catalogBands, priceStatus, shownSavings } from "@/lib/view/market";
 import { SlidersHorizontal } from "lucide-react";
 import Link from "next/link";
@@ -85,7 +86,7 @@ export function CatalogBrowser({
       subScores: item.subScores,
       price: { median: item.median, medianMileageKm: item.medianMileageKm },
     }));
-    const paired = items.map((item, index) => ({ item, m: models[index], advice: adviseFor(models[index], amount, models) }));
+    const paired = items.map((item, index) => ({ item, m: models[index], advice: adviseFor(models[index], item.median, models) }));
     markBest(paired, amount);
     return new Map(paired.map((row) => [row.item.slug, row.advice]));
   }, [items, amount]);
@@ -213,6 +214,7 @@ export function CatalogBrowser({
                         />
                       </div>
                     ) : null}
+                    {advice?.verdict !== "avoid" && cheaperTrap(item) ? <p className="mt-2 text-sm">{cheaperTrap(item)}</p> : null}
                     <p className="mt-2 text-sm text-muted">
                       {rub(item.median)}
                       {gap > 0 ? ` · ещё ${approxRub(gap)}` : ""} · {item.medianYear} · {item.medianMileageKm.toLocaleString("ru-RU")} км

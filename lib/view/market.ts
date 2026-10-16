@@ -39,9 +39,9 @@ function toAdvice(item: CatalogItem): AdviceModel {
   };
 }
 
-function blocked(item: CatalogItem, model: AdviceModel, amount: number, all: AdviceModel[]): boolean {
+function blocked(item: CatalogItem, model: AdviceModel, all: AdviceModel[]): boolean {
   if (item.bestGearbox === "avoid") return true;
-  return adviseFor(model, amount, all)?.verdict === "avoid";
+  return adviseFor(model, item.median, all)?.verdict === "avoid";
 }
 
 /** Точная сумма копилки. Её нельзя подменять ближайшей отметкой уровня. */
@@ -82,7 +82,7 @@ export function priceBreakdown(item: CatalogItem, driver: DriverProfile = DEFAUL
 
 function openModels(items: CatalogItem[], driver: DriverProfile): CatalogItem[] {
   const models = items.map(toAdvice);
-  return items.filter((item, index) => item.median > 0 && !blocked(item, models[index], purchasePrice(item, driver), models));
+  return items.filter((item, index) => item.median > 0 && !blocked(item, models[index], models));
 }
 
 function soonest(items: CatalogItem[], amount: number, driver: DriverProfile): CatalogItem | null {
@@ -173,7 +173,7 @@ export function almostNote(
 export function bestSafeAt(items: CatalogItem[], amount: number, driver: DriverProfile = DEFAULT_DRIVER): CatalogItem | null {
   const models = items.map(toAdvice);
   const priced = new Set(affordableReal(items, amount, driver).map((item) => item.slug));
-  const safe = items.filter((item, index) => priced.has(item.slug) && !blocked(item, models[index], amount, models));
+  const safe = items.filter((item, index) => priced.has(item.slug) && !blocked(item, models[index], models));
   return bestAt(safe, amount);
 }
 
@@ -266,8 +266,8 @@ export function snapPoints(items: CatalogItem[], driver: DriverProfile = DEFAULT
         previousModel &&
         currentBest &&
         currentModel &&
-        blocked(previousBest, previousModel, previous, models) &&
-        !blocked(currentBest, currentModel, amount, models),
+        blocked(previousBest, previousModel, models) &&
+        !blocked(currentBest, currentModel, models),
     );
     if (sweet) points.push({ amount, kind: "sweet" });
     else if (leftAvoid) points.push({ amount, kind: "gearbox" });
@@ -316,7 +316,7 @@ export function catalogBands(
   const skip: CatalogItem[] = [];
   const later: CatalogItem[] = [];
   items.forEach((item, index) => {
-    const avoid = blocked(item, models[index], saved, models);
+    const avoid = blocked(item, models[index], models);
     const price = item.median > 0 ? purchasePrice(item, driver) : Number.POSITIVE_INFINITY;
     if (price <= saved && avoid) {
       skip.push(item);

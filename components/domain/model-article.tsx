@@ -15,6 +15,7 @@ import { displayName, type CatalogItem, type PricePoint } from "@/lib/market";
 import type { PickedPrice } from "@/lib/prices";
 import type { Model } from "@/lib/schema";
 import { tierAmounts } from "@/lib/tiers";
+import { cheaperTrap } from "@/lib/view/advice";
 import { priceStatus } from "@/lib/view/market";
 import { autoruSearchUrl, dromSearchUrl } from "@/lib/view/search-links";
 import { SearchLinks } from "@/components/domain/search-links";
@@ -36,7 +37,7 @@ export function ModelArticle({
   const { data, saved, ready } = useUser();
   const [copied, setCopied] = useState(false);
   const [adviceOpen, setAdviceOpen] = useState(true);
-  const budget = ready && saved > 0 ? saved : price.median;
+  const searchBudget = ready && saved > 0 ? saved : price.median;
   const advice = useMemo(() => {
     const models = items.map((item) => ({
       slug: item.slug,
@@ -46,10 +47,11 @@ export function ModelArticle({
       subScores: item.subScores,
       price: { median: item.median, medianMileageKm: item.medianMileageKm },
     }));
-    const paired = items.map((item, index) => ({ item, m: models[index], advice: adviseFor(models[index], budget, models) }));
-    markBest(paired, budget);
+    const paired = items.map((item, index) => ({ item, m: models[index], advice: adviseFor(models[index], item.median, models) }));
+    markBest(paired, ready && saved > 0 ? saved : price.median);
     return paired.find((row) => row.item.slug === model.slug)?.advice ?? null;
-  }, [items, budget, model.slug]);
+  }, [items, price.median, model.slug, ready, saved]);
+  const caveat = cheaperTrap({ median: price.median, budgetRules: model.budgetRules });
   const hp = model.engines.find((engine) => engine.recommended)?.hp ?? model.engines[0].hp;
   const driver = { ...data.driver, onParentPolicy: data.onParentPolicy };
   const purchase = realPrice(price.median, hp, driver);
@@ -85,6 +87,7 @@ export function ModelArticle({
         {advice ? (
           <AdviceMark advice={advice} items={items} open={adviceOpen} onToggle={() => setAdviceOpen((value) => !value)} />
         ) : null}
+        {advice?.verdict !== "avoid" && caveat ? <p className="text-sm">{caveat}</p> : null}
         <ScorePill score={scoreOf(model)} />
       </section>
 
@@ -200,8 +203,8 @@ export function ModelArticle({
           <SearchLinks
             autoLabel="Искать на auto.ru"
             dromLabel="Искать на Drom"
-            autoHref={autoruSearchUrl(model, { priceTo: budget, yearFrom: model.years[0], yearTo: model.years[1] })}
-            dromHref={dromSearchUrl(model, { priceTo: budget, yearFrom: model.years[0], yearTo: model.years[1] })}
+            autoHref={autoruSearchUrl(model, { priceTo: searchBudget, yearFrom: model.years[0], yearTo: model.years[1] })}
+            dromHref={dromSearchUrl(model, { priceTo: searchBudget, yearFrom: model.years[0], yearTo: model.years[1] })}
           />
         </div>
       </section>
