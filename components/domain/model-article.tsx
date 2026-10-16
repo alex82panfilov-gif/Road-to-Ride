@@ -17,8 +17,8 @@ import type { Model } from "@/lib/schema";
 import { tierAmounts } from "@/lib/tiers";
 import { avoidExcuse, cheaperTrap } from "@/lib/view/advice";
 import { priceStatus } from "@/lib/view/market";
-import { autoruSearchUrl, dromSearchUrl } from "@/lib/view/search-links";
-import { SearchLinks } from "@/components/domain/search-links";
+import { searchLinks } from "@/lib/view/search";
+import { MarketSearch } from "@/components/domain/search-links";
 import { TermText } from "@/components/domain/term-text";
 import Link from "next/link";
 import { useMemo, useState } from "react";
@@ -37,7 +37,6 @@ export function ModelArticle({
   const { data, saved, ready } = useUser();
   const [copied, setCopied] = useState(false);
   const [adviceOpen, setAdviceOpen] = useState(true);
-  const searchBudget = ready && saved > 0 ? saved : price.median;
   const advice = useMemo(() => {
     const models = items.map((item) => ({
       slug: item.slug,
@@ -223,12 +222,7 @@ export function ModelArticle({
         {price.median > 1_000_000 ? <p className="mt-2 text-sm">Пока вне бюджета: медиана выше 1 000 000 ₽.</p> : null}
         {price.notes ? <p className="mt-2 text-sm text-muted">{price.notes}</p> : null}
         <div className="mt-3">
-          <SearchLinks
-            autoLabel="Искать на auto.ru"
-            dromLabel="Искать на Drom"
-            autoHref={autoruSearchUrl(model, { priceTo: searchBudget, yearFrom: model.years[0], yearTo: model.years[1] })}
-            dromHref={dromSearchUrl(model, { priceTo: searchBudget, yearFrom: model.years[0], yearTo: model.years[1] })}
-          />
+          <MarketSearch result={searchLinks(model, { median: price.median, savings: ready && saved > 0 ? saved : undefined })} />
         </div>
       </section>
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { AdviceMark, Sign, type ModelLink } from "@/components/domain/advice-mark";
+import { MarketSearch } from "@/components/domain/search-links";
 import { ScorePill } from "@/components/domain/score-pill";
 import { useUser } from "@/components/providers";
 import { Sheet } from "@/components/ui/sheet";
@@ -16,6 +17,8 @@ import { inflationOf } from "@/lib/storage";
 import { realPrice } from "@/lib/meta";
 import { avoidExcuse, cheaperTrap } from "@/lib/view/advice";
 import { catalogBands, priceStatus, shownSavings } from "@/lib/view/market";
+import { searchLinks } from "@/lib/view/search";
+import type { Model } from "@/lib/schema";
 import { SlidersHorizontal } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -30,11 +33,13 @@ const sorts = {
 
 export function CatalogBrowser({
   items,
+  models = [],
   pending = [],
   traps = [],
   links = [],
 }: {
   items: CatalogItem[];
+  models?: Model[];
   pending?: { slug: string; brand: string; model: string }[];
   traps?: TTrap[];
   links?: ModelLink[];
@@ -179,6 +184,8 @@ export function CatalogBrowser({
                 const advice = adviceBySlug.get(item.slug) ?? null;
                 const gap = realPrice(item.median, item.hp, data.driver) - amount;
                 const status = priceStatus(item);
+                const car = view === "mine" ? models.find((model) => model.slug === item.slug) : undefined;
+                const market = car ? searchLinks(car, { median: item.median, savings: amount > 0 ? amount : undefined }) : null;
                 return (
                   <li key={item.slug} className="card p-4">
                     <div className="flex flex-wrap items-start justify-between gap-3">
@@ -224,6 +231,11 @@ export function CatalogBrowser({
                       {gap > 0 ? ` · ещё ${approxRub(gap)}` : ""} · {item.medianYear} · {item.medianMileageKm.toLocaleString("ru-RU")} км
                     </p>
                     {status.length ? <p className="mt-1 text-sm text-muted">{status.join(" · ")}</p> : null}
+                    {market ? (
+                      <div className="mt-3">
+                        <MarketSearch result={market} />
+                      </div>
+                    ) : null}
                   </li>
                 );
               })}

@@ -137,6 +137,18 @@ function validateSnapshot(issues: Issue[], snapshot: TSnapshot, model: TModel, p
   }
 }
 
+/** Предупреждения карточки, которые не зависят от снимка цен. */
+export function modelCardIssues(model: TModel): Issue[] {
+  if (model.listingRules?.length) return [];
+  return [
+    {
+      level: "warn",
+      slug: model.slug,
+      msg: "нет listingRules — поиск на площадках берёт годы поколения, а не разрешённые пары мотор/коробка",
+    },
+  ];
+}
+
 export function reviewRaw(raw: string, models: Map<string, TModel>, previous: TSnapshotFile | null) {
   const issues: Issue[] = [];
   const verdicts = new Map<string, Verdict>();
@@ -201,6 +213,7 @@ function loadModels(dir: string) {
     if (!model.gearboxes.some((gearbox) => gearbox.type !== "MT" && gearbox.verdict !== "avoid")) {
       issues.push({ level: "warn", slug: model.slug, msg: "нет ни одной допустимой автоматической коробки — модель не попадёт в каталог" });
     }
+    issues.push(...modelCardIssues(model));
     for (const risk of model.risks) {
       if (risk.repairCostRub && risk.repairCostRub[0] > risk.repairCostRub[1]) {
         issues.push({ level: "error", slug: model.slug, msg: `риск «${risk.title}»: стоимость ремонта «от» больше «до»` });

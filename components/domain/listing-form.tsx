@@ -4,7 +4,7 @@ import { Card } from "@/components/ui/card";
 import { SearchLinks } from "@/components/domain/search-links";
 import { admittedFault, assessListing, type ListingMarket } from "@/lib/listing";
 import type { Model } from "@/lib/schema";
-import { autoruSearchUrl, dromSearchUrl, similarWindow } from "@/lib/view/search-links";
+import { searchLinks } from "@/lib/view/search";
 import { meta } from "@/lib/meta";
 import { useState } from "react";
 
@@ -16,7 +16,10 @@ export function ListingForm({ model, price }: { model: Model; price: ListingMark
   const [condition, setCondition] = useState("Не требует ремонта");
   const [adText, setAdText] = useState("");
   const [flags, setFlags] = useState<ReturnType<typeof assessListing> | null>(null);
-  const similar = similarWindow(Number(year) || model.years[1], Number(mileage) || 0);
+  const similar = searchLinks(model, {
+    median: price.median,
+    similar: { year: Number(year) || model.years[1], mileageKm: Number(mileage) || 0 },
+  });
 
   return (
     <Card>
@@ -61,8 +64,8 @@ export function ListingForm({ model, price }: { model: Model; price: ListingMark
         <SearchLinks
           autoLabel="Сравнить с похожими на auto.ru"
           dromLabel="на Drom"
-          autoHref={autoruSearchUrl(model, similar)}
-          dromHref={dromSearchUrl(model, similar)}
+          autoHref={similar.links.autoru}
+          dromHref={similar.links.drom}
         />
       </div>
       {flags ? (
