@@ -38,7 +38,7 @@ test("Polo seed at 250 000 opens the whole market from the taxi floor, not from 
   assert.match(result.links.drom, /minyear=2015&maxyear=2020/);
   assert.match(result.links.drom, /mv=1\.6&xv=1\.6/);
   assert.match(result.links.drom, /minprice=800000&maxprice=1500000/);
-  assert.doesNotMatch(result.links.drom, /minpower|maxpower|power/i);
+  assert.match(result.links.drom, /minpower=110&maxpower=110/);
   assert.match(result.links.drom, /maxprobeg=230000/);
   assert.match(result.links.drom, /transmission\[\]=2&transmission\[\]=5/);
   assert.doesNotMatch(result.links.drom, /(?:^|[?&])transmission=2(?:&|$)/);
@@ -76,6 +76,7 @@ test("Elantra XD seed has no model floor and stays at 105 hp, not the HD's 122",
   assert.deepEqual(result.power, { from: 105, to: 105 });
   assert.deepEqual(result.engines.map((engine) => engine.hp), [105]);
   assert.match(result.links.drom, /minprice=100000&maxprice=1500000/);
+  assert.match(result.links.drom, /minpower=105&maxpower=105/);
   assert.doesNotMatch(result.caption, /от /);
   assert.match(result.caption, /Цена пока не измерена — показываем весь рынок/);
   assert.match(result.caption, /1\.6 105 л\.с\./);

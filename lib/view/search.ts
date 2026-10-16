@@ -30,16 +30,18 @@ const PRICE_STEP = 10_000;
  * TODO: классический автомат на auto.ru. Когда будет ручной URL фильтра Polo
  * с одной АКПП (без робота и вариатора), подставить значение в AUTORU_CLASSIC_AUTOMATIC.
  * Пока параметр коробки в ссылку auto.ru не ставится, чтобы не открыть роботов.
+ * transmission=AUTOMATIC без такой проверки не ставить: это может быть группа.
  *
- * TODO: мощность на Drom и auto.ru. Имена параметров не выдуманы.
- * Ждём ручной URL Polo на Drom с фильтром ровно 110 л.с. и ручной URL Polo
- * на auto.ru: Москва, только классический автомат, 1.6, 110 л.с.
- * Второй адрес закроет и AUTORU_CLASSIC_AUTOMATIC. Пока мощности в ссылке нет,
- * хотя подпись и поле power уже знают л.с. разрешённого мотора.
+ * Drom, мощность проверена 16.10.2026 на Polo: minpower=110&maxpower=110 — только CWVA,
+ * minpower=105&maxpower=105 — только CFNA 2015 года.
+ *
+ * TODO: мощность на auto.ru. Ждём ручной URL Polo: Москва, только классический автомат,
+ * 1.6, мощность 110–110. Тот же адрес закроет AUTORU_CLASSIC_AUTOMATIC.
+ * power_from / power_to в ссылку не ставятся, пока адрес не прислан.
  */
 export const AUTORU_CLASSIC_AUTOMATIC: string | null = null;
-export const DROM_POWER_FROM: string | null = null;
-export const DROM_POWER_TO: string | null = null;
+export const DROM_POWER_FROM = "minpower";
+export const DROM_POWER_TO = "maxpower";
 export const AUTORU_POWER_FROM: string | null = null;
 export const AUTORU_POWER_TO: string | null = null;
 
@@ -151,8 +153,9 @@ function uniqueEngines(pairs: Pair[]): SearchEngine[] {
   const seen = new Set<string>();
   const engines: SearchEngine[] = [];
   for (const pair of pairs) {
-    if (seen.has(pair.code)) continue;
-    seen.add(pair.code);
+    const key = `${pair.code}:${pair.hp ?? ""}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
     engines.push({ code: pair.code, volumeL: pair.volumeL, hp: pair.hp });
   }
   return engines;
