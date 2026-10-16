@@ -30,6 +30,11 @@ test("an old piggy without withdrawal fields still imports", () => {
   assert.equal(user.deposits[1].reason, undefined);
 });
 
+test("a saved visit date survives import", () => {
+  const user = parseImport(JSON.stringify({ app: "road-to-ride", version: 1, deposits: [deposit], lastSeenAt: "2026-09-01" }));
+  assert.equal(user.lastSeenAt, "2026-09-01");
+});
+
 test("a withdrawal with a negative amount survives import", () => {
   const user = parseImport(
     JSON.stringify({

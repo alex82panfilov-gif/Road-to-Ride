@@ -28,6 +28,8 @@ export type CatalogItem = {
   notes?: string;
   isSeed: boolean;
   isFallback: boolean;
+  /** Предыдущая живая медиана. null — сравнивать не с чем, в том числе у стартового ориентира. */
+  previousMedian?: number | null;
   bestGearbox: Model["gearboxes"][number]["verdict"];
   budgetRules: Model["budgetRules"];
   mileage: Model["mileage"];

@@ -5,7 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { scoreText } from "@/lib/cn";
 import { labels } from "@/lib/content";
+import { monthsToGoal } from "@/lib/forecast";
 import { approxRub, rub, todayIso } from "@/lib/format";
+import { tierAmounts } from "@/lib/tiers";
+import { absenceDue, absenceLines } from "@/lib/view/absence";
 import { setbackLine } from "@/lib/view/ledger";
 import { displayName, type CatalogItem } from "@/lib/market";
 import { experiencePurchaseLine, meta, purchaseQuote, type PurchaseQuote } from "@/lib/meta";
@@ -31,6 +34,66 @@ import {
 } from "@/lib/view/market";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
+
+function AbsenceCard({ items }: { items: CatalogItem[] }) {
+  const { ready, data, saved, update } = useUser();
+  const [lines, setLines] = useState<string[] | null>(null);
+  const ran = useRef(false);
+
+  useEffect(() => {
+    if (!ready || ran.current) return;
+    ran.current = true;
+    const today = todayIso();
+    if (!absenceDue(data.lastSeenAt, today)) {
+      if (!data.lastSeenAt) update((current) => ({ ...current, lastSeenAt: today }));
+      setLines([]);
+      return;
+    }
+    const lastSeenAt = data.lastSeenAt ?? today;
+    const since = data.deposits.filter((deposit) => deposit.date > lastSeenAt);
+    const previousSaved = saved - since.reduce((sum, deposit) => sum + deposit.amount, 0);
+    const driver = { ...data.driver, onParentPolicy: data.onParentPolicy };
+    const before = bestSafeAt(items, previousSaved, driver);
+    const after = bestSafeAt(items, saved, driver);
+    const goal = items.find((item) => item.slug === data.goalSlug) ?? null;
+    const goalPrice = goal ? purchasePrice(goal, driver) : null;
+    const inflation = inflationOf(data);
+    setLines(
+      absenceLines({
+        lastSeenAt,
+        saved,
+        deposits: data.deposits,
+        tiers: tierAmounts(),
+        market: items.map((item) => ({
+          name: item.model,
+          seed: item.isSeed,
+          previous: item.previousMedian ?? null,
+          current: item.median,
+          month: item.month,
+          listings: item.sampleSize,
+        })),
+        beforeName: before ? displayName(before) : null,
+        afterName: after ? displayName(after) : null,
+        goalName: goal ? displayName(goal) : null,
+        monthsBefore: goalPrice === null ? null : monthsToGoal(previousSaved, data.monthly, goalPrice, inflation),
+        monthsAfter: goalPrice === null ? null : monthsToGoal(saved, data.monthly, goalPrice, inflation),
+      }),
+    );
+    update((current) => ({ ...current, lastSeenAt: today }));
+  }, [ready, data, saved, items, update]);
+
+  if (!lines?.length) return null;
+  return (
+    <Card>
+      <h2 className="text-lg font-semibold">Пока тебя не было</h2>
+      <ul className="mt-2 space-y-1 text-sm">
+        {lines.map((line) => (
+          <li key={line}>{line}</li>
+        ))}
+      </ul>
+    </Card>
+  );
+}
 
 function shortAmount(amount: number): string {
   if (amount >= 1_000_000) return "1 млн";
@@ -327,12 +390,7 @@ export function RoadFork({ items }: { items: CatalogItem[] }) {
         </p>
       </section>
 
-      <Card>
-        <h2 className="text-lg font-semibold">Пока тебя не было</h2>
-        <p className="mt-2 text-sm text-muted">
-          Сводку за время отсутствия пока не из чего собрать: в копилке нет месяца последнего визита.
-        </p>
-      </Card>
+      <AbsenceCard items={items} />
     </div>
   );
 }

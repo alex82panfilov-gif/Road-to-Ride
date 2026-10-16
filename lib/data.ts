@@ -101,6 +101,10 @@ export const catalog: CatalogItem[] = models.flatMap((model) => {
     notes: price.notes,
     isSeed: price.isSeed,
     isFallback: price.isFallback,
+    previousMedian: (() => {
+      const history = priceHistory(model.slug);
+      return history.length >= 2 ? history[history.length - 2].median : null;
+    })(),
     bestGearbox: bestGearbox(model),
     budgetRules: model.budgetRules,
     mileage: model.mileage,

@@ -46,6 +46,8 @@ export type UserData = {
   licenseDate: string | null;
   /** Вписан в полис родителей и ездит без аварий. */
   onParentPolicy: boolean;
+  /** День прошлого открытия сайта. null — визита ещё не было. */
+  lastSeenAt: string | null;
 };
 
 const DepositSchema = z.object({
@@ -83,6 +85,7 @@ const UserSchema = z.object({
   }),
   licenseDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable(),
   onParentPolicy: z.boolean(),
+  lastSeenAt: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable(),
 });
 
 export function defaultUser(): UserData {
@@ -103,6 +106,7 @@ export function defaultUser(): UserData {
     driver: { ...DEFAULT_DRIVER },
     licenseDate: null,
     onParentPolicy: false,
+    lastSeenAt: null,
   };
 }
 
@@ -139,6 +143,7 @@ function migrate(raw: unknown): UserData {
     version: 1,
     deposits: depositsOf(record.deposits),
     licenseDate: licenseOf(record.licenseDate),
+    lastSeenAt: licenseOf(record.lastSeenAt),
     onParentPolicy: record.onParentPolicy === true,
     driver: { ...base.driver, ...(record.driver as object) },
   };
@@ -187,6 +192,7 @@ export function parseImport(raw: string): UserData {
     version: 1,
     deposits: depositsOf(json.deposits),
     licenseDate: licenseOf(json.licenseDate),
+    lastSeenAt: licenseOf(json.lastSeenAt),
     onParentPolicy: json.onParentPolicy === true,
     driver: { ...base.driver, ...driver },
   });
