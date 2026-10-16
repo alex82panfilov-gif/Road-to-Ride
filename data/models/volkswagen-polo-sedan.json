@@ -12,6 +12,7 @@
   "brand": "Volkswagen",
   "model": "Polo",
   "generation": "Sedan I",
+  "autoruPath": "volkswagen/polo/20113124",
   "years": [
     2010,
     2020

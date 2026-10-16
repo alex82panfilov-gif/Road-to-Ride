@@ -90,6 +90,7 @@ export const Model = z
     avoid: z.array(z.string()),
     checklist: z.array(z.string()),
     listingRules: z.array(z.string()).optional(),
+    autoruPath: z.string().regex(/^[a-z0-9/-]+$/).optional(),
     budgetRules: z.array(BudgetRule).optional(),
   })
   .strict();
