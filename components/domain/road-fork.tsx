@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/card";
 import { scoreText } from "@/lib/cn";
 import { labels } from "@/lib/content";
 import { approxRub, rub, todayIso } from "@/lib/format";
+import { setbackLine } from "@/lib/view/ledger";
 import { displayName, type CatalogItem } from "@/lib/market";
 import { experiencePurchaseLine, meta, purchaseQuote, type PurchaseQuote } from "@/lib/meta";
 import { inflationOf } from "@/lib/storage";
@@ -61,8 +62,8 @@ function PriceFacts({ item, quote }: { item: CatalogItem; quote: PurchaseQuote }
 }
 
 export function RoadFork({ items }: { items: CatalogItem[] }) {
-  const { ready, data, saved } = useUser();
-  const { setDepositOpen } = useUi();
+  const { ready, data, saved, update } = useUser();
+  const { setDepositOpen, setWithdrawOpen } = useUi();
   const [expanded, setExpanded] = useState(false);
   const [preview, setPreview] = useState(saved);
   const [pulse, setPulse] = useState<{ amount: number; token: number } | null>(null);
@@ -131,6 +132,9 @@ export function RoadFork({ items }: { items: CatalogItem[] }) {
     return !car || car.isSeed;
   });
   const previewCar = bestSafeAt(items, preview, driver);
+  const lastMove = data.deposits.at(-1);
+  const beforeWithdrawal = lastMove && lastMove.amount < 0 ? bestSafeAt(items, amount - lastMove.amount, driver) : null;
+  const rolledBack = beforeWithdrawal && beforeWithdrawal.slug !== today?.slug ? setbackLine(beforeWithdrawal, amount, driver) : null;
 
   function commit(raw: number) {
     const hit = snaps.find((snap) => Math.abs(snap.amount - raw) <= 10_000);
@@ -163,7 +167,24 @@ export function RoadFork({ items }: { items: CatalogItem[] }) {
         ) : (
           <p className="text-sm">Пока нет машины, от которой считать старт. Дорога уже нарисована.</p>
         )}
-        <Button onClick={() => setDepositOpen(true)}>{data.deposits.length ? "Добавить взнос" : "Указать накопления"}</Button>
+        {rolledBack ? <p className="text-sm">{rolledBack}</p> : null}
+        <div className="flex flex-wrap gap-2">
+          <Button onClick={() => setDepositOpen(true)}>{data.deposits.length ? "Добавить взнос" : "Указать накопления"}</Button>
+          {amount > 0 ? (
+            <Button variant="secondary" onClick={() => setWithdrawOpen(true)}>
+              Снять
+            </Button>
+          ) : null}
+        </div>
+        <label className="block max-w-xs text-sm">
+          Взнос в месяц, ₽
+          <input
+            inputMode="numeric"
+            className="num mt-1 h-12 w-full rounded-2xl bg-canvas-secondary px-4"
+            value={data.monthly || ""}
+            onChange={(event) => update((current) => ({ ...current, monthly: Math.max(0, Number(event.target.value.replace(/\s/g, "")) || 0) }))}
+          />
+        </label>
       </header>
 
       <section className="space-y-3 md:space-y-4" aria-label="Дорога">

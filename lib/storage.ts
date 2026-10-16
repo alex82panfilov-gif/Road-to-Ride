@@ -9,12 +9,17 @@ const LEGACY_THEME_KEY = "fm:theme";
 export const contributorIds = ["me", "dad", "mom", "gift", "other"] as const;
 export type ContributorId = (typeof contributorIds)[number];
 
+export const withdrawalReasons = ["repair", "lent", "other"] as const;
+export type WithdrawalReason = (typeof withdrawalReasons)[number];
+
 export type Deposit = {
   id: string;
   amount: number;
   date: string;
   by: ContributorId;
   note?: string;
+  /** Есть только у снятия: сумма в записи отрицательная. */
+  reason?: WithdrawalReason;
 };
 
 export type ChecklistState = {
@@ -45,10 +50,11 @@ export type UserData = {
 
 const DepositSchema = z.object({
   id: z.string(),
-  amount: z.number().positive(),
+  amount: z.number().refine((value) => Number.isFinite(value) && value !== 0),
   date: z.string(),
   by: z.enum(contributorIds),
   note: z.string().optional(),
+  reason: z.enum(withdrawalReasons).optional(),
 });
 
 const UserSchema = z.object({
@@ -112,6 +118,17 @@ function licenseOf(value: unknown): string | null {
   return typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value) ? value : null;
 }
 
+/** Старые взносы без причины и с reason: null остаются взносами. */
+function depositsOf(value: unknown): unknown {
+  if (!Array.isArray(value)) return value;
+  return value.map((item) => {
+    if (!item || typeof item !== "object") return item;
+    const deposit = { ...(item as Record<string, unknown>) };
+    if (deposit.reason == null) delete deposit.reason;
+    return deposit;
+  });
+}
+
 function migrate(raw: unknown): UserData {
   const base = defaultUser();
   if (!raw || typeof raw !== "object") return base;
@@ -120,6 +137,7 @@ function migrate(raw: unknown): UserData {
     ...base,
     ...record,
     version: 1,
+    deposits: depositsOf(record.deposits),
     licenseDate: licenseOf(record.licenseDate),
     onParentPolicy: record.onParentPolicy === true,
     driver: { ...base.driver, ...(record.driver as object) },
@@ -167,6 +185,7 @@ export function parseImport(raw: string): UserData {
     ...base,
     ...json,
     version: 1,
+    deposits: depositsOf(json.deposits),
     licenseDate: licenseOf(json.licenseDate),
     onParentPolicy: json.onParentPolicy === true,
     driver: { ...base.driver, ...driver },

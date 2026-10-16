@@ -11,11 +11,12 @@ import { plural, rub, todayIso } from "@/lib/format";
 import { purchaseQuote } from "@/lib/meta";
 import { displayName, type CatalogItem } from "@/lib/market";
 import { backupFilename, buildIcs, exportPayload, inflationOf, parseImport, type ContributorId } from "@/lib/storage";
+import { withdrawalReasonLabel } from "@/lib/view/ledger";
 import { useEffect, useMemo, useState } from "react";
 
 export function SavingsPanel({ items }: { items: CatalogItem[] }) {
   const { ready, data, saved, update, removeDeposit, replaceAll } = useUser();
-  const { setDepositOpen } = useUi();
+  const { setDepositOpen, setWithdrawOpen } = useUi();
   const [confirm, setConfirm] = useState(false);
   const [month, setMonth] = useState<string | null>(null);
 
@@ -25,7 +26,10 @@ export function SavingsPanel({ items }: { items: CatalogItem[] }) {
 
   const shares = useMemo(() => {
     const totals = new Map<ContributorId, number>();
-    for (const deposit of data.deposits) totals.set(deposit.by, (totals.get(deposit.by) ?? 0) + deposit.amount);
+    for (const deposit of data.deposits) {
+      if (deposit.amount <= 0) continue;
+      totals.set(deposit.by, (totals.get(deposit.by) ?? 0) + deposit.amount);
+    }
     return [...totals.entries()].sort((a, b) => b[1] - a[1]);
   }, [data.deposits]);
 
@@ -97,7 +101,10 @@ export function SavingsPanel({ items }: { items: CatalogItem[] }) {
           <h1 className="text-[2rem] leading-tight font-semibold">Копилка</h1>
           <p className="num mt-2 text-3xl font-semibold">{rub(saved)}</p>
         </div>
-        <Button onClick={() => setDepositOpen(true)}>Добавить взнос</Button>
+        <div className="flex flex-wrap gap-2">
+          <Button onClick={() => setDepositOpen(true)}>Добавить взнос</Button>
+          <Button variant="secondary" onClick={() => setWithdrawOpen(true)}>Снять</Button>
+        </div>
       </header>
 
       {month && data.backupReminderMonth !== month ? (
@@ -124,7 +131,7 @@ export function SavingsPanel({ items }: { items: CatalogItem[] }) {
                 <span className="num">{rub(amount)}</span>
               </div>
               <div className="h-2 rounded-full bg-canvas-secondary">
-                <div className="h-2 rounded-full bg-accent" style={{ width: `${(amount / saved) * 100}%` }} />
+                <div className="h-2 rounded-full bg-accent" style={{ width: `${saved > 0 ? (amount / saved) * 100 : 0}%` }} />
               </div>
             </li>
           ))}
@@ -188,7 +195,7 @@ export function SavingsPanel({ items }: { items: CatalogItem[] }) {
             <div>
               <p className="num font-medium">{rub(deposit.amount)}</p>
               <p className="text-sm text-muted">
-                {labels.contributors[deposit.by]} · {deposit.date}
+                {deposit.amount < 0 ? `Снятие${deposit.reason ? ` · ${withdrawalReasonLabel[deposit.reason]}` : ""}` : labels.contributors[deposit.by]} · {deposit.date}
                 {deposit.note ? ` · ${deposit.note}` : ""}
               </p>
             </div>

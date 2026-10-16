@@ -4,6 +4,7 @@ import { Sheet } from "@/components/ui/sheet";
 import { ToastProvider, useToast } from "@/components/ui/toast";
 import { labels } from "@/lib/content";
 import { groupRubles, parseRubles, todayIso } from "@/lib/format";
+import { withdrawalError } from "@/lib/view/ledger";
 import {
   defaultUser,
   loadUser,
@@ -13,6 +14,7 @@ import {
   type ContributorId,
   type Deposit,
   type UserData,
+  type WithdrawalReason,
 } from "@/lib/storage";
 import { createContext, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 
@@ -22,6 +24,7 @@ type UserApi = {
   saved: number;
   update: (recipe: (current: UserData) => UserData) => void;
   addDeposit: (input: { amount: number; date: string; by: ContributorId; note?: string }) => void;
+  addWithdrawal: (input: { amount: number; date: string; reason: WithdrawalReason }) => void;
   removeDeposit: (id: string) => void;
   replaceAll: (next: UserData) => void;
 };
@@ -30,6 +33,8 @@ const UserContext = createContext<UserApi | null>(null);
 const UiContext = createContext<{
   depositOpen: boolean;
   setDepositOpen: (open: boolean) => void;
+  withdrawOpen: boolean;
+  setWithdrawOpen: (open: boolean) => void;
   searchOpen: boolean;
   setSearchOpen: (open: boolean) => void;
 } | null>(null);
@@ -82,12 +87,31 @@ function UserState({ children }: { children: React.ReactNode }) {
         const deposit: Deposit = { id: crypto.randomUUID(), ...input };
         update((current) => ({ ...current, deposits: [...current.deposits, deposit] }));
       },
+      addWithdrawal: (input) => {
+        const error = withdrawalError(savedAmount(dataRef.current), input.amount);
+        if (error) return;
+        const deposit: Deposit = {
+          id: crypto.randomUUID(),
+          amount: -input.amount,
+          date: input.date,
+          by: "me",
+          reason: input.reason,
+        };
+        setData((current) => ({ ...current, deposits: [...current.deposits, deposit] }));
+        toast({
+          text: "Снято из копилки.",
+          action: "Отменить",
+          duration: 8000,
+          onAction: () =>
+            setData((current) => ({ ...current, deposits: current.deposits.filter((item) => item.id !== deposit.id) })),
+        });
+      },
       removeDeposit: (id) => {
         const removed = dataRef.current.deposits.find((item) => item.id === id);
         if (!removed) return;
         setData((current) => ({ ...current, deposits: current.deposits.filter((item) => item.id !== id) }));
         toast({
-          text: "Взнос удалён.",
+          text: removed.amount < 0 ? "Снятие удалено." : "Взнос удалён.",
           action: "Отменить",
           duration: 8000,
           onAction: () =>
@@ -107,14 +131,16 @@ function UserState({ children }: { children: React.ReactNode }) {
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const [depositOpen, setDepositOpen] = useState(false);
+  const [withdrawOpen, setWithdrawOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
 
   return (
     <ToastProvider>
       <UserState>
-        <UiContext.Provider value={{ depositOpen, setDepositOpen, searchOpen, setSearchOpen }}>
+        <UiContext.Provider value={{ depositOpen, setDepositOpen, withdrawOpen, setWithdrawOpen, searchOpen, setSearchOpen }}>
           {children}
           <DepositSheet open={depositOpen} onClose={() => setDepositOpen(false)} />
+          <WithdrawSheet open={withdrawOpen} onClose={() => setWithdrawOpen(false)} />
         </UiContext.Provider>
       </UserState>
     </ToastProvider>
@@ -213,6 +239,74 @@ function DepositSheet({ open, onClose }: { open: boolean; onClose: () => void })
         </label>
         <button type="submit" className="h-12 w-full rounded-full bg-accent font-medium text-accent-ink">
           Добавить взнос
+        </button>
+      </form>
+    </Sheet>
+  );
+}
+
+function WithdrawSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const { addWithdrawal, saved } = useUser();
+  const [amount, setAmount] = useState("");
+  const [date, setDate] = useState("");
+  const [reason, setReason] = useState<WithdrawalReason>("repair");
+  const [amountError, setAmountError] = useState("");
+
+  useEffect(() => {
+    setDate(todayIso());
+  }, []);
+
+  return (
+    <Sheet open={open} title="Снять из копилки" onClose={onClose}>
+      <form
+        className="space-y-4"
+        onSubmit={(event) => {
+          event.preventDefault();
+          const value = parseRubles(amount);
+          if (value === null) {
+            setAmountError("Напишите сумму цифрами, например 50 000.");
+            return;
+          }
+          const error = withdrawalError(saved, value);
+          if (error) {
+            setAmountError(error);
+            return;
+          }
+          setAmountError("");
+          addWithdrawal({ amount: value, date, reason });
+          setAmount("");
+          onClose();
+        }}
+      >
+        <label className="block text-sm">
+          Сумма, ₽
+          <input
+            inputMode="numeric"
+            required
+            value={amount}
+            aria-invalid={amountError ? true : undefined}
+            onChange={(event) => {
+              setAmount(groupRubles(event.target.value));
+              if (amountError) setAmountError("");
+            }}
+            className="num mt-1 h-12 w-full rounded-2xl bg-canvas-secondary px-4"
+          />
+          {amountError ? <span className="mt-1 block text-danger">{amountError}</span> : null}
+        </label>
+        <label className="block text-sm">
+          Причина
+          <select value={reason} onChange={(event) => setReason(event.target.value as WithdrawalReason)} className="mt-1 h-12 w-full rounded-2xl bg-canvas-secondary px-4">
+            <option value="repair">Ремонт</option>
+            <option value="lent">Одолжил</option>
+            <option value="other">Другое</option>
+          </select>
+        </label>
+        <label className="block text-sm">
+          Дата
+          <input type="date" required value={date} onChange={(event) => setDate(event.target.value)} className="mt-1 h-12 w-full rounded-2xl bg-canvas-secondary px-4" />
+        </label>
+        <button type="submit" className="h-12 w-full rounded-full bg-accent font-medium text-accent-ink">
+          Снять
         </button>
       </form>
     </Sheet>
