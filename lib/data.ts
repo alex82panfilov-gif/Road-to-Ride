@@ -2,7 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { meta, realPrice } from "./meta";
 import { bestGearbox, findModel, type CatalogItem, type PricePoint } from "./market";
-import { pickPrice } from "./prices";
+import { isLivePrice, pickPrice } from "./prices";
 import { modelScore } from "./score";
 import { Model, SnapshotFile, TrapsFile, type Model as CarModel, type SnapshotFile as MonthFile, type TTrap } from "./schema";
 
@@ -51,12 +51,10 @@ export function prevMonth(month: string) {
 }
 
 export function priceHistory(slug: string): PricePoint[] {
-  return snapshotFiles
-    .filter((file) => !file.seed)
-    .flatMap((file) =>
-      file.snapshots
-        .filter((snapshot) => snapshot.slug === slug)
-        .map((snapshot) => ({
+  return snapshotFiles.flatMap((file) =>
+    file.snapshots
+      .filter((snapshot) => snapshot.slug === slug && (!file.seed || isLivePrice(snapshot)))
+      .map((snapshot) => ({
           month: snapshot.month,
           p25: snapshot.p25,
           median: snapshot.median,
