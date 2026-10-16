@@ -15,7 +15,7 @@ import { displayName, type CatalogItem, type PricePoint } from "@/lib/market";
 import type { PickedPrice } from "@/lib/prices";
 import type { Model } from "@/lib/schema";
 import { tierAmounts } from "@/lib/tiers";
-import { cheaperTrap } from "@/lib/view/advice";
+import { avoidExcuse, cheaperTrap } from "@/lib/view/advice";
 import { priceStatus } from "@/lib/view/market";
 import { autoruSearchUrl, dromSearchUrl } from "@/lib/view/search-links";
 import { SearchLinks } from "@/components/domain/search-links";
@@ -85,10 +85,33 @@ export function ModelArticle({
           ))}
         </ul>
         {advice ? (
-          <AdviceMark advice={advice} items={items} open={adviceOpen} onToggle={() => setAdviceOpen((value) => !value)} />
+          <AdviceMark
+            advice={advice}
+            items={items}
+            car={items.find((item) => item.slug === model.slug)}
+            catalog={items}
+            saved={saved}
+            driver={driver}
+            open={adviceOpen}
+            onToggle={() => setAdviceOpen((value) => !value)}
+          />
         ) : null}
         {advice?.verdict !== "avoid" && caveat ? <p className="text-sm">{caveat}</p> : null}
-        <ScorePill score={scoreOf(model)} />
+        <ScorePill
+          score={scoreOf(model)}
+          excuse={
+            advice?.verdict === "avoid"
+              ? avoidExcuse(
+                  items.find((item) => item.slug === model.slug) ?? {
+                    median: price.median,
+                    bestGearbox: model.gearboxes.some((box) => box.verdict === "avoid" && box.type !== "MT") ? "avoid" : "recommended",
+                    gearboxes: model.gearboxes,
+                    budgetRules: model.budgetRules,
+                  },
+                )
+              : null
+          }
+        />
       </section>
 
       <section className="space-y-2">

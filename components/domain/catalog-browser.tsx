@@ -14,7 +14,7 @@ import type { TTrap } from "@/lib/schema";
 import { TIER_MAX } from "@/lib/tiers";
 import { inflationOf } from "@/lib/storage";
 import { realPrice } from "@/lib/meta";
-import { cheaperTrap } from "@/lib/view/advice";
+import { avoidExcuse, cheaperTrap } from "@/lib/view/advice";
 import { catalogBands, priceStatus, shownSavings } from "@/lib/view/market";
 import { SlidersHorizontal } from "lucide-react";
 import Link from "next/link";
@@ -202,13 +202,17 @@ export function CatalogBrowser({
                           {item.generation}, {labels.bodies[item.body]}
                         </div>
                       </div>
-                      <ScorePill score={item.score} />
+                      <ScorePill score={item.score} excuse={advice?.verdict === "avoid" ? avoidExcuse(item) ?? "если бы не коробка/такси" : null} />
                     </div>
                     {advice ? (
                       <div className="mt-2">
                         <AdviceMark
                           advice={advice}
                           items={links}
+                          car={item}
+                          catalog={items}
+                          saved={amount}
+                          driver={data.driver}
                           open={openSign === item.slug}
                           onToggle={() => setOpenSign((current) => (current === item.slug ? null : item.slug))}
                         />

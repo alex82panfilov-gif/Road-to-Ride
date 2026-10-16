@@ -1,6 +1,8 @@
 import type { Advice, Verdict } from "@/lib/advice";
 import { labels } from "@/lib/content";
-import { displayName } from "@/lib/market";
+import { displayName, type CatalogItem } from "@/lib/market";
+import type { DriverProfile } from "@/lib/meta";
+import { alternativesFor } from "@/lib/view/advice";
 import Link from "next/link";
 
 const caption: Record<Verdict, string> = {
@@ -17,15 +19,27 @@ export function AdviceMark({
   open,
   onToggle,
   items,
+  car,
+  catalog,
+  saved,
+  driver,
 }: {
   advice: Advice;
   open: boolean;
   onToggle: () => void;
   items: ModelLink[];
+  car?: CatalogItem;
+  catalog?: CatalogItem[];
+  saved?: number;
+  driver?: DriverProfile;
 }) {
   const instead = advice.insteadSlugs
     .map((slug) => items.find((item) => item.slug === slug))
     .filter((item): item is ModelLink => Boolean(item));
+  const alternatives =
+    advice.verdict === "avoid" && car && catalog && saved !== undefined
+      ? alternativesFor(car, catalog, saved, driver)
+      : [];
 
   return (
     <div>
@@ -52,6 +66,17 @@ export function AdviceMark({
             </p>
           ) : null}
         </div>
+      ) : null}
+      {alternatives.length ? (
+        <p className="mt-2 text-sm">
+          Вместо неё в этом бюджете:{" "}
+          {alternatives.map((item, index) => (
+            <span key={item.slug}>
+              {index ? ", " : ""}
+              <Link href={`/cars/${item.slug}`}>{displayName(item)}</Link>
+            </span>
+          ))}
+        </p>
       ) : null}
     </div>
   );

@@ -9,7 +9,15 @@ const color = {
   top: "text-score-top",
 };
 
-export function ScorePill({ score }: { score: number }) {
+export function ScorePill({ score, excuse }: { score: number; excuse?: string | null }) {
+  if (excuse) {
+    return (
+      <span className="inline-flex items-baseline gap-2 text-muted">
+        <span className="num text-lg font-semibold">{scoreText(score)}</span>
+        <span className="text-sm">{excuse}</span>
+      </span>
+    );
+  }
   const band = scoreBand(score);
   return (
     <span className={`inline-flex items-baseline gap-2 ${color[band]}`}>
