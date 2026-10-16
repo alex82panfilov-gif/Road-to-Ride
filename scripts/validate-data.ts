@@ -10,6 +10,7 @@ import path from "node:path";
 import { pathToFileURL } from "node:url";
 import type { ZodError } from "zod";
 import { Model, SnapshotFile, type TListing, type TModel, type TSnapshot, type TSnapshotFile } from "../lib/schema.ts";
+import { enginesMissingPower } from "../lib/view/search.ts";
 
 const MIN_PUBLISH = 5;
 const MIN_MEDIUM = 8;
@@ -139,14 +140,22 @@ function validateSnapshot(issues: Issue[], snapshot: TSnapshot, model: TModel, p
 
 /** Предупреждения карточки, которые не зависят от снимка цен. */
 export function modelCardIssues(model: TModel): Issue[] {
-  if (model.listingRules?.length) return [];
-  return [
-    {
+  const issues: Issue[] = [];
+  if (!model.listingRules?.length) {
+    issues.push({
       level: "warn",
       slug: model.slug,
       msg: "нет listingRules — поиск на площадках берёт годы поколения, а не разрешённые пары мотор/коробка",
-    },
-  ];
+    });
+  }
+  for (const code of enginesMissingPower(model)) {
+    issues.push({
+      level: "warn",
+      slug: model.slug,
+      msg: `мотор «${code}» без мощности — фильтр л.с. в поиске не ставится`,
+    });
+  }
+  return issues;
 }
 
 export function reviewRaw(raw: string, models: Map<string, TModel>, previous: TSnapshotFile | null) {

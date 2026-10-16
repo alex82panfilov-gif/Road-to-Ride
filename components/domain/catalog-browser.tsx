@@ -185,7 +185,17 @@ export function CatalogBrowser({
                 const gap = realPrice(item.median, item.hp, data.driver) - amount;
                 const status = priceStatus(item);
                 const car = view === "mine" ? models.find((model) => model.slug === item.slug) : undefined;
-                const market = car ? searchLinks(car, { median: item.median, savings: amount > 0 ? amount : undefined }) : null;
+                const market = car
+                  ? searchLinks(car, {
+                      median: item.median,
+                      p25: item.p25,
+                      p75: item.p75,
+                      isSeed: item.isSeed,
+                      isFallback: item.isFallback,
+                      confidence: item.confidence,
+                      savings: amount > 0 ? amount : undefined,
+                    })
+                  : null;
                 return (
                   <li key={item.slug} className="card p-4">
                     <div className="flex flex-wrap items-start justify-between gap-3">

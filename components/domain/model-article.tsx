@@ -222,7 +222,17 @@ export function ModelArticle({
         {price.median > 1_000_000 ? <p className="mt-2 text-sm">Пока вне бюджета: медиана выше 1 000 000 ₽.</p> : null}
         {price.notes ? <p className="mt-2 text-sm text-muted">{price.notes}</p> : null}
         <div className="mt-3">
-          <MarketSearch result={searchLinks(model, { median: price.median, savings: ready && saved > 0 ? saved : undefined })} />
+          <MarketSearch
+            result={searchLinks(model, {
+              median: price.median,
+              p25: price.p25,
+              p75: price.p75,
+              isSeed: price.isSeed,
+              isFallback: price.isFallback,
+              confidence: price.confidence,
+              savings: ready && saved > 0 ? saved : undefined,
+            })}
+          />
         </div>
       </section>
 

@@ -1,8 +1,9 @@
 import { rub } from "../format";
 import type { Model } from "../schema";
 
-/** Окно сбора объявлений в валидаторе. Выше этой цены поиск не открываем. */
-const PRICE_CAP = 1_500_000;
+/** Потолок и пол сбора объявлений в валидаторе. Поиск за эти границы не выходит. */
+export const PRICE_MAX = 1_500_000;
+export const PRICE_MIN = 100_000;
 const PRICE_STEP = 10_000;
 
 /**
@@ -29,8 +30,18 @@ const PRICE_STEP = 10_000;
  * TODO: классический автомат на auto.ru. Когда будет ручной URL фильтра Polo
  * с одной АКПП (без робота и вариатора), подставить значение в AUTORU_CLASSIC_AUTOMATIC.
  * Пока параметр коробки в ссылку auto.ru не ставится, чтобы не открыть роботов.
+ *
+ * TODO: мощность на Drom и auto.ru. Имена параметров не выдуманы.
+ * Ждём ручной URL Polo на Drom с фильтром ровно 110 л.с. и ручной URL Polo
+ * на auto.ru: Москва, только классический автомат, 1.6, 110 л.с.
+ * Второй адрес закроет и AUTORU_CLASSIC_AUTOMATIC. Пока мощности в ссылке нет,
+ * хотя подпись и поле power уже знают л.с. разрешённого мотора.
  */
 export const AUTORU_CLASSIC_AUTOMATIC: string | null = null;
+export const DROM_POWER_FROM: string | null = null;
+export const DROM_POWER_TO: string | null = null;
+export const AUTORU_POWER_FROM: string | null = null;
+export const AUTORU_POWER_TO: string | null = null;
 
 const DROM_CLASSIC_AUTOMATIC = ["2", "5"] as const;
 
@@ -55,13 +66,21 @@ export type SearchModel = Pick<
 
 export type SearchContext = {
   median: number;
+  p25?: number;
+  p75?: number;
+  /** Стартовый ориентир, а не подсчёт объявлений. Вместе с low и fallback окно не сужает. */
+  isSeed?: boolean;
+  isFallback?: boolean;
+  confidence?: "low" | "medium" | "high";
   /** Сумма копилки. Нет числа или 0 — копилочную ссылку не строим. */
   savings?: number;
   /** Сравнение с конкретным объявлением: год ±2, пробег ±30%. Цену копилки не подставляет. */
   similar?: { year: number; mileageKm: number };
 };
 
-export type SearchEngine = { code: string; volumeL: number };
+export type SearchEngine = { code: string; volumeL: number; hp: number | null };
+
+export type SearchPower = { from: number; to: number };
 
 export type MarketplaceLinks = { autoru: string; drom: string };
 
@@ -76,6 +95,10 @@ export type SearchLinksResult = {
   engines: SearchEngine[];
   /** rules — годы разрешённых пар из listingRules; generation — годы поколения. */
   yearSource: "rules" | "generation";
+  /** null — у разрешённого мотора нет л.с., фильтр мощности не ставится. */
+  power: SearchPower | null;
+  /** false — seed, low или fallback: верх окна PRICE_MAX, низ только из правила avoid. */
+  measured: boolean;
   priceFrom: number;
   priceTo: number;
   kmTo: number;
@@ -102,7 +125,11 @@ function cc(value: number): number {
   return Math.round(value * 1000);
 }
 
-type Pair = { code: string; volumeL: number; yearFrom: number; yearTo: number };
+type Pair = { code: string; volumeL: number; hp: number | null; yearFrom: number; yearTo: number };
+
+function engineHp(hp: number | undefined): number | null {
+  return hp != null && hp > 0 ? hp : null;
+}
 
 function allowedPairs(model: SearchModel): Pair[] {
   const automatics = model.gearboxes.filter((gearbox) => gearbox.type === "AT" && gearbox.verdict !== "avoid");
@@ -114,7 +141,7 @@ function allowedPairs(model: SearchModel): Pair[] {
     for (const engine of engines) {
       const yearFrom = Math.max(gearbox.years?.[0] ?? model.years[0], engine.years?.[0] ?? model.years[0]);
       const yearTo = Math.min(gearbox.years?.[1] ?? model.years[1], engine.years?.[1] ?? model.years[1]);
-      if (yearFrom <= yearTo) pairs.push({ code: engine.code, volumeL: engine.volumeL, yearFrom, yearTo });
+      if (yearFrom <= yearTo) pairs.push({ code: engine.code, volumeL: engine.volumeL, hp: engineHp(engine.hp), yearFrom, yearTo });
     }
   }
   return pairs;
@@ -126,9 +153,31 @@ function uniqueEngines(pairs: Pair[]): SearchEngine[] {
   for (const pair of pairs) {
     if (seen.has(pair.code)) continue;
     seen.add(pair.code);
-    engines.push({ code: pair.code, volumeL: pair.volumeL });
+    engines.push({ code: pair.code, volumeL: pair.volumeL, hp: pair.hp });
   }
   return engines;
+}
+
+function selectedEngines(model: SearchModel): SearchEngine[] {
+  const pairs = allowedPairs(model);
+  if (pairs.length) return uniqueEngines(pairs);
+  const fallback = model.engines.filter((engine) => engine.recommended);
+  return (fallback.length ? fallback : model.engines).map((engine) => ({
+    code: engine.code,
+    volumeL: engine.volumeL,
+    hp: engineHp(engine.hp),
+  }));
+}
+
+/** Коды моторов, которые поиск взял бы, но у которых в карточке нет л.с. */
+export function enginesMissingPower(model: SearchModel): string[] {
+  return selectedEngines(model).filter((engine) => engine.hp == null).map((engine) => engine.code);
+}
+
+function powerOf(engines: SearchEngine[]): SearchPower | null {
+  if (!engines.length || engines.some((engine) => engine.hp == null)) return null;
+  const values = engines.map((engine) => engine.hp as number);
+  return { from: Math.min(...values), to: Math.max(...values) };
 }
 
 function avoidRule(model: SearchModel) {
@@ -138,15 +187,23 @@ function avoidRule(model: SearchModel) {
   return rules.find((rule) => rule.to === ceiling) ?? null;
 }
 
-function priceWindow(model: SearchModel, median: number): { priceFrom: number; priceTo: number } {
+function isMeasured(context: SearchContext): boolean {
+  return context.isSeed === false && context.isFallback !== true && (context.confidence === "medium" || context.confidence === "high");
+}
+
+function priceWindow(model: SearchModel, context: SearchContext): { priceFrom: number; priceTo: number; measured: boolean } {
   const rule = avoidRule(model);
-  const rawFrom = rule ? Math.max(rule.to, median * 0.75) : median * 0.75;
-  const priceFrom = roundPrice(rawFrom);
-  let priceTo = roundPrice(Math.min(PRICE_CAP, median * 1.25));
-  // Медиана внутри зоны «не рекомендовать» (так у Focus: ориентир ниже порога робота).
-  // Верх окна — потолок сбора, иначе поиск шёл бы от большей цены к меньшей.
-  if (priceTo < priceFrom) priceTo = PRICE_CAP;
-  return { priceFrom, priceTo };
+  // Стартовый ориентир — не медиана. Сужать вокруг него значит отрезать нормальные машины.
+  if (!isMeasured(context)) {
+    return { priceFrom: rule ? rule.to : PRICE_MIN, priceTo: PRICE_MAX, measured: false };
+  }
+  const quartiles = context.p25 != null && context.p25 > 0 && context.p75 != null && context.p75 > 0;
+  const rawFrom = quartiles ? context.p25! * 0.9 : context.median * 0.75;
+  const rawTo = quartiles ? context.p75! * 1.1 : context.median * 1.25;
+  const priceFrom = roundPrice(rule ? Math.max(rule.to, rawFrom) : rawFrom);
+  let priceTo = roundPrice(Math.min(PRICE_MAX, rawTo));
+  if (priceTo < priceFrom) priceTo = PRICE_MAX;
+  return { priceFrom, priceTo, measured: true };
 }
 
 function cheapNote(model: SearchModel, savings: number, priceFrom: number): string {
@@ -161,6 +218,7 @@ type Window = {
   yearFrom: number;
   yearTo: number;
   volumes: number[];
+  power?: SearchPower | null;
   priceFrom?: number;
   priceTo?: number;
   kmFrom?: number;
@@ -181,6 +239,10 @@ function autoruUrl(model: SearchModel, window: Window): string {
     params.set("displacement_from", String(Math.min(...amounts)));
     params.set("displacement_to", String(Math.max(...amounts)));
   }
+  if (window.power && AUTORU_POWER_FROM && AUTORU_POWER_TO) {
+    params.set(AUTORU_POWER_FROM, String(window.power.from));
+    params.set(AUTORU_POWER_TO, String(window.power.to));
+  }
   if (window.kmFrom != null) params.set("km_age_from", String(window.kmFrom));
   if (window.kmTo != null) params.set("km_age_to", String(window.kmTo));
   const query = params.toString();
@@ -193,6 +255,9 @@ function dromUrl(model: SearchModel, window: Window): string {
   if (window.volumes.length) {
     const amounts = window.volumes.map(liters);
     parts.push(`mv=${amounts[0]}`, `xv=${amounts[amounts.length - 1]}`);
+  }
+  if (window.power && DROM_POWER_FROM && DROM_POWER_TO) {
+    parts.push(`${DROM_POWER_FROM}=${window.power.from}`, `${DROM_POWER_TO}=${window.power.to}`);
   }
   if (window.priceFrom != null) parts.push(`minprice=${window.priceFrom}`);
   if (window.priceTo != null) parts.push(`maxprice=${window.priceTo}`);
@@ -215,28 +280,58 @@ export function similarWindow(year: number, mileageKm: number): { yearFrom: numb
   return window;
 }
 
-function captionOf(years: [number, number], volumes: number[], priceFrom: number, priceTo: number, kmTo: number): string {
-  const volume = volumes.map(liters).join(", ");
-  const range = `${grouped.format(priceFrom)} – ${grouped.format(priceTo)} ₽`;
-  return `Поиск: ${years[0]}–${years[1]}, ${volume}, автомат, ${range}, до ${grouped.format(kmTo)} км`;
+function specText(engines: SearchEngine[]): string {
+  const byVolume = new Map<number, number[]>();
+  for (const engine of engines) {
+    const known = byVolume.get(engine.volumeL) ?? [];
+    if (engine.hp != null && !known.includes(engine.hp)) known.push(engine.hp);
+    byVolume.set(engine.volumeL, known);
+  }
+  return [...byVolume.entries()]
+    .sort((a, b) => a[0] - b[0])
+    .map(([volume, powers]) => {
+      const size = liters(volume);
+      if (!powers.length) return size;
+      powers.sort((a, b) => a - b);
+      const hp = powers.length === 1 ? String(powers[0]) : `${powers[0]}–${powers[powers.length - 1]}`;
+      return `${size} ${hp} л.с.`;
+    })
+    .join(", ");
+}
+
+function captionOf(
+  years: [number, number],
+  engines: SearchEngine[],
+  priceFrom: number,
+  priceTo: number,
+  kmTo: number,
+  measured: boolean,
+): string {
+  const parts = [`${years[0]}–${years[1]}`, specText(engines), "АКПП"];
+  const modelFloor = !measured && priceFrom > PRICE_MIN;
+  if (measured) parts.push(`${grouped.format(priceFrom)} – ${grouped.format(priceTo)} ₽`);
+  else if (modelFloor) parts.push(`от ${grouped.format(priceFrom)} ₽`);
+  parts.push(`до ${grouped.format(kmTo)} км`);
+  const line = parts.join(", ");
+  if (measured) return line;
+  const from = modelFloor ? ` от ${grouped.format(priceFrom)} ₽` : "";
+  return `${line}. Цена пока не измерена — показываем весь рынок${from}`;
 }
 
 /** Все ссылки на Авто.ру и Drom в проекте строятся здесь. */
 export function searchLinks(model: SearchModel, context: SearchContext): SearchLinksResult {
   const pairs = allowedPairs(model);
-  const fallback = model.engines.filter((engine) => engine.recommended);
-  const engines = pairs.length
-    ? uniqueEngines(pairs)
-    : (fallback.length ? fallback : model.engines).map((engine) => ({ code: engine.code, volumeL: engine.volumeL }));
+  const engines = selectedEngines(model);
   const volumes = [...new Set(engines.map((engine) => engine.volumeL))].sort((a, b) => a - b);
+  const power = powerOf(engines);
   const yearSource = model.listingRules?.length && pairs.length ? "rules" : "generation";
   const years: [number, number] =
     yearSource === "rules"
       ? [Math.min(...pairs.map((pair) => pair.yearFrom)), Math.max(...pairs.map((pair) => pair.yearTo))]
       : [model.years[0], model.years[1]];
-  const { priceFrom, priceTo } = priceWindow(model, context.median);
+  const { priceFrom, priceTo, measured } = priceWindow(model, context);
   const kmTo = model.mileage.avoidFrom;
-  const market: Window = { yearFrom: years[0], yearTo: years[1], volumes, priceFrom, priceTo, kmTo };
+  const market: Window = { yearFrom: years[0], yearTo: years[1], volumes, power, priceFrom, priceTo, kmTo };
 
   if (context.similar) {
     const near = similarWindow(context.similar.year, context.similar.mileageKm);
@@ -244,6 +339,7 @@ export function searchLinks(model: SearchModel, context: SearchContext): SearchL
       yearFrom: near.yearFrom,
       yearTo: near.yearTo,
       volumes,
+      power,
       kmFrom: near.kmFrom,
       kmTo: near.kmTo,
     };
@@ -251,11 +347,13 @@ export function searchLinks(model: SearchModel, context: SearchContext): SearchL
       years,
       volumes,
       engines,
+      power,
       yearSource,
+      measured,
       priceFrom,
       priceTo,
       kmTo,
-      caption: captionOf(years, volumes, priceFrom, priceTo, kmTo),
+      caption: captionOf(years, engines, priceFrom, priceTo, kmTo, measured),
       links: linksFor(model, window),
       savings: { kind: "none" },
     };
@@ -277,11 +375,13 @@ export function searchLinks(model: SearchModel, context: SearchContext): SearchL
     years,
     volumes,
     engines,
+    power,
     yearSource,
+    measured,
     priceFrom,
     priceTo,
     kmTo,
-    caption: captionOf(years, volumes, priceFrom, priceTo, kmTo),
+    caption: captionOf(years, engines, priceFrom, priceTo, kmTo, measured),
     links: linksFor(model, market),
     savings: pocket,
   };

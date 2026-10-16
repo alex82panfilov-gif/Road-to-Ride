@@ -18,6 +18,9 @@ export function ListingForm({ model, price }: { model: Model; price: ListingMark
   const [flags, setFlags] = useState<ReturnType<typeof assessListing> | null>(null);
   const similar = searchLinks(model, {
     median: price.median,
+    p25: price.p25,
+    p75: price.p75,
+    isSeed: price.isSeed,
     similar: { year: Number(year) || model.years[1], mileageKm: Number(mileage) || 0 },
   });
 
