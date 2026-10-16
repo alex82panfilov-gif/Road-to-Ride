@@ -11,7 +11,7 @@
     "validate:fix": "tsx scripts/validate-data.ts --write",
     "agent:input": "tsx scripts/build-agent-input.ts",
     "import:listings": "tsx scripts/import-listings.ts",
-    "test": "tsx --test lib/score.test.ts lib/forecast.test.ts lib/tiers.test.ts lib/listing.test.ts lib/advice.test.ts lib/view/market.test.ts scripts/validate-data.test.ts scripts/import-listings.test.ts lib/view/search-links.test.ts"
+    "test": "tsx --test lib/score.test.ts lib/forecast.test.ts lib/tiers.test.ts lib/listing.test.ts lib/advice.test.ts lib/meta.test.ts lib/view/market.test.ts scripts/validate-data.test.ts scripts/import-listings.test.ts lib/view/search-links.test.ts"
   },
   "dependencies": {
     "@vercel/analytics": "^2.0.1",

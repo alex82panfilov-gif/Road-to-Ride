@@ -49,8 +49,10 @@ test("320000 stays the exact piggy amount", () => {
   assert.notEqual(shownSavings(320_000), tierFloor(320_000));
   const bands = catalogBands(catalog, 320_000, 20_000, 0.007);
   assert.ok(bands.pocket.every((item) => purchasePrice(item) <= 320_000));
-  assert.ok(bands.pocket.some((item) => item.slug === "kia-cerato-1"));
+  assert.ok(bands.pocket.some((item) => item.slug === "hyundai-elantra-xd"));
+  assert.ok(bands.pocket.every((item) => item.slug !== "kia-cerato-1"));
   assert.ok(bands.pocket.every((item) => item.slug !== "ford-fusion"));
+  assert.ok(bands.soon.some((item) => item.slug === "kia-cerato-1"));
   assert.ok(bands.soon.some((item) => item.slug === "ford-fusion"));
 });
 
@@ -58,10 +60,10 @@ test("at 320000 today is not Fusion because the real price is higher", () => {
   const fusion = catalog.find((item) => item.slug === "ford-fusion");
   assert.ok(fusion);
   const price = realPrice(fusion.median, fusion.hp);
-  assert.equal(price, 371_990);
+  assert.equal(price, 374_312);
   assert.ok(price > 320_000);
   assert.notEqual(bestSafeAt(catalog, 320_000)?.slug, "ford-fusion");
-  assert.equal(bestSafeAt(catalog, 320_000)?.slug, "kia-cerato-1");
+  assert.equal(bestSafeAt(catalog, 320_000)?.slug, "hyundai-elantra-xd");
 });
 
 test("at 150000 Matiz is out of reach once startup costs are included", () => {
@@ -99,14 +101,14 @@ test("at 0 the fork names Matiz and a car scored at least 4.5", () => {
   const earlier = monthsToGoal(0, 20_000, purchasePrice(nearest), 0.007);
   const later = monthsToGoal(0, 20_000, purchasePrice(decent), 0.007);
   assert.ok(earlier !== null && later !== null);
-  assert.equal(aimContrast(earlier, nearest.score, later, decent.score), "+4 мес. — и оценка 4,6 вместо 2,9");
+  assert.equal(aimContrast(earlier, nearest.score, later, decent.score), "+3 мес. — и оценка 4,6 вместо 2,9");
 });
 
 test("a purchase target rounds to thousands and the breakdown sums to the real price", () => {
   const matiz = catalog.find((item) => item.slug === "daewoo-matiz");
   assert.ok(matiz);
   const price = purchasePrice(matiz);
-  assert.equal(roundToThousands(price), 202_000);
+  assert.equal(roundToThousands(price), 204_000);
   const parts = priceBreakdown(matiz);
   assert.equal(parts.median + parts.osago + parts.registration + parts.diagnostic + parts.service + parts.reserve, parts.total);
   assert.equal(parts.total, price);

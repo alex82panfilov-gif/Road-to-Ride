@@ -25,6 +25,8 @@ export type Meta = {
     tbMax: number;
     territoryMoscow: number;
     kbmNewDriver: number;
+    sourceTitle: string;
+    sourceUrl: string;
     note: string;
   };
   powerCoef: { upToHp: number; coef: number }[];

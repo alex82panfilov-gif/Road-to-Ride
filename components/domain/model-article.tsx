@@ -106,7 +106,10 @@ export function ModelArticle({
           <li>Первое ТО: {rub(meta.firstServiceRub)}</li>
           <li>Резерв {Math.round(meta.reserveRate * 100)}%: {rub(reserve)}</li>
         </ul>
-        <p className="mt-3 text-sm text-muted">{meta.osago.note}</p>
+        <p className="mt-3 text-sm text-muted">
+          {meta.osago.note}{" "}
+          <a href={meta.osago.sourceUrl}>{meta.osago.sourceTitle}</a>
+        </p>
         <div className="mt-4 flex flex-wrap gap-4 text-sm">
           <Link href={`/cost/${model.slug}`}>Калькулятор года владения</Link>
           <Link href={`/tiers/${tier}`}>Что ещё есть за {rub(tier)}</Link>

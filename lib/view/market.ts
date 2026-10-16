@@ -100,7 +100,7 @@ export function nextWithinReach(items: CatalogItem[], amount: number, driver: Dr
   return soonest(openModels(items, driver), amount, driver);
 }
 
-/** «+4 мес. — и оценка 4,6 вместо 2,9». Пусто, если вторая цель не дальше первой. */
+/** «+3 мес. — и оценка 4,6 вместо 2,9». Пусто, если вторая цель не дальше первой. */
 export function aimContrast(earlierMonths: number, earlierScore: number, laterMonths: number, laterScore: number): string | null {
   const months = laterMonths - earlierMonths;
   if (months <= 0) return null;
