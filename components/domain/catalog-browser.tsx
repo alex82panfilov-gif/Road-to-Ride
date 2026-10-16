@@ -194,6 +194,7 @@ export function CatalogBrowser({
                       isFallback: item.isFallback,
                       confidence: item.confidence,
                       savings: amount > 0 ? amount : undefined,
+                      ...(body ? { body: body as Model["body"] } : {}),
                     })
                   : null;
                 return (

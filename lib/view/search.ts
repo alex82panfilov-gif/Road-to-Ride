@@ -14,7 +14,11 @@ const PRICE_STEP = 10_000;
  * - объём в литрах: mv, xv
  * - цена: minprice, maxprice
  * - пробег до: maxprobeg; пробег от: minprobeg (сайт сохраняет его в адресе)
- * - кузов в пути: sedan, hatchback, wagon, suv, van
+ * - кузов в пути: sedan, hatchback, wagon, suv, van.
+ *   В ссылку не ставим: у поколения часто несколько кузовов, а в карточке поле body одно
+ *   (Focus III — хэтчбек, седан и универсал; Elantra XD — седан и лифтбек;
+ *   Solaris I и Cerato I — седан и хэтчбек).
+ *   Исключение: кузов есть в названии (Polo Sedan: slug или поколение) или его выбрали в фильтре каталога.
  * - классический автомат: transmission[]=2 и transmission[]=5 (АКПП и SSR)
  * - transmission=2 одно — группа «Автомат»: АКПП, робот и вариатор сразу
  *
@@ -61,9 +65,39 @@ const AUTORU_BODY: Partial<Record<Model["body"], string>> = {
   hatchback: "body-hatchback",
 };
 
+const BODY_WORDS: Record<string, Model["body"]> = {
+  sedan: "sedan",
+  седан: "sedan",
+  hatchback: "hatchback",
+  хэтчбек: "hatchback",
+  хетчбек: "hatchback",
+  wagon: "wagon",
+  универсал: "wagon",
+  crossover: "crossover",
+  кроссовер: "crossover",
+  suv: "crossover",
+  minivan: "minivan",
+  минивэн: "minivan",
+  минивен: "minivan",
+};
+
+/** Polo Sedan: «sedan» в slug и в поколении «Sedan I», не в поле model «Polo». */
+function namedBody(model: SearchModel): Model["body"] | null {
+  const words = `${model.slug} ${model.model} ${model.generation}`.toLowerCase().split(/[^a-zа-яё]+/).filter(Boolean);
+  for (const word of words) {
+    const body = BODY_WORDS[word];
+    if (body) return body;
+  }
+  return null;
+}
+
+function linkBody(model: SearchModel, context: SearchContext): Model["body"] | null {
+  return context.body ?? namedBody(model);
+}
+
 export type SearchModel = Pick<
   Model,
-  "brand" | "model" | "years" | "body" | "engines" | "gearboxes" | "mileage" | "budgetRules" | "listingRules" | "autoruPath"
+  "slug" | "brand" | "model" | "generation" | "years" | "body" | "engines" | "gearboxes" | "mileage" | "budgetRules" | "listingRules" | "autoruPath"
 >;
 
 export type SearchContext = {
@@ -78,6 +112,8 @@ export type SearchContext = {
   savings?: number;
   /** Сравнение с конкретным объявлением: год ±2, пробег ±30%. Цену копилки не подставляет. */
   similar?: { year: number; mileageKm: number };
+  /** Кузов, который пользователь выбрал в фильтре каталога. Без выбора в ссылку не попадает. */
+  body?: Model["body"];
 };
 
 export type SearchEngine = { code: string; volumeL: number; hp: number | null };
@@ -228,9 +264,9 @@ type Window = {
   kmTo?: number;
 };
 
-function autoruUrl(model: SearchModel, window: Window): string {
+function autoruUrl(model: SearchModel, window: Window, body: Model["body"] | null): string {
   const tail = model.autoruPath ?? `${slug(model.brand)}/${slug(model.model)}`;
-  const body = AUTORU_BODY[model.body];
+  const bodySegment = body ? AUTORU_BODY[body] : undefined;
   const params = new URLSearchParams();
   if (AUTORU_CLASSIC_AUTOMATIC) params.set("transmission", AUTORU_CLASSIC_AUTOMATIC);
   params.set("year_from", String(window.yearFrom));
@@ -249,11 +285,11 @@ function autoruUrl(model: SearchModel, window: Window): string {
   if (window.kmFrom != null) params.set("km_age_from", String(window.kmFrom));
   if (window.kmTo != null) params.set("km_age_to", String(window.kmTo));
   const query = params.toString();
-  const bodyPath = body ? `${body}/` : "";
+  const bodyPath = bodySegment ? `${bodySegment}/` : "";
   return `https://auto.ru/moskva/cars/${tail}/used/${bodyPath}?${query}`;
 }
 
-function dromUrl(model: SearchModel, window: Window): string {
+function dromUrl(model: SearchModel, window: Window, body: Model["body"] | null): string {
   const parts = [`minyear=${window.yearFrom}`, `maxyear=${window.yearTo}`];
   if (window.volumes.length) {
     const amounts = window.volumes.map(liters);
@@ -267,11 +303,12 @@ function dromUrl(model: SearchModel, window: Window): string {
   if (window.kmFrom != null) parts.push(`minprobeg=${window.kmFrom}`);
   if (window.kmTo != null) parts.push(`maxprobeg=${window.kmTo}`);
   for (const value of DROM_CLASSIC_AUTOMATIC) parts.push(`transmission[]=${value}`);
-  return `https://auto.drom.ru/moscow/${slug(model.brand)}/${slug(model.model)}/${DROM_BODY[model.body]}/?${parts.join("&")}`;
+  const bodyPath = body ? `${DROM_BODY[body]}/` : "";
+  return `https://auto.drom.ru/moscow/${slug(model.brand)}/${slug(model.model)}/${bodyPath}?${parts.join("&")}`;
 }
 
-function linksFor(model: SearchModel, window: Window): MarketplaceLinks {
-  return { autoru: autoruUrl(model, window), drom: dromUrl(model, window) };
+function linksFor(model: SearchModel, window: Window, body: Model["body"] | null): MarketplaceLinks {
+  return { autoru: autoruUrl(model, window, body), drom: dromUrl(model, window, body) };
 }
 
 export function similarWindow(year: number, mileageKm: number): { yearFrom: number; yearTo: number; kmFrom?: number; kmTo?: number } {
@@ -334,6 +371,7 @@ export function searchLinks(model: SearchModel, context: SearchContext): SearchL
       : [model.years[0], model.years[1]];
   const { priceFrom, priceTo, measured } = priceWindow(model, context);
   const kmTo = model.mileage.avoidFrom;
+  const body = linkBody(model, context);
   const market: Window = { yearFrom: years[0], yearTo: years[1], volumes, power, priceFrom, priceTo, kmTo };
 
   if (context.similar) {
@@ -357,7 +395,7 @@ export function searchLinks(model: SearchModel, context: SearchContext): SearchL
       priceTo,
       kmTo,
       caption: captionOf(years, engines, priceFrom, priceTo, kmTo, measured),
-      links: linksFor(model, window),
+      links: linksFor(model, window, body),
       savings: { kind: "none" },
     };
   }
@@ -370,7 +408,7 @@ export function searchLinks(model: SearchModel, context: SearchContext): SearchL
         ? {
             kind: "links",
             label: `В пределах копилки (до ${rub(savings)})`,
-            links: linksFor(model, { ...market, priceTo: savings }),
+            links: linksFor(model, { ...market, priceTo: savings }, body),
           }
         : { kind: "note", text: cheapNote(model, savings, priceFrom) };
 
@@ -385,7 +423,7 @@ export function searchLinks(model: SearchModel, context: SearchContext): SearchL
     priceTo,
     kmTo,
     caption: captionOf(years, engines, priceFrom, priceTo, kmTo, measured),
-    links: linksFor(model, market),
+    links: linksFor(model, market, body),
     savings: pocket,
   };
 }

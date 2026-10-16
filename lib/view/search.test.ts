@@ -50,6 +50,7 @@ test("Polo seed at 250 000 opens the whole market from the taxi floor, not from 
   assert.match(result.links.autoru, /displacement_from=1600&displacement_to=1600/);
   assert.match(result.links.autoru, /km_age_to=230000/);
   assert.doesNotMatch(result.links.autoru, /transmission=/);
+  assert.doesNotMatch(result.caption, /седан|кузов/i);
 });
 
 test("a measured Polo uses the quartile band and still keeps the taxi floor", () => {
@@ -77,6 +78,10 @@ test("Elantra XD seed has no model floor and keeps 105–107 hp, not the HD's 12
   assert.deepEqual(result.engines.map((engine) => engine.hp), [105, 107]);
   assert.match(result.links.drom, /minprice=100000&maxprice=1500000/);
   assert.match(result.links.drom, /minpower=105&maxpower=107/);
+  assert.match(result.links.drom, /\/hyundai\/elantra\/\?/);
+  assert.doesNotMatch(result.links.drom, /\/(?:hatchback|sedan)\//);
+  assert.doesNotMatch(result.links.autoru, /body-/);
+  assert.doesNotMatch(result.caption, /седан|хэтчбек|лифтбек|кузов/i);
   assert.doesNotMatch(result.caption, /от /);
   assert.match(result.caption, /Цена пока не измерена — показываем весь рынок/);
   assert.match(result.caption, /1\.6 105–107 л\.с\./);
@@ -103,11 +108,24 @@ test("Focus III search is only the 1.5 EcoBoost automatic from 2015 to 2019", ()
   assert.equal(result.savings.kind, "note");
   assert.match(result.links.drom, /mv=1\.5&xv=1\.5/);
   assert.match(result.links.drom, /minyear=2015&maxyear=2019/);
-  assert.match(result.links.drom, /\/hatchback\//);
+  assert.match(result.links.drom, /\/ford\/focus\/\?/);
+  assert.doesNotMatch(result.links.drom, /\/(?:hatchback|sedan|wagon)\//);
   assert.doesNotMatch(result.links.drom, /mv=1\.6/);
   assert.doesNotMatch(result.links.autoru, /displacement_from=1600/);
-  assert.match(result.links.autoru, /\/used\/body-hatchback\/\?/);
+  assert.match(result.links.autoru, /\/used\/\?/);
+  assert.doesNotMatch(result.links.autoru, /body-/);
   assert.match(result.links.autoru, /displacement_from=1500&displacement_to=1500/);
+  assert.doesNotMatch(result.caption, /седан|хэтчбек|универсал|кузов/i);
+});
+
+test("a catalog body filter is what puts a body into Focus and Solaris links", () => {
+  const focus = searchLinks(load("ford-focus-3"), { median: 680_000, body: "hatchback" });
+  assert.match(focus.links.drom, /\/hatchback\//);
+  assert.match(focus.links.autoru, /\/used\/body-hatchback\/\?/);
+  assert.doesNotMatch(focus.caption, /хэтчбек|кузов/i);
+  const solaris = searchLinks(load("hyundai-solaris-1"), { median: 820_000, body: "sedan" });
+  assert.match(solaris.links.drom, /\/sedan\//);
+  assert.match(solaris.links.autoru, /body-sedan/);
 });
 
 test("a model without listing rules uses the generation years", () => {
@@ -115,6 +133,11 @@ test("a model without listing rules uses the generation years", () => {
   assert.equal(result.yearSource, "generation");
   assert.deepEqual(result.years, [2010, 2017]);
   assert.equal(result.savings.kind, "none");
+  assert.doesNotMatch(result.links.drom, /\/(?:hatchback|sedan)\//);
+  assert.doesNotMatch(result.links.autoru, /body-/);
+  const cerato = searchLinks(load("kia-cerato-1"), { median: 250_000 });
+  assert.doesNotMatch(cerato.links.drom, /\/(?:hatchback|sedan)\//);
+  assert.doesNotMatch(cerato.links.autoru, /body-/);
 });
 
 test("an allowed engine without horsepower does not invent a power filter", () => {
