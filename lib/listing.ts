@@ -12,6 +12,31 @@ export type ListingFlag = {
   text: string;
 };
 
+export type ListingMarket = Pick<PriceSnapshot, "p25" | "p75" | "median"> & { isSeed?: boolean };
+
+function percentText(delta: number): string {
+  const rounded = Math.round(Math.abs(delta) * 1000) / 10;
+  return Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(1).replace(".", ",");
+}
+
+function againstPoint(asked: number, base: number, seed: boolean): ListingFlag {
+  const delta = asked / base - 1;
+  const where = seed ? "стартового ориентира" : "ориентира";
+  if (delta < -0.25) return { tone: "bad", text: "Подозрительно дёшево: залог, битая или мошенник." };
+  if (delta < -0.15) return { tone: "warn", text: `Ниже ${where}, на ${percentText(delta)}%.` };
+  if (delta <= 0.15) return { tone: "ok", text: seed ? "Рядом со стартовым ориентиром." : "Рядом с ориентиром." };
+  if (delta <= 0.4) return { tone: "warn", text: `Выше ${where}, на ${percentText(delta)}%.` };
+  return { tone: "warn", text: `Заметно выше ${where}, на ${percentText(delta)}%.` };
+}
+
+function againstBand(asked: number, p25: number, p75: number): ListingFlag {
+  if (asked < p25 * 0.75) return { tone: "bad", text: "Подозрительно дёшево: залог, битая или мошенник." };
+  if (asked < p25 * 0.85) return { tone: "warn", text: `Ниже рынка, на ${percentText(asked / p25 - 1)}% от нижней границы.` };
+  if (asked <= p75 * 1.15) return { tone: "ok", text: "Рядом с рынком." };
+  if (asked <= p75 * 1.4) return { tone: "warn", text: `Выше рынка, на ${percentText(asked / p75 - 1)}% от верхней границы.` };
+  return { tone: "warn", text: `Заметно выше рынка, на ${percentText(asked / p75 - 1)}% от верхней границы.` };
+}
+
 const KM_PER_YEAR = 15_000;
 const TAXI_KM_PER_YEAR = 30_000;
 
@@ -24,7 +49,7 @@ function yearsAfter(age: number, one: string, few: string, many: string): string
   return `${age} ${many}`;
 }
 
-export function assessListing(model: Model, price: Pick<PriceSnapshot, "p25" | "p75" | "median">, input: ListingInput, asOfYear: number): ListingFlag[] {
+export function assessListing(model: Model, price: ListingMarket, input: ListingInput, asOfYear: number): ListingFlag[] {
   const flags: ListingFlag[] = [];
   const [yearFrom, yearTo] = model.years;
   if (input.year < yearFrom || input.year > yearTo) {
@@ -53,12 +78,11 @@ export function assessListing(model: Model, price: Pick<PriceSnapshot, "p25" | "
     });
   }
 
-  if (price.p25 > 0 && input.priceRub < price.p25 * 0.75) {
-    flags.push({ tone: "bad", text: "Цена заметно ниже типичного диапазона. Так часто выглядит приманка." });
-  } else if (price.p75 > 0 && input.priceRub > price.p75 * 1.2) {
-    flags.push({ tone: "warn", text: "Цена выше типичного диапазона. Имеет смысл сравнить с другими объявлениями." });
-  } else if (price.median > 0) {
-    flags.push({ tone: "ok", text: "Цена рядом с ориентиром по модели." });
+  if (price.isSeed) {
+    if (price.median > 0) flags.push(againstPoint(input.priceRub, price.median, true));
+    flags.push({ tone: "warn", text: "Ориентир стартовый, не замер рынка." });
+  } else if (price.p25 > 0 && price.p75 > 0) {
+    flags.push(againstBand(input.priceRub, price.p25, price.p75));
   }
 
   if (input.owners >= 6) flags.push({ tone: "warn", text: "Много собственников: спросите, почему машина так часто переходила." });

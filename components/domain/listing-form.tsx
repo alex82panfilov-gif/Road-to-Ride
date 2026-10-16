@@ -1,12 +1,12 @@
 "use client";
 
 import { Card } from "@/components/ui/card";
-import { assessListing } from "@/lib/listing";
-import type { Model, PriceSnapshot } from "@/lib/schema";
+import { assessListing, type ListingMarket } from "@/lib/listing";
+import type { Model } from "@/lib/schema";
 import { meta } from "@/lib/meta";
 import { useState } from "react";
 
-export function ListingForm({ model, price }: { model: Model; price: Pick<PriceSnapshot, "p25" | "median" | "p75"> }) {
+export function ListingForm({ model, price }: { model: Model; price: ListingMarket }) {
   const [year, setYear] = useState(String(model.years[1]));
   const [mileage, setMileage] = useState("");
   const [cost, setCost] = useState("");
