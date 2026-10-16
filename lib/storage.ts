@@ -37,6 +37,8 @@ export type UserData = {
   seenLevel: number;
   backupReminderMonth: string | null;
   driver: DriverProfile;
+  /** Дата прав категории B. null — меньше года назад. */
+  licenseDate: string | null;
 };
 
 const DepositSchema = z.object({
@@ -71,6 +73,7 @@ const UserSchema = z.object({
     age: z.number().min(0).max(120),
     experienceYears: z.number().min(0).max(60),
   }),
+  licenseDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable(),
 });
 
 export function defaultUser(): UserData {
@@ -89,6 +92,7 @@ export function defaultUser(): UserData {
     seenLevel: 0,
     backupReminderMonth: null,
     driver: { ...DEFAULT_DRIVER },
+    licenseDate: null,
   };
 }
 
@@ -100,11 +104,21 @@ export function inflationOf(data: UserData): number {
   return data.inflation ?? meta.monthlyInflation;
 }
 
+function licenseOf(value: unknown): string | null {
+  return typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value) ? value : null;
+}
+
 function migrate(raw: unknown): UserData {
   const base = defaultUser();
   if (!raw || typeof raw !== "object") return base;
   const record = raw as Record<string, unknown>;
-  const candidate = { ...base, ...record, version: 1, driver: { ...base.driver, ...(record.driver as object) } };
+  const candidate = {
+    ...base,
+    ...record,
+    version: 1,
+    licenseDate: licenseOf(record.licenseDate),
+    driver: { ...base.driver, ...(record.driver as object) },
+  };
   const parsed = UserSchema.safeParse(candidate);
   return parsed.success ? parsed.data : base;
 }
@@ -144,7 +158,13 @@ export function parseImport(raw: string): UserData {
   if (!Array.isArray(json.deposits)) throw new Error("Файл копилки не подошёл");
   const base = defaultUser();
   const driver = json.driver && typeof json.driver === "object" ? (json.driver as object) : {};
-  const parsed = UserSchema.safeParse({ ...base, ...json, version: 1, driver: { ...base.driver, ...driver } });
+  const parsed = UserSchema.safeParse({
+    ...base,
+    ...json,
+    version: 1,
+    licenseDate: licenseOf(json.licenseDate),
+    driver: { ...base.driver, ...driver },
+  });
   if (!parsed.success) throw new Error("Файл копилки не подошёл");
   return parsed.data;
 }

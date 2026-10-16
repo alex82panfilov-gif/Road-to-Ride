@@ -1,4 +1,6 @@
 import metaJson from "@/data/meta.json";
+import { monthsToGoal } from "./forecast";
+import { plural } from "./format";
 
 export type DriverProfile = {
   age: number;
@@ -43,10 +45,11 @@ export function powerCoef(hp: number): number {
   return row?.coef ?? meta.powerCoef[meta.powerCoef.length - 1].coef;
 }
 
-/** Упрощённый коэффициент возраст/стаж. Это не сетка ЦБ, а понятная вилка для калькулятора. */
+/** Упрощённый коэффициент возраст/стаж. Клетки 18–21 и стажа до двух лет совпадают с указанием № 7204-У. */
 export function ageExperienceCoef(age: number, experienceYears: number): number {
   const experience = Math.max(0, experienceYears);
   if (age < 22 && experience < 1) return 2.27;
+  if (age < 22 && experience < 2) return 1.92;
   if (age < 22) return 1.97;
   if (age < 25 && experience < 2) return 1.87;
   if (age < 30 && experience < 3) return 1.63;
@@ -55,10 +58,86 @@ export function ageExperienceCoef(age: number, experienceYears: number): number 
   return 1.2;
 }
 
-export function osagoRange(hp: number, driver: DriverProfile = DEFAULT_DRIVER): { min: number; max: number; mid: number } {
+/** Стаж в годах: от даты прав до `asOf`, плюс месяцы до покупки. Пустая дата — прав меньше года. */
+export function experienceYearsOn(licenseDate: string | null, asOfIso: string, extraMonths = 0): number {
+  let months = 0;
+  if (licenseDate && /^\d{4}-\d{2}-\d{2}$/.test(licenseDate) && /^\d{4}-\d{2}-\d{2}$/.test(asOfIso)) {
+    const [year, month, day] = licenseDate.split("-").map(Number);
+    const [asOfYear, asOfMonth, asOfDay] = asOfIso.split("-").map(Number);
+    months = (asOfYear - year) * 12 + (asOfMonth - month);
+    if (asOfDay < day) months -= 1;
+    months = Math.max(0, months);
+  }
+  return (months + Math.max(0, extraMonths)) / 12;
+}
+
+export function experiencePurchaseLine(years: number): string {
+  const rounded = Math.round(years * 10) / 10;
+  const text = Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(1).replace(".", ",");
+  const unit = Number.isInteger(rounded) ? plural(rounded, "год", "года", "лет") : "лет";
+  return `ОСАГО посчитано на дату покупки: стаж к тому времени ${text} ${unit}.`;
+}
+
+export type PurchaseQuote = {
+  total: number;
+  osago: number;
+  months: number | null;
+  experienceYears: number;
+  age: number;
+};
+
+/** Цена к покупке и стаж на эту дату. КВС смотрит вперёд, КБМ — на стаж сегодня. */
+export function purchaseQuote(input: {
+  median: number;
+  hp: number;
+  driver: DriverProfile;
+  licenseDate: string | null;
+  saved: number;
+  monthly: number;
+  inflation: number;
+  asOf: string;
+}): PurchaseQuote {
+  const currentExperience = input.licenseDate
+    ? experienceYearsOn(input.licenseDate, input.asOf, 0)
+    : input.driver.experienceYears;
+  const priceAt = (assumed: number): PurchaseQuote => {
+    const experienceYears = currentExperience + assumed / 12;
+    const age = input.driver.age + assumed / 12;
+    const osago = osagoRange(input.hp, { age, experienceYears }, currentExperience).mid;
+    const reserve = Math.round(input.median * meta.reserveRate);
+    const total =
+      input.median + osago + meta.registrationRub + meta.diagnosticCardRub + meta.firstServiceRub + reserve;
+    const next =
+      input.monthly > 0 || input.saved >= total
+        ? monthsToGoal(input.saved, input.monthly, total, input.inflation)
+        : null;
+    return { total, osago, months: next, experienceYears, age };
+  };
+  let assumed = 0;
+  const seen = new Set<number>();
+  let quote = priceAt(0);
+  for (let step = 0; step < 8; step += 1) {
+    if (quote.months === null || quote.months === assumed) return quote;
+    if (seen.has(quote.months)) {
+      const longer = Math.max(assumed, quote.months);
+      const priced = priceAt(longer);
+      return { ...priced, months: priced.months === null ? null : longer };
+    }
+    seen.add(assumed);
+    assumed = quote.months;
+    quote = priceAt(assumed);
+  }
+  return quote;
+}
+
+export function osagoRange(
+  hp: number,
+  driver: DriverProfile = DEFAULT_DRIVER,
+  kbmExperience = driver.experienceYears,
+): { min: number; max: number; mid: number } {
   const power = powerCoef(hp);
   const age = ageExperienceCoef(driver.age, driver.experienceYears);
-  const kbm = driver.experienceYears < 1 ? meta.osago.kbmNewDriver : 1;
+  const kbm = kbmExperience < 1 ? meta.osago.kbmNewDriver : 1;
   const factor = power * meta.osago.territoryMoscow * kbm * age;
   const min = Math.round(meta.osago.tbMin * factor);
   const max = Math.round(meta.osago.tbMax * factor);

@@ -6,9 +6,9 @@ import { Card } from "@/components/ui/card";
 import { scoreText } from "@/lib/cn";
 import { labels } from "@/lib/content";
 import { monthsToGoal } from "@/lib/forecast";
-import { approxRub, rub } from "@/lib/format";
+import { approxRub, rub, todayIso } from "@/lib/format";
 import { displayName, type CatalogItem } from "@/lib/market";
-import type { DriverProfile } from "@/lib/meta";
+import { experiencePurchaseLine, meta, purchaseQuote, type PurchaseQuote } from "@/lib/meta";
 import { inflationOf } from "@/lib/storage";
 import { TIER_MAX } from "@/lib/tiers";
 import {
@@ -21,7 +21,6 @@ import {
   nextJumpAfter,
   nextQualityAt,
   nextWithinReach,
-  priceBreakdown,
   priceStatus,
   purchasePrice,
   roadWindow,
@@ -41,20 +40,20 @@ function waitLine(months: number | null, monthly: number): string {
   return `около ${months} мес. при ${rub(monthly)} в месяц`;
 }
 
-function PriceFacts({ item, driver }: { item: CatalogItem; driver: DriverProfile }) {
-  const parts = priceBreakdown(item, driver);
-  const reservePercent = Math.round(parts.reserveRate * 100);
+function PriceFacts({ item, quote }: { item: CatalogItem; quote: PurchaseQuote }) {
+  const reserve = Math.round(item.median * meta.reserveRate);
   return (
     <details className="mt-2 text-sm">
       <summary className="cursor-pointer">Из чего складывается</summary>
       <ul className="mt-2 space-y-1 text-muted">
-        <li>Медиана: {rub(parts.median)}</li>
-        <li>ОСАГО: {rub(parts.osago)}</li>
-        <li>Учёт: {rub(parts.registration)}</li>
-        {parts.diagnostic > 0 ? <li>Диагностическая карта: {rub(parts.diagnostic)}</li> : null}
-        <li>ТО: {rub(parts.service)}</li>
-        <li>Резерв {reservePercent}%: {rub(parts.reserve)}</li>
-        <li>Итого: {rub(parts.total)}</li>
+        <li>Медиана: {rub(item.median)}</li>
+        <li>ОСАГО: {rub(quote.osago)}</li>
+        <li>Учёт: {rub(meta.registrationRub)}</li>
+        {meta.diagnosticCardRub > 0 ? <li>Диагностическая карта: {rub(meta.diagnosticCardRub)}</li> : null}
+        <li>ТО: {rub(meta.firstServiceRub)}</li>
+        <li>Резерв {Math.round(meta.reserveRate * 100)}%: {rub(reserve)}</li>
+        <li>Итого: {rub(quote.total)}</li>
+        <li>{experiencePurchaseLine(quote.experienceYears)}</li>
       </ul>
     </details>
   );
@@ -67,12 +66,17 @@ export function RoadFork({ items }: { items: CatalogItem[] }) {
   const [preview, setPreview] = useState(saved);
   const [pulse, setPulse] = useState<{ amount: number; token: number } | null>(null);
   const [snapNote, setSnapNote] = useState("");
+  const [asOf, setAsOf] = useState("");
   const snaps = useMemo(() => snapPoints(items, data.driver), [items, data.driver]);
   const announced = useRef<number | null>(null);
 
   useEffect(() => {
     if (ready) setPreview(saved);
   }, [ready, saved]);
+
+  useEffect(() => {
+    setAsOf(todayIso());
+  }, []);
 
   if (!ready) return null;
 
@@ -91,8 +95,24 @@ export function RoadFork({ items }: { items: CatalogItem[] }) {
   const nearestAim = nextWithinReach(items, amount, driver);
   const decentAim = nextDecentAt(items, amount, driver);
   const showPair = (!today || today.score < DECENT_SCORE) && nearestAim !== null && decentAim !== null && nearestAim.slug !== decentAim.slug;
-  const nearestMonths = nearestAim ? monthsToGoal(amount, data.monthly, purchasePrice(nearestAim, driver), inflation) : null;
-  const decentMonths = decentAim ? monthsToGoal(amount, data.monthly, purchasePrice(decentAim, driver), inflation) : null;
+  const quoteOf = (car: CatalogItem) =>
+    purchaseQuote({
+      median: car.median,
+      hp: car.hp,
+      driver,
+      licenseDate: data.licenseDate,
+      saved: amount,
+      monthly: data.monthly,
+      inflation,
+      asOf,
+    });
+  const todayQuote = today ? quoteOf(today) : null;
+  const nearestQuote = nearestAim ? quoteOf(nearestAim) : null;
+  const decentQuote = decentAim ? quoteOf(decentAim) : null;
+  const jumpQuote = jumpCar ? quoteOf(jumpCar) : null;
+  const laterQuote = laterCar ? quoteOf(laterCar) : null;
+  const nearestMonths = nearestQuote?.months ?? null;
+  const decentMonths = decentQuote?.months ?? null;
   const window = roadWindow(preview, expanded);
   const posts = [
     ...window.behind.map((post) => ({ amount: post, you: false, tier: true })),
@@ -178,9 +198,9 @@ export function RoadFork({ items }: { items: CatalogItem[] }) {
                 Оценка {scoreText(today.score)}. {labels.verdict[today.bestGearbox]}.
               </p>
               <p className="mt-2 text-sm text-muted">
-                Медиана {rub(today.median)}. С расходами {approxRub(purchasePrice(today, driver))}. {priceStatus(today).join(" · ")}
+                Медиана {rub(today.median)}. С расходами {approxRub(todayQuote?.total ?? purchasePrice(today, driver))}. {priceStatus(today).join(" · ")}
               </p>
-              <PriceFacts item={today} driver={driver} />
+              {todayQuote ? <PriceFacts item={today} quote={todayQuote} /> : null}
             </>
           ) : (
             <>
@@ -189,7 +209,7 @@ export function RoadFork({ items }: { items: CatalogItem[] }) {
                 {showPair
                   ? "Сравнение двух целей — на соседней карточке. Суммы там округлены до тысяч."
                   : nearestAim
-                    ? <>Ближайшая — <Link href={`/cars/${nearestAim.slug}`}>{displayName(nearestAim)}</Link>, {approxRub(purchasePrice(nearestAim, driver))}. Медиана {rub(nearestAim.median)}.</>
+                    ? <>Ближайшая — <Link href={`/cars/${nearestAim.slug}`}>{displayName(nearestAim)}</Link>, {approxRub(nearestQuote?.total ?? purchasePrice(nearestAim, driver))}. Медиана {rub(nearestAim.median)}.</>
                     : "В каталоге пока нет машин с ценой."}
               </p>
             </>
@@ -201,16 +221,16 @@ export function RoadFork({ items }: { items: CatalogItem[] }) {
               <p className="text-sm text-muted">Две цели</p>
               <h2 className="mt-1 text-xl font-semibold">Ближайшая или заметно лучше</h2>
               <p className="mt-3 text-sm">
-                <Link href={`/cars/${nearestAim.slug}`}>{displayName(nearestAim)}</Link> — {approxRub(purchasePrice(nearestAim, driver))}, {waitLine(nearestMonths, data.monthly)}. Оценка {scoreText(nearestAim.score)}.
+                <Link href={`/cars/${nearestAim.slug}`}>{displayName(nearestAim)}</Link> — {approxRub(nearestQuote?.total ?? purchasePrice(nearestAim, driver))}, {waitLine(nearestMonths, data.monthly)}. Оценка {scoreText(nearestAim.score)}.
               </p>
-              <PriceFacts item={nearestAim} driver={driver} />
+              {nearestQuote ? <PriceFacts item={nearestAim} quote={nearestQuote} /> : null}
               <p className="mt-3 text-sm">
-                <Link href={`/cars/${decentAim.slug}`}>{displayName(decentAim)}</Link> — {approxRub(purchasePrice(decentAim, driver))}, {waitLine(decentMonths, data.monthly)}. Оценка {scoreText(decentAim.score)}. Это заметно лучше машина.
+                <Link href={`/cars/${decentAim.slug}`}>{displayName(decentAim)}</Link> — {approxRub(decentQuote?.total ?? purchasePrice(decentAim, driver))}, {waitLine(decentMonths, data.monthly)}. Оценка {scoreText(decentAim.score)}. Это заметно лучше машина.
               </p>
               {nearestMonths !== null && decentMonths !== null && aimContrast(nearestMonths, nearestAim.score, decentMonths, decentAim.score) ? (
                 <p className="mt-2 text-sm font-medium">{aimContrast(nearestMonths, nearestAim.score, decentMonths, decentAim.score)}</p>
               ) : null}
-              <PriceFacts item={decentAim} driver={driver} />
+              {decentQuote ? <PriceFacts item={decentAim} quote={decentQuote} /> : null}
             </>
           ) : jump !== null ? (
             <>
@@ -222,7 +242,7 @@ export function RoadFork({ items }: { items: CatalogItem[] }) {
                 </p>
               ) : null}
               <p className="mt-2 text-sm">{months === null ? "Срок появится, когда укажешь взнос в месяц." : `Около ${months} мес. при ${rub(data.monthly)} в месяц.`}</p>
-              {jumpCar ? <PriceFacts item={jumpCar} driver={driver} /> : null}
+              {jumpCar && jumpQuote ? <PriceFacts item={jumpCar} quote={jumpQuote} /> : null}
             </>
           ) : (
             <>
@@ -243,7 +263,7 @@ export function RoadFork({ items }: { items: CatalogItem[] }) {
                   "Дальше по каталогу заметно лучше не станет. Можно брать сегодняшнюю."
                 )}
               </p>
-              {laterCar ? <PriceFacts item={laterCar} driver={driver} /> : null}
+              {laterCar && laterQuote ? <PriceFacts item={laterCar} quote={laterQuote} /> : null}
             </>
           )}
         </Card>

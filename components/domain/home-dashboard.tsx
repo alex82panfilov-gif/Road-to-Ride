@@ -1,5 +1,6 @@
 "use client";
 
+import { LicenseField } from "@/components/domain/license-field";
 import { RoadFork } from "@/components/domain/road-fork";
 import { useUser } from "@/components/providers";
 import { Card } from "@/components/ui/card";
@@ -8,7 +9,7 @@ import { earnedBadges } from "@/lib/badges";
 import { labels } from "@/lib/content";
 import { addMonths, monthsToGoal } from "@/lib/forecast";
 import { rub, todayIso } from "@/lib/format";
-import { realPrice } from "@/lib/meta";
+import { purchaseQuote, realPrice } from "@/lib/meta";
 import { displayName, type CatalogItem } from "@/lib/market";
 import { inflationOf } from "@/lib/storage";
 import { amountForLevel, levelForAmount, tierAmounts } from "@/lib/tiers";
@@ -39,7 +40,19 @@ export function HomeDashboard({ items }: { items: CatalogItem[] }) {
   const amount = shownSavings(saved);
   const level = levelForAmount(amount);
   const goal = items.find((item) => item.slug === data.goalSlug) ?? null;
-  const goalPrice = goal ? realPrice(goal.median, goal.hp, data.driver) : null;
+  const goalQuote = goal
+    ? purchaseQuote({
+        median: goal.median,
+        hp: goal.hp,
+        driver: data.driver,
+        licenseDate: data.licenseDate,
+        saved: amount,
+        monthly: data.monthly,
+        inflation: inflationOf(data),
+        asOf: asOf ?? "",
+      })
+    : null;
+  const goalPrice = goalQuote?.total ?? null;
   const unlocked = level > data.seenLevel && level > 0 ? bestSafeAt(items, amountForLevel(level), data.driver) : null;
   const people = new Set(data.deposits.map((deposit) => deposit.by)).size;
   const badges = earnedBadges({
@@ -53,6 +66,12 @@ export function HomeDashboard({ items }: { items: CatalogItem[] }) {
   return (
     <div className="space-y-8">
       <RoadFork items={items} />
+      <Card>
+        <h2 className="text-lg font-semibold">Права</h2>
+        <div className="mt-3">
+          <LicenseField />
+        </div>
+      </Card>
       {unlocked ? (
         <Card>
           <p className="text-sm text-muted">Открылась отметка</p>

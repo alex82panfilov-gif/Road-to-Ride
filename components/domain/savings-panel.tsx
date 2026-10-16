@@ -1,14 +1,14 @@
 "use client";
 
+import { LicenseField } from "@/components/domain/license-field";
 import { useUi, useUser } from "@/components/providers";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Sheet } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
 import { labels } from "@/lib/content";
-import { monthsToGoal } from "@/lib/forecast";
 import { plural, rub, todayIso } from "@/lib/format";
-import { realPrice } from "@/lib/meta";
+import { purchaseQuote } from "@/lib/meta";
 import { displayName, type CatalogItem } from "@/lib/market";
 import { backupFilename, buildIcs, exportPayload, inflationOf, parseImport, type ContributorId } from "@/lib/storage";
 import { useEffect, useMemo, useState } from "react";
@@ -32,8 +32,20 @@ export function SavingsPanel({ items }: { items: CatalogItem[] }) {
   if (!ready) return <Skeleton className="h-64" />;
 
   const goal = items.find((item) => item.slug === data.goalSlug) ?? null;
-  const goalPrice = goal ? realPrice(goal.median, goal.hp, data.driver) : null;
-  const months = goalPrice && data.monthly > 0 ? monthsToGoal(saved, data.monthly, goalPrice, inflationOf(data)) : null;
+  const goalQuote = goal
+    ? purchaseQuote({
+        median: goal.median,
+        hp: goal.hp,
+        driver: data.driver,
+        licenseDate: data.licenseDate,
+        saved,
+        monthly: data.monthly,
+        inflation: inflationOf(data),
+        asOf: todayIso(),
+      })
+    : null;
+  const goalPrice = goalQuote?.total ?? null;
+  const months = goalQuote?.months ?? null;
 
   function download(filename: string, content: string, type: string) {
     const url = URL.createObjectURL(new Blob([content], { type }));
@@ -71,6 +83,7 @@ export function SavingsPanel({ items }: { items: CatalogItem[] }) {
             ))}
           </select>
         </label>
+        <LicenseField />
         <Button onClick={() => setDepositOpen(true)}>Добавить первый взнос</Button>
       </Card>
     );
@@ -142,6 +155,7 @@ export function SavingsPanel({ items }: { items: CatalogItem[] }) {
             onChange={(event) => update((current) => ({ ...current, monthly: Math.max(0, Number(event.target.value) || 0) }))}
           />
         </label>
+        <LicenseField />
         <label className="block text-sm">
           Рост цен в месяц, %
           <input
