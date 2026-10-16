@@ -8,6 +8,7 @@ import { Sheet } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
 import { labels } from "@/lib/content";
 import { plural, rub, todayIso } from "@/lib/format";
+import { GoalPicker } from "@/components/domain/goal-picker";
 import { purchaseQuote } from "@/lib/meta";
 import { displayName, type CatalogItem } from "@/lib/market";
 import { backupFilename, buildIcs, exportPayload, inflationOf, parseImport, type ContributorId } from "@/lib/storage";
@@ -74,19 +75,16 @@ export function SavingsPanel({ items }: { items: CatalogItem[] }) {
         </p>
         <label className="block text-sm">
           Машина-цель
-          <select
+          <GoalPicker
             id="savings-goal"
-            className="mt-1 h-12 w-full rounded-2xl bg-canvas-secondary px-4"
-            value={data.goalSlug ?? ""}
-            onChange={(event) => update((current) => ({ ...current, goalSlug: event.target.value || null }))}
-          >
-            <option value="">Не выбрана</option>
-            {items.map((item) => (
-              <option key={item.slug} value={item.slug}>
-                {displayName(item)}
-              </option>
-            ))}
-          </select>
+            items={items}
+            saved={saved}
+            monthly={data.monthly}
+            inflation={inflationOf(data)}
+            driver={data.driver}
+            value={data.goalSlug}
+            onChange={(slug) => update((current) => ({ ...current, goalSlug: slug }))}
+          />
         </label>
         <LicenseField />
         <Button onClick={() => setDepositOpen(true)}>Добавить первый взнос</Button>
@@ -141,18 +139,15 @@ export function SavingsPanel({ items }: { items: CatalogItem[] }) {
       <Card className="space-y-4">
         <label className="block text-sm">
           Машина-цель
-          <select
-            className="mt-1 h-12 w-full rounded-2xl bg-canvas-secondary px-4"
-            value={data.goalSlug ?? ""}
-            onChange={(event) => update((current) => ({ ...current, goalSlug: event.target.value || null }))}
-          >
-            <option value="">Не выбрана</option>
-            {items.map((item) => (
-              <option key={item.slug} value={item.slug}>
-                {displayName(item)}
-              </option>
-            ))}
-          </select>
+          <GoalPicker
+            items={items}
+            saved={saved}
+            monthly={data.monthly}
+            inflation={inflationOf(data)}
+            driver={data.driver}
+            value={data.goalSlug}
+            onChange={(slug) => update((current) => ({ ...current, goalSlug: slug }))}
+          />
         </label>
         <label className="block text-sm">
           Откладываю в месяц, ₽

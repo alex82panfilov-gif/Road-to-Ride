@@ -13,6 +13,7 @@ import { purchaseQuote, type DriverProfile } from "@/lib/meta";
 import { displayName, type CatalogItem } from "@/lib/market";
 import { inflationOf } from "@/lib/storage";
 import { amountForLevel, levelForAmount, tierAmounts } from "@/lib/tiers";
+import { GoalPicker } from "@/components/domain/goal-picker";
 import { bestSafeAt, shownSavings } from "@/lib/view/market";
 import { scoreText } from "@/lib/cn";
 import Link from "next/link";
@@ -94,18 +95,15 @@ export function HomeDashboard({ items }: { items: CatalogItem[] }) {
         <h2 className="text-lg font-semibold">Цель</h2>
         <label className="mt-3 block text-sm">
           Машина-цель
-          <select
-            className="mt-1 h-12 w-full rounded-2xl bg-canvas-secondary px-4"
-            value={data.goalSlug ?? ""}
-            onChange={(event) => update((current) => ({ ...current, goalSlug: event.target.value || null }))}
-          >
-            <option value="">Не выбрана</option>
-            {items.map((item) => (
-              <option key={item.slug} value={item.slug}>
-                {displayName(item)} · {rub(item.median)}
-              </option>
-            ))}
-          </select>
+          <GoalPicker
+            items={items}
+            saved={amount}
+            monthly={data.monthly}
+            inflation={inflationOf(data)}
+            driver={data.driver}
+            value={data.goalSlug}
+            onChange={(slug) => update((current) => ({ ...current, goalSlug: slug }))}
+          />
         </label>
       </Card>
       {goal && goalQuote ? (
