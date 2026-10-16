@@ -16,8 +16,8 @@ import {
   leftForCar,
   nextJumpAfter,
   nextQualityAt,
-  plateauUntil,
   priceStatus,
+  purchasePrice,
   roadWindow,
   shownSavings,
   snapPoints,
@@ -37,7 +37,7 @@ export function RoadFork({ items }: { items: CatalogItem[] }) {
   const [preview, setPreview] = useState(saved);
   const [pulse, setPulse] = useState<{ amount: number; token: number } | null>(null);
   const [snapNote, setSnapNote] = useState("");
-  const snaps = useMemo(() => snapPoints(items), [items]);
+  const snaps = useMemo(() => snapPoints(items, data.driver), [items, data.driver]);
   const announced = useRef<number | null>(null);
 
   useEffect(() => {
@@ -47,17 +47,18 @@ export function RoadFork({ items }: { items: CatalogItem[] }) {
   if (!ready) return null;
 
   const amount = shownSavings(saved);
+  const driver = data.driver;
   const inflation = inflationOf(data);
-  const today = bestSafeAt(items, amount);
+  const today = bestSafeAt(items, amount, driver);
   const family = familyContribution(data.deposits);
-  const remainder = leftForCar(amount, today, data.driver);
-  const jump = nextJumpAfter(items, amount);
-  const plateau = plateauUntil(items, amount);
-  const later = nextQualityAt(items, amount);
-  const jumpCar = jump === null ? null : bestSafeAt(items, jump);
-  const laterCar = later === null ? null : bestSafeAt(items, later);
+  const remainder = leftForCar(amount, today, driver);
+  const jump = nextJumpAfter(items, amount, driver);
+  const later = nextQualityAt(items, amount, driver);
+  const jumpCar = jump === null ? null : bestSafeAt(items, jump, driver);
+  const laterCar = later === null ? null : bestSafeAt(items, later, driver);
   const months = jump === null ? null : monthsToGoal(amount, data.monthly, jump, inflation);
-  const nearest = [...items].sort((left, right) => left.median - right.median)[0];
+  const laterMonths = later === null ? null : monthsToGoal(amount, data.monthly, later, inflation);
+  const nearest = [...items].filter((item) => item.median > 0).sort((left, right) => purchasePrice(left, driver) - purchasePrice(right, driver))[0];
   const window = roadWindow(preview, expanded);
   const posts = [
     ...window.behind.map((post) => ({ amount: post, you: false, tier: true })),
@@ -65,15 +66,15 @@ export function RoadFork({ items }: { items: CatalogItem[] }) {
     ...window.ahead.map((post) => ({ amount: post, you: false, tier: true })),
   ];
   const seedRoad = posts.some((post) => {
-    const car = bestSafeAt(items, post.amount);
+    const car = bestSafeAt(items, post.amount, driver);
     return !car || car.isSeed;
   });
-  const previewCar = bestSafeAt(items, preview);
+  const previewCar = bestSafeAt(items, preview, driver);
 
   function commit(raw: number) {
     const hit = snaps.find((snap) => Math.abs(snap.amount - raw) <= 10_000);
     const next = hit?.amount ?? raw;
-    const car = bestSafeAt(items, next);
+    const car = bestSafeAt(items, next, driver);
     setPreview(next);
     if (!hit) {
       announced.current = null;
@@ -113,7 +114,7 @@ export function RoadFork({ items }: { items: CatalogItem[] }) {
         </div>
         <ul className={`road-scroll ${expanded ? "is-full" : ""} ${seedRoad ? "is-seed-road" : ""}`}>
           {posts.map((post) => {
-            const car = bestSafeAt(items, post.amount);
+            const car = bestSafeAt(items, post.amount, driver);
             const seed = !car || car.isSeed;
             const snapped = pulse?.amount === post.amount;
             return (
@@ -142,7 +143,7 @@ export function RoadFork({ items }: { items: CatalogItem[] }) {
               <p className="mt-2 text-sm">
                 Оценка {scoreText(today.score)}. {labels.verdict[today.bestGearbox]}.
               </p>
-              <p className="mt-2 text-sm text-muted">Медиана {rub(today.median)}. {priceStatus(today).join(" · ")}</p>
+              <p className="mt-2 text-sm text-muted">Медиана {rub(today.median)}. С расходами {rub(purchasePrice(today, driver))}. {priceStatus(today).join(" · ")}</p>
             </>
           ) : (
             <>
@@ -150,7 +151,7 @@ export function RoadFork({ items }: { items: CatalogItem[] }) {
               <p className="mt-2 text-sm">
                 {nearest ? (
                   <>
-                    Ближайшая в каталоге — <Link href={`/cars/${nearest.slug}`}>{displayName(nearest)}</Link>, медиана {rub(nearest.median)}.
+                    Ближайшая с расходами — <Link href={`/cars/${nearest.slug}`}>{displayName(nearest)}</Link>, нужно {rub(purchasePrice(nearest, driver))}. Медиана {rub(nearest.median)}.
                   </>
                 ) : (
                   "В каталоге пока нет машин с ценой."
@@ -162,7 +163,7 @@ export function RoadFork({ items }: { items: CatalogItem[] }) {
         <Card>
           {jump !== null ? (
             <>
-              <p className="text-sm text-muted">Подождать до {rub(jump)}</p>
+              <p className="text-sm text-muted">Накопить до {rub(jump)}</p>
               <h2 className="mt-1 text-xl font-semibold">{jumpCar ? <Link href={`/cars/${jumpCar.slug}`}>{displayName(jumpCar)}</Link> : "На этой отметке"}</h2>
               {jumpCar ? (
                 <p className="mt-2 text-sm">
@@ -177,23 +178,21 @@ export function RoadFork({ items }: { items: CatalogItem[] }) {
             </>
           ) : (
             <>
-              <p className="text-sm text-muted">Ждать ближайшие 150 000 ₽</p>
+              <p className="text-sm text-muted">{today ? "Дальше 150 000 ₽" : "Первая машина"}</p>
               <h2 className="mt-1 text-xl font-semibold">
-                {later !== null && later - amount <= 150_000 ? "Ближайшая перемена" : "Ждать не стоит"}
+                {laterMonths !== null && laterMonths > 12 && today ? "Можно брать сегодняшнюю" : laterCar ? <Link href={`/cars/${laterCar.slug}`}>{displayName(laterCar)}</Link> : "Дальше по каталогу"}
               </h2>
               <p className="mt-2 text-sm">
-                {later !== null && later - amount > 150_000 ? (
+                {later !== null && laterCar ? (
                   <>
-                    До {rub(plateau)} лучше не станет. Бери сегодняшнюю или копи сразу до {rub(later)}
-                    {laterCar ? <> — там {displayName(laterCar)}</> : null}.
-                  </>
-                ) : later !== null ? (
-                  <>
-                    Выгодной точки рядом нет. Ближайшая перемена — {rub(later)}
-                    {laterCar ? <>, {displayName(laterCar)}</> : null}.
+                    {today ? <>Лучше этой машины до {rub(later)} не будет. Там {displayName(laterCar)}</> : <>До {displayName(laterCar)} нужно {rub(later)}</>}
+                    {laterMonths === null
+                      ? ". Срок появится, когда укажешь взнос в месяц."
+                      : `: около ${laterMonths} мес. при ${rub(data.monthly)} в месяц.`}
+                    {today && laterMonths !== null && laterMonths > 12 ? " Можно брать сегодняшнюю." : ""}
                   </>
                 ) : (
-                  "Дальше по каталогу заметно лучше не станет. Бери сегодняшнюю."
+                  "Дальше по каталогу заметно лучше не станет. Можно брать сегодняшнюю."
                 )}
               </p>
             </>

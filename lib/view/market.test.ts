@@ -2,14 +2,13 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { catalog } from "../data.ts";
 import { bestAt } from "../market.ts";
-import { tierAmounts, tierFloor } from "../tiers.ts";
+import { realPrice } from "../meta.ts";
+import { tierFloor } from "../tiers.ts";
 import {
   bestSafeAt,
   catalogBands,
-  choiceDiffs,
   nextJumpAfter,
-  nextQualityAt,
-  plateauUntil,
+  purchasePrice,
   shownSavings,
 } from "./market.ts";
 
@@ -41,31 +40,49 @@ test("bestSafeAt drops a car whose best gearbox is avoid", () => {
 test("320000 stays the exact piggy amount", () => {
   assert.equal(shownSavings(320_000), 320_000);
   assert.notEqual(shownSavings(320_000), tierFloor(320_000));
-  const bands = catalogBands(catalog, 320_000, 0, 0.007);
-  assert.ok(bands.pocket.some((item) => item.slug === "kia-spectra"));
-  assert.ok(bands.pocket.every((item) => item.median <= 320_000));
-  assert.ok(bands.skip.every((item) => item.median <= 320_000));
+  const bands = catalogBands(catalog, 320_000, 20_000, 0.007);
+  assert.ok(bands.pocket.every((item) => purchasePrice(item) <= 320_000));
+  assert.ok(bands.pocket.some((item) => item.slug === "kia-cerato-1"));
+  assert.ok(bands.pocket.every((item) => item.slug !== "ford-fusion"));
+  assert.ok(bands.soon.some((item) => item.slug === "ford-fusion"));
 });
 
-test("nextJumpAfter is null on the plateau and names the later rise", () => {
-  assert.equal(nextJumpAfter(catalog, 320_000), null);
-  assert.equal(plateauUntil(catalog, 320_000), 650_000);
-  assert.equal(nextQualityAt(catalog, 320_000), 660_000);
+test("at 320000 today is not Fusion because the real price is higher", () => {
+  const fusion = catalog.find((item) => item.slug === "ford-fusion");
+  assert.ok(fusion);
+  const price = realPrice(fusion.median, fusion.hp);
+  assert.equal(price, 371_990);
+  assert.ok(price > 320_000);
+  assert.notEqual(bestSafeAt(catalog, 320_000)?.slug, "ford-fusion");
+  assert.equal(bestSafeAt(catalog, 320_000)?.slug, "kia-cerato-1");
 });
 
-test("a sweet spot inside 150000 is a jump", () => {
-  assert.equal(nextJumpAfter(catalog, 150_000), 200_000);
+test("at 150000 Matiz is out of reach once startup costs are included", () => {
+  const matiz = catalog.find((item) => item.slug === "daewoo-matiz");
+  assert.ok(matiz);
+  const price = purchasePrice(matiz);
+  assert.ok(price > 150_000);
+  assert.notEqual(bestSafeAt(catalog, 150_000)?.slug, "daewoo-matiz");
+  assert.equal(bestSafeAt(catalog, 150_000), null);
 });
 
-test("caution cars stay available", () => {
-  assert.equal(bestSafeAt(catalog, 150_000)?.slug, "daewoo-matiz");
+test("nextJumpAfter 320000 reaches the real price of the next car", () => {
+  const fusion = catalog.find((item) => item.slug === "ford-fusion");
+  assert.ok(fusion);
+  const jump = nextJumpAfter(catalog, 320_000);
+  assert.ok(jump !== null);
+  assert.ok(jump >= purchasePrice(fusion));
+  assert.equal(bestSafeAt(catalog, jump)?.slug, "ford-fusion");
 });
 
 test("Focus III is not the safe choice where it is affordable", () => {
   assert.notEqual(bestSafeAt(catalog, 700_000)?.slug, "ford-focus-3");
 });
 
-test("tier marks where bestAt and bestSafeAt differ", () => {
-  const diffs = choiceDiffs(catalog, tierAmounts());
-  assert.deepEqual(diffs, []);
+test("the Solaris 9.9 fixture still separates bestAt from bestSafeAt", () => {
+  const solaris = catalog.find((item) => item.slug === "hyundai-solaris-1");
+  const fusion = catalog.find((item) => item.slug === "ford-fusion");
+  assert.ok(solaris && fusion);
+  const cheap = { ...solaris, median: 400_000, score: 9.9 };
+  assert.notEqual(bestAt([cheap, fusion], 500_000)?.slug, bestSafeAt([cheap, fusion], 500_000)?.slug);
 });

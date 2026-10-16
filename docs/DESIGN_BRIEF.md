@@ -11,14 +11,17 @@
 ## Выбор машины
 
 - `bestAt` в `lib/market.ts` остаётся. Он выбирает максимальную оценку среди машин, чья медиана не выше суммы, и не смотрит на `avoid`.
+- Машина доступна, если `realPrice` не выше копилки. ОСАГО считается по мощности и профилю водителя, поэтому порог у каждой модели свой. Медиана по-прежнему показывается как цена рынка.
 - `lib/view/market.ts`:
-  - `bestSafeAt(items, amount)` — как `bestAt`, но без моделей, у которых `adviseFor(...).verdict === "avoid"` или `bestGearbox === "avoid"`.
-  - `nextJumpAfter(items, amount)` — ближайшая точка из `sweetSpotAmounts` выше суммы и не дальше +150 000 ₽, где `bestSafeAt` даёт оценку выше хотя бы на 0,5 или коробку лучше. Иначе `null`: ждать эти 150 000 ₽ не стоит.
-  - `plateauUntil(items, amount)` — последняя сумма, до которой безопасный вариант ещё не лучше.
-  - `nextQualityAt(items, amount)` — первая сумма без окна в 150 000 ₽, где качество вырастает. Это «копи сразу до Y», когда `nextJumpAfter` вернул `null`.
+  - `affordableReal(items, amount, driver)` — модели с `realPrice` не выше суммы.
+  - `purchasePrice(item, driver)` — `realPrice` одной модели.
+  - `bestSafeAt(items, amount, driver)` — лучшая из `affordableReal`, без моделей, у которых `adviseFor(...).verdict === "avoid"` или `bestGearbox === "avoid"`.
+  - `nextJumpAfter(items, amount, driver)` — ближайшая сумма выше копилки и не дальше +150 000 ₽, где `bestSafeAt` даёт оценку выше хотя бы на 0,5 или коробку лучше. Сумма не ниже `realPrice` этой модели. Иначе `null`.
+  - `plateauUntil(items, amount, driver)` — последняя сумма, до которой безопасный вариант ещё не лучше.
+  - `nextQualityAt(items, amount, driver)` — первая сумма без окна в 150 000 ₽, где качество вырастает. Это единственное число в тексте «лучше не будет».
   - `compareSafeTiers` — сравнение соседних уровней через `bestSafeAt`.
   - `shownSavings(saved)` — точная сумма копилки, без округления до отметки.
-  - `catalogBands` — «по карману», «через 1–4 месяца», «в бюджете, но не бери», остальное в «дальше».
+  - `catalogBands` — «по карману», «через 1–4 месяца», «в бюджете, но не бери» считаются от `realPrice`. Срок `monthsToGoal` тоже до `realPrice`.
   - `priceStatus` — «стартовый ориентир», «мало данных», «цена прошлого месяца».
   - `snapPoints` — точки щелчка: выгодная точка или место, где рекомендация перестала быть `avoid`.
   - `leftForCar` — сумма минус разница между `realPrice` и медианой.

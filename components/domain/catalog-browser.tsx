@@ -13,6 +13,7 @@ import { displayName, type CatalogItem } from "@/lib/market";
 import type { TTrap } from "@/lib/schema";
 import { TIER_MAX } from "@/lib/tiers";
 import { inflationOf } from "@/lib/storage";
+import { realPrice } from "@/lib/meta";
 import { catalogBands, priceStatus, shownSavings } from "@/lib/view/market";
 import { SlidersHorizontal } from "lucide-react";
 import Link from "next/link";
@@ -89,7 +90,7 @@ export function CatalogBrowser({
     return new Map(paired.map((row) => [row.item.slug, row.advice]));
   }, [items, amount]);
 
-  const bands = useMemo(() => catalogBands(items, amount, data.monthly, inflationOf(data)), [items, amount, data.monthly, data]);
+  const bands = useMemo(() => catalogBands(items, amount, data.monthly, inflationOf(data), data.driver), [items, amount, data.monthly, data]);
 
   function prepare(list: CatalogItem[]) {
     return list
@@ -175,7 +176,7 @@ export function CatalogBrowser({
             <ul className="space-y-3">
               {group.rows.map((item) => {
                 const advice = adviceBySlug.get(item.slug) ?? null;
-                const above = item.median > amount;
+                const gap = realPrice(item.median, item.hp, data.driver) - amount;
                 const status = priceStatus(item);
                 return (
                   <li key={item.slug} className="card p-4">
@@ -214,7 +215,7 @@ export function CatalogBrowser({
                     ) : null}
                     <p className="mt-2 text-sm text-muted">
                       {rub(item.median)}
-                      {above ? ` · ещё ${rub(item.median - amount)}` : ""} · {item.medianYear} · {item.medianMileageKm.toLocaleString("ru-RU")} км
+                      {gap > 0 ? ` · ещё ${rub(gap)}` : ""} · {item.medianYear} · {item.medianMileageKm.toLocaleString("ru-RU")} км
                     </p>
                     {status.length ? <p className="mt-1 text-sm text-muted">{status.join(" · ")}</p> : null}
                   </li>

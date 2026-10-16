@@ -1,13 +1,13 @@
 import { adviseFor, type AdviceModel } from "../advice";
 import { monthsToGoal } from "../forecast";
-import { realPrice, type DriverProfile } from "../meta";
+import { DEFAULT_DRIVER, realPrice, type DriverProfile } from "../meta";
 import {
   bestAt,
   sweetSpotAmounts,
   type CatalogItem,
   type TierComparison,
 } from "../market";
-import { nextTierAmount, TIER_MAX, tierAmounts, tierFloor } from "../tiers";
+import { nextTierAmount, tierAmounts, tierFloor } from "../tiers";
 
 const SCORE_STEP = 0.5;
 const WAIT_WINDOW = 150_000;
@@ -44,9 +44,20 @@ export function shownSavings(saved: number): number {
   return saved;
 }
 
-export function bestSafeAt(items: CatalogItem[], amount: number): CatalogItem | null {
+/** Сколько нужно на машину с ОСАГО, учётом, ТО и резервом. Медиана остаётся ценой рынка. */
+export function purchasePrice(item: CatalogItem, driver: DriverProfile = DEFAULT_DRIVER): number {
+  return realPrice(item.median, item.hp, driver);
+}
+
+/** Модели, которые можно купить на эту сумму: реальная цена не выше копилки. */
+export function affordableReal(items: CatalogItem[], amount: number, driver: DriverProfile = DEFAULT_DRIVER): CatalogItem[] {
+  return items.filter((item) => item.median > 0 && purchasePrice(item, driver) <= amount);
+}
+
+export function bestSafeAt(items: CatalogItem[], amount: number, driver: DriverProfile = DEFAULT_DRIVER): CatalogItem | null {
   const models = items.map(toAdvice);
-  const safe = items.filter((item, index) => !blocked(item, models[index], amount, models));
+  const priced = new Set(affordableReal(items, amount, driver).map((item) => item.slug));
+  const safe = items.filter((item, index) => priced.has(item.slug) && !blocked(item, models[index], amount, models));
   return bestAt(safe, amount);
 }
 
@@ -58,56 +69,57 @@ export function qualityJumped(current: CatalogItem | null, next: CatalogItem | n
   return scoreUp || boxUp;
 }
 
-function watchAmounts(items: CatalogItem[]): number[] {
+function watchAmounts(items: CatalogItem[], driver: DriverProfile): number[] {
   const values = new Set<number>(tierAmounts());
   for (const item of items) {
-    if (item.median > 0 && item.median <= TIER_MAX) values.add(item.median);
+    if (item.median <= 0) continue;
+    values.add(purchasePrice(item, driver));
   }
   return [...values].sort((left, right) => left - right);
 }
 
-export function nextJumpAfter(items: CatalogItem[], amount: number): number | null {
-  const current = bestSafeAt(items, amount);
+export function nextJumpAfter(items: CatalogItem[], amount: number, driver: DriverProfile = DEFAULT_DRIVER): number | null {
+  const current = bestSafeAt(items, amount, driver);
   const cap = amount + WAIT_WINDOW;
-  for (const spot of sweetSpotAmounts(items)) {
-    if (spot <= amount || spot > cap) continue;
-    if (qualityJumped(current, bestSafeAt(items, spot))) return spot;
+  for (const step of watchAmounts(items, driver)) {
+    if (step <= amount || step > cap) continue;
+    if (qualityJumped(current, bestSafeAt(items, step, driver))) return step;
   }
   return null;
 }
 
 /** Последняя сумма, на которой лучший безопасный вариант ещё не лучше текущего. */
-export function plateauUntil(items: CatalogItem[], amount: number): number {
-  const current = bestSafeAt(items, amount);
+export function plateauUntil(items: CatalogItem[], amount: number, driver: DriverProfile = DEFAULT_DRIVER): number {
+  const current = bestSafeAt(items, amount, driver);
   let flat = amount;
-  for (const step of watchAmounts(items)) {
+  for (const step of watchAmounts(items, driver)) {
     if (step <= amount) continue;
-    if (qualityJumped(current, bestSafeAt(items, step))) return flat;
+    if (qualityJumped(current, bestSafeAt(items, step, driver))) return flat;
     flat = step;
   }
   return flat;
 }
 
 /** Ближайшая сумма, где качество реально вырастает, без окна в 150 000 ₽. */
-export function nextQualityAt(items: CatalogItem[], amount: number): number | null {
-  const current = bestSafeAt(items, amount);
-  for (const step of watchAmounts(items)) {
+export function nextQualityAt(items: CatalogItem[], amount: number, driver: DriverProfile = DEFAULT_DRIVER): number | null {
+  const current = bestSafeAt(items, amount, driver);
+  for (const step of watchAmounts(items, driver)) {
     if (step <= amount) continue;
-    if (qualityJumped(current, bestSafeAt(items, step))) return step;
+    if (qualityJumped(current, bestSafeAt(items, step, driver))) return step;
   }
   return null;
 }
 
-export function compareSafeTiers(items: CatalogItem[], budget: number): TierComparison {
+export function compareSafeTiers(items: CatalogItem[], budget: number, driver: DriverProfile = DEFAULT_DRIVER): TierComparison {
   const currentBudget = budget < 150_000 ? 0 : tierFloor(budget);
-  const current = currentBudget ? bestSafeAt(items, currentBudget) : null;
+  const current = currentBudget ? bestSafeAt(items, currentBudget, driver) : null;
   let nextBudget = nextTierAmount(budget);
-  let next = nextBudget ? bestSafeAt(items, nextBudget) : null;
+  let next = nextBudget ? bestSafeAt(items, nextBudget, driver) : null;
   while (nextBudget && !next) {
     const further = nextTierAmount(nextBudget);
     if (!further) break;
     nextBudget = further;
-    next = bestSafeAt(items, nextBudget);
+    next = bestSafeAt(items, nextBudget, driver);
   }
   return {
     currentBudget,
@@ -120,7 +132,7 @@ export function compareSafeTiers(items: CatalogItem[], budget: number): TierComp
   };
 }
 
-export function snapPoints(items: CatalogItem[]): SnapPoint[] {
+export function snapPoints(items: CatalogItem[], driver: DriverProfile = DEFAULT_DRIVER): SnapPoint[] {
   const spots = new Set(sweetSpotAmounts(items));
   const models = items.map(toAdvice);
   const points: SnapPoint[] = [];
@@ -128,7 +140,7 @@ export function snapPoints(items: CatalogItem[]): SnapPoint[] {
   for (let index = 0; index < amounts.length; index += 1) {
     const amount = amounts[index];
     const previous = index === 0 ? 0 : amounts[index - 1];
-    const sweet = spots.has(amount) && qualityJumped(bestSafeAt(items, previous), bestSafeAt(items, amount));
+    const sweet = spots.has(amount) && qualityJumped(bestSafeAt(items, previous, driver), bestSafeAt(items, amount, driver));
     const previousBest = bestAt(items, previous);
     const currentBest = bestAt(items, amount);
     const previousModel = previousBest ? models.find((model) => model.slug === previousBest.slug) : undefined;
@@ -175,7 +187,13 @@ export function priceStatus(item: { isSeed: boolean; isFallback: boolean; confid
   return lines;
 }
 
-export function catalogBands(items: CatalogItem[], saved: number, monthly: number, inflation: number): CatalogBands {
+export function catalogBands(
+  items: CatalogItem[],
+  saved: number,
+  monthly: number,
+  inflation: number,
+  driver: DriverProfile = DEFAULT_DRIVER,
+): CatalogBands {
   const models = items.map(toAdvice);
   const pocket: CatalogItem[] = [];
   const soon: CatalogItem[] = [];
@@ -183,15 +201,16 @@ export function catalogBands(items: CatalogItem[], saved: number, monthly: numbe
   const later: CatalogItem[] = [];
   items.forEach((item, index) => {
     const avoid = blocked(item, models[index], saved, models);
-    if (item.median <= saved && avoid) {
+    const price = item.median > 0 ? purchasePrice(item, driver) : Number.POSITIVE_INFINITY;
+    if (price <= saved && avoid) {
       skip.push(item);
       return;
     }
-    if (item.median <= saved) {
+    if (price <= saved) {
       pocket.push(item);
       return;
     }
-    const months = monthsToGoal(saved, monthly, item.median, inflation);
+    const months = monthsToGoal(saved, monthly, price, inflation);
     if (!avoid && months !== null && months >= 1 && months <= 4) {
       soon.push(item);
       return;
@@ -206,10 +225,10 @@ export function catalogBands(items: CatalogItem[], saved: number, monthly: numbe
   return { pocket, soon, skip, later };
 }
 
-export function choiceDiffs(items: CatalogItem[], amounts: number[]) {
+export function choiceDiffs(items: CatalogItem[], amounts: number[], driver: DriverProfile = DEFAULT_DRIVER) {
   return amounts.flatMap((amount) => {
     const raw = bestAt(items, amount);
-    const safe = bestSafeAt(items, amount);
+    const safe = bestSafeAt(items, amount, driver);
     if ((raw?.slug ?? null) === (safe?.slug ?? null)) return [];
     return [{ amount, bestAt: raw?.slug ?? null, bestSafeAt: safe?.slug ?? null }];
   });

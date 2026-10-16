@@ -40,7 +40,7 @@ export function HomeDashboard({ items }: { items: CatalogItem[] }) {
   const level = levelForAmount(amount);
   const goal = items.find((item) => item.slug === data.goalSlug) ?? null;
   const goalPrice = goal ? realPrice(goal.median, goal.hp, data.driver) : null;
-  const unlocked = level > data.seenLevel && level > 0 ? bestSafeAt(items, amountForLevel(level)) : null;
+  const unlocked = level > data.seenLevel && level > 0 ? bestSafeAt(items, amountForLevel(level), data.driver) : null;
   const people = new Set(data.deposits.map((deposit) => deposit.by)).size;
   const badges = earnedBadges({
     saved: amount,
