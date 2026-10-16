@@ -42,6 +42,17 @@ function quantile(xs: number[], q: number) {
 
 const near = (a: number, b: number, tol = QUANTILE_TOLERANCE) => Math.abs(a - b) <= Math.max(1, b * tol);
 
+const TYPO_MILEAGE_KM = 1_000;
+const TYPO_MILEAGE_YEARS = 3;
+
+/** «2004 год, 290 км»: почти новая цифра пробега у старой машины — ошибка ввода, не рынок. */
+export function mileageTypo(year: number, mileageKm: number, nowYear: number): string | null {
+  if (mileageKm < TYPO_MILEAGE_KM && nowYear - year > TYPO_MILEAGE_YEARS) {
+    return `пробег ${mileageKm} км при возрасте больше ${TYPO_MILEAGE_YEARS} лет — ошибка ввода`;
+  }
+  return null;
+}
+
 export function gearboxCheck(model: TModel, listing: TListing): string | null {
   const engineCodes = model.engines.filter((engine) => Math.abs(engine.volumeL - listing.engineL) < 0.05).map((engine) => engine.code);
   if (!engineCodes.length) return `у модели нет мотора ${listing.engineL} л`;
@@ -64,6 +75,15 @@ function validateSnapshot(issues: Issue[], snapshot: TSnapshot, model: TModel, p
   if (!(snapshot.p25 <= snapshot.median && snapshot.median <= snapshot.p75)) err("нарушено p25 ≤ медиана ≤ p75");
   if (snapshot.medianYear < model.years[0] || snapshot.medianYear > model.years[1]) {
     err(`медианный год ${snapshot.medianYear} вне поколения ${model.years.join("–")}`);
+  }
+
+  const nowYear = Number(fileMonth.slice(0, 4));
+  for (const listing of snapshot.listings ?? []) {
+    const typo = mileageTypo(listing.year, listing.mileageKm, nowYear);
+    if (!typo) continue;
+    const tag = `${listing.platform}:${listing.id}`;
+    err(`${tag}: ${typo}`);
+    warn(`${tag}: ${typo}. Объявление отброшено`);
   }
 
   if (!isSeed) {
@@ -95,7 +115,6 @@ function validateSnapshot(issues: Issue[], snapshot: TSnapshot, model: TModel, p
       }
     }
 
-    const nowYear = Number(fileMonth.slice(0, 4));
     for (const listing of listings) {
       const tag = `${listing.platform}:${listing.id}`;
       if (listing.year < model.years[0] || listing.year > model.years[1]) err(`${tag}: ${listing.year} г. вне поколения`);

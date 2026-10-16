@@ -52,16 +52,24 @@ test("320000 stays the exact piggy amount", () => {
   assert.equal(shownSavings(320_000), 320_000);
   assert.notEqual(shownSavings(320_000), tierFloor(320_000));
   const bands = catalogBands(catalog, 320_000, 20_000, 0.007);
+  const elantra = catalog.find((item) => item.slug === "hyundai-elantra-xd");
+  assert.ok(elantra);
+  assert.equal(elantra.median, 250_000);
+  assert.equal(elantra.confidence, "low");
+  assert.equal(elantra.isSeed, false);
+  assert.equal(purchasePrice(elantra), 320_718);
   assert.ok(bands.pocket.every((item) => purchasePrice(item) <= 320_000));
-  assert.ok(bands.pocket.some((item) => item.slug === "hyundai-elantra-xd"));
+  assert.ok(bands.pocket.some((item) => item.slug === "nissan-almera-n16"));
+  assert.ok(bands.pocket.every((item) => item.slug !== "hyundai-elantra-xd"));
+  assert.ok(bands.soon.some((item) => item.slug === "hyundai-elantra-xd"));
   assert.ok(bands.pocket.every((item) => item.slug !== "kia-cerato-1"));
   assert.ok(bands.pocket.every((item) => item.slug !== "ford-fusion"));
   assert.ok(bands.soon.some((item) => item.slug === "kia-cerato-1"));
   assert.ok(bands.soon.some((item) => item.slug === "ford-fusion"));
 });
 
-test("at 320000 Elantra is affordable and Cerato is only short by less than a deposit", () => {
-  assert.equal(bestSafeAt(catalog, 320_000)?.slug, "hyundai-elantra-xd");
+test("at 320000 Almera N16 is affordable and Cerato is only short by less than a deposit", () => {
+  assert.equal(bestSafeAt(catalog, 320_000)?.slug, "nissan-almera-n16");
   const almost = almostAffordable(catalog, 320_000, 20_000);
   assert.equal(almost?.item.slug, "kia-cerato-1");
   assert.ok(almost);
@@ -106,7 +114,7 @@ test("at 320000 today is not Fusion because the real price is higher", () => {
   assert.equal(price, 374_312);
   assert.ok(price > 320_000);
   assert.notEqual(bestSafeAt(catalog, 320_000)?.slug, "ford-fusion");
-  assert.equal(bestSafeAt(catalog, 320_000)?.slug, "hyundai-elantra-xd");
+  assert.equal(bestSafeAt(catalog, 320_000)?.slug, "nissan-almera-n16");
 });
 
 test("at 150000 Matiz is out of reach once startup costs are included", () => {

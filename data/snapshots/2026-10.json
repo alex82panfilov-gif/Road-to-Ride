@@ -1,6 +1,8 @@
 {
+  "schemaVersion": 2,
   "month": "2026-10",
   "generatedAt": "2026-10-01T09:00:00.000Z",
+  "seed": true,
   "marketSummary": {
     "trend": "Стартовый ряд заложен с ростом около 0,7% в месяц от мая к октябрю. Это не замер рынка, а каркас, чтобы графики и уровни уже работали.",
     "sources": [
@@ -28,17 +30,79 @@
       "month": "2026-10",
       "slug": "hyundai-elantra-xd",
       "region": "moscow",
-      "sampleSize": 0,
-      "p25": 200000,
-      "median": 200000,
-      "p75": 260000,
-      "medianMileageKm": 170000,
-      "medianYear": 2006,
+      "sampleSize": 6,
+      "p25": 231250,
+      "median": 250000,
+      "p75": 287500,
+      "medianMileageKm": 204704,
+      "medianYear": 2005,
       "confidence": "low",
       "sources": [
-        "https://www.autostat.ru/"
+        "https://auto.drom.ru/"
       ],
-      "notes": "Стартовый ориентир, не подсчёт объявлений. Замените снимок по docs/AGENT_PROMPT.md."
+      "notes": "Полуручной сбор: строки из CSV, без имён и телефонов. Проверьте выборку валидатором.",
+      "listings": [
+        {
+          "id": "756336005",
+          "platform": "drom",
+          "year": 2001,
+          "mileageKm": 250000,
+          "priceRub": 250000,
+          "engineL": 1.6,
+          "gearboxType": "AT",
+          "gearboxRaw": "4АКПП"
+        },
+        {
+          "id": "916070055",
+          "platform": "drom",
+          "year": 2008,
+          "mileageKm": 189408,
+          "priceRub": 315000,
+          "engineL": 1.6,
+          "gearboxType": "AT",
+          "gearboxRaw": "4АКПП"
+        },
+        {
+          "id": "572273634",
+          "platform": "drom",
+          "year": 2002,
+          "mileageKm": 183200,
+          "priceRub": 250000,
+          "engineL": 1.6,
+          "gearboxType": "AT",
+          "gearboxRaw": "4АКПП"
+        },
+        {
+          "id": "363657575",
+          "platform": "drom",
+          "year": 2009,
+          "mileageKm": 267000,
+          "priceRub": 300000,
+          "engineL": 1.6,
+          "gearboxType": "AT",
+          "gearboxRaw": "4АКПП"
+        },
+        {
+          "id": "461006636",
+          "platform": "drom",
+          "year": 2004,
+          "mileageKm": 180000,
+          "priceRub": 225000,
+          "engineL": 1.6,
+          "gearboxType": "AT",
+          "gearboxRaw": "4АКПП"
+        },
+        {
+          "id": "586232692",
+          "platform": "drom",
+          "year": 2005,
+          "mileageKm": 220000,
+          "priceRub": 220000,
+          "engineL": 1.6,
+          "gearboxType": "AT",
+          "gearboxRaw": "4АКПП"
+        }
+      ]
     },
     {
       "month": "2026-10",
@@ -416,7 +480,5 @@
       "issue": "Все медианы — стартовые ориентиры с confidence=low. Замените живым снимком."
     }
   ],
-  "changelog": "Октябрь 2026. В каталоге 18 моделей с автоматом от Accent до Corolla. Цены — стартовые ориентиры по Москве, уверенность низкая, выборки объявлений нет. Уровни 350, 700 и 850 тысяч заложены как заметные скачки оценки. Перед публичным запуском замените data/snapshots/2026-10.json снимком по методике.",
-  "schemaVersion": 2,
-  "seed": true
+  "changelog": "Октябрь 2026. В каталоге 18 моделей с автоматом от Accent до Corolla. Цены — стартовые ориентиры по Москве, уверенность низкая, выборки объявлений нет. Уровни 350, 700 и 850 тысяч заложены как заметные скачки оценки. Перед публичным запуском замените data/snapshots/2026-10.json снимком по методике."
 }

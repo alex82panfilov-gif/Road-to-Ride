@@ -9,10 +9,11 @@ import fs from "node:fs";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { Model, SnapshotFile, type TListing, type TModel, type TSnapshotFile } from "../lib/schema.ts";
+import { isMoscowRegionCity } from "./moscow-region.ts";
 import { gearboxCheck, reviewRaw } from "./validate-data.ts";
 
 const PHONE_RE = /(\+7|\b8)[\s(-]*9\d{2}[\s)-]*\d{3}[\s-]*\d{2}[\s-]*\d{2}/;
-const COLUMNS = ["slug", "platform", "listingId", "year", "mileageKm", "priceRub", "engine", "gearbox"] as const;
+const COLUMNS = ["slug", "platform", "listingId", "year", "mileageKm", "priceRub", "engine", "gearbox", "city"] as const;
 
 const PLATFORM_URL: Record<TListing["platform"], string> = {
   drom: "https://auto.drom.ru/",
@@ -109,17 +110,20 @@ export function rowsFromCsv(text: string): { rows: ManualRow[]; errors: string[]
   const errors: string[] = [];
   table.slice(1).forEach((cells, index) => {
     const line = index + 2;
-    const [slug, platformRaw, listingId, yearRaw, mileageRaw, priceRaw, engine, gearbox] = cells;
+    const [slug, platformRaw, listingId, yearRaw, mileageRaw, priceRaw, engine, gearbox, city] = cells;
     const platform = platformOf(platformRaw ?? "");
     const year = Number(yearRaw);
     const mileageKm = Number(mileageRaw);
     const priceRub = Number(String(priceRaw).replace(/\s/g, ""));
+    const cityOk = Boolean(city) && isMoscowRegionCity(city);
     if (!slug || !listingId || !engine || !gearbox) errors.push(`Строка ${line}: пустое обязательное поле.`);
     if (!platform) errors.push(`Строка ${line}: площадка «${platformRaw}» не из drom, autoru, avito, other.`);
     if (!Number.isInteger(year) || year < 1980 || year > 2035) errors.push(`Строка ${line}: год не похож на год.`);
     if (!Number.isInteger(mileageKm) || mileageKm < 0) errors.push(`Строка ${line}: пробег должен быть целым.`);
     if (!Number.isInteger(priceRub) || priceRub <= 0) errors.push(`Строка ${line}: цена должна быть целым числом рублей.`);
-    if (platform && slug && listingId && Number.isInteger(year) && Number.isInteger(mileageKm) && Number.isInteger(priceRub) && engine && gearbox) {
+    if (!city) errors.push(`Строка ${line}: нет города.`);
+    else if (!cityOk) errors.push(`Строка ${line}: город «${city}» вне Москвы и Московской области.`);
+    if (platform && slug && listingId && Number.isInteger(year) && Number.isInteger(mileageKm) && Number.isInteger(priceRub) && engine && gearbox && cityOk) {
       rows.push({ slug, platform, listingId, year, mileageKm, priceRub, engine, gearbox });
     }
   });
