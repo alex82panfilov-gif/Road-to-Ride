@@ -1,8 +1,10 @@
 "use client";
 
 import { Card } from "@/components/ui/card";
+import { SearchLinks } from "@/components/domain/search-links";
 import { assessListing, type ListingMarket } from "@/lib/listing";
 import type { Model } from "@/lib/schema";
+import { autoruSearchUrl, dromSearchUrl, similarWindow } from "@/lib/view/search-links";
 import { meta } from "@/lib/meta";
 import { useState } from "react";
 
@@ -12,6 +14,7 @@ export function ListingForm({ model, price }: { model: Model; price: ListingMark
   const [cost, setCost] = useState("");
   const [owners, setOwners] = useState("2");
   const [flags, setFlags] = useState<ReturnType<typeof assessListing> | null>(null);
+  const similar = similarWindow(Number(year) || model.years[1], Number(mileage) || 0);
 
   return (
     <Card>
@@ -39,6 +42,14 @@ export function ListingForm({ model, price }: { model: Model; price: ListingMark
           Сравнить с нормами
         </button>
       </form>
+      <div className="mt-4">
+        <SearchLinks
+          autoLabel="Сравнить с похожими на auto.ru"
+          dromLabel="на Drom"
+          autoHref={autoruSearchUrl(model, similar)}
+          dromHref={dromSearchUrl(model, similar)}
+        />
+      </div>
       {flags ? (
         <ul className="mt-4 space-y-2 text-sm">
           {flags.map((flag) => (

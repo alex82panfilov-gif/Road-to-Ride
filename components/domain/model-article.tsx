@@ -16,6 +16,8 @@ import type { PickedPrice } from "@/lib/prices";
 import type { Model } from "@/lib/schema";
 import { tierAmounts } from "@/lib/tiers";
 import { priceStatus } from "@/lib/view/market";
+import { autoruSearchUrl, dromSearchUrl } from "@/lib/view/search-links";
+import { SearchLinks } from "@/components/domain/search-links";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 
@@ -159,6 +161,14 @@ export function ModelArticle({
         {price.isFallback ? <p className="mt-2 text-sm">В этом месяце мало объявлений, показана цена за {price.month}.</p> : null}
         {price.median > 1_000_000 ? <p className="mt-2 text-sm">Пока вне бюджета: медиана выше 1 000 000 ₽.</p> : null}
         {price.notes ? <p className="mt-2 text-sm text-muted">{price.notes}</p> : null}
+        <div className="mt-3">
+          <SearchLinks
+            autoLabel="Искать на auto.ru"
+            dromLabel="Искать на Drom"
+            autoHref={autoruSearchUrl(model, { priceTo: budget, yearFrom: model.years[0], yearTo: model.years[1] })}
+            dromHref={dromSearchUrl(model, { priceTo: budget, yearFrom: model.years[0], yearTo: model.years[1] })}
+          />
+        </div>
       </section>
 
       <section className="space-y-3">
