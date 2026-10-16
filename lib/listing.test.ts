@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import test from "node:test";
-import { assessListing } from "./listing.ts";
+import { admittedFault, assessListing } from "./listing.ts";
 import { Model } from "./schema.ts";
 
 const elantra = Model.parse(JSON.parse(fs.readFileSync("data/models/hyundai-elantra-xd.json", "utf8")));
@@ -47,6 +47,12 @@ test("a measured price uses the p25-p75 band", () => {
   assert.ok(far.some((flag) => flag.text.startsWith("Заметно выше рынка")));
   const bait = assessListing(elantra, market, { year: 2008, mileageKm: 180_000, priceRub: 140_000, owners: 2 }, 2026);
   assert.ok(bait.some((flag) => flag.text.includes("Подозрительно дёшево")));
+});
+
+test("a no-repair claim that names a fault is the seller's own words", () => {
+  assert.equal(admittedFault("на холодную стук, в остальном идеал", "Не требует ремонта"), "Продавец сам указал неисправность.");
+  assert.equal(admittedFault("на холодную стук", "Есть неисправности"), null);
+  assert.equal(admittedFault("один владелец, обслуживание у дилера", "Не требует ремонта"), null);
 });
 
 test("a 2018 car with 90 thousand km is ordinary for its age", () => {

@@ -49,6 +49,15 @@ function yearsAfter(age: number, one: string, few: string, many: string): string
   return `${age} ${many}`;
 }
 
+const SELLER_FAULTS = ["не греет", "требует ремонта", "стук", "пинается", "не заводится", "под восстановление", "срочно"];
+
+export function admittedFault(text: string, condition: string): string | null {
+  if (condition !== "Не требует ремонта") return null;
+  const hay = text.toLowerCase();
+  if (!SELLER_FAULTS.some((word) => hay.includes(word))) return null;
+  return "Продавец сам указал неисправность.";
+}
+
 export function assessListing(model: Model, price: ListingMarket, input: ListingInput, asOfYear: number): ListingFlag[] {
   const flags: ListingFlag[] = [];
   const [yearFrom, yearTo] = model.years;
