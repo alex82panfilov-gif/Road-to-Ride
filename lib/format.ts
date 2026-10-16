@@ -10,6 +10,15 @@ export function rub(value: number): string {
   return money.format(value);
 }
 
+/** Оценка цены до тысяч: стартовый ориентир не должен выглядеть как замер. */
+export function roundToThousands(value: number): number {
+  return Math.round(value / 1000) * 1000;
+}
+
+export function approxRub(value: number): string {
+  return `≈ ${rub(roundToThousands(value))}`;
+}
+
 export function km(value: number): string {
   return `${kmFormat.format(value)} км`;
 }

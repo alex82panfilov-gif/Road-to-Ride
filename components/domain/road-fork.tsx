@@ -6,16 +6,21 @@ import { Card } from "@/components/ui/card";
 import { scoreText } from "@/lib/cn";
 import { labels } from "@/lib/content";
 import { monthsToGoal } from "@/lib/forecast";
-import { rub } from "@/lib/format";
+import { approxRub, rub } from "@/lib/format";
 import { displayName, type CatalogItem } from "@/lib/market";
+import type { DriverProfile } from "@/lib/meta";
 import { inflationOf } from "@/lib/storage";
 import { TIER_MAX } from "@/lib/tiers";
 import {
   bestSafeAt,
+  DECENT_SCORE,
   familyContribution,
   leftForCar,
+  nextDecentAt,
   nextJumpAfter,
   nextQualityAt,
+  nextWithinReach,
+  priceBreakdown,
   priceStatus,
   purchasePrice,
   roadWindow,
@@ -28,6 +33,30 @@ import { useEffect, useMemo, useRef, useState } from "react";
 function shortAmount(amount: number): string {
   if (amount >= 1_000_000) return "1 млн";
   return String(Math.round(amount / 1000));
+}
+
+function waitLine(months: number | null, monthly: number): string {
+  if (months === null) return "срок появится, когда укажешь взнос в месяц";
+  return `около ${months} мес. при ${rub(monthly)} в месяц`;
+}
+
+function PriceFacts({ item, driver }: { item: CatalogItem; driver: DriverProfile }) {
+  const parts = priceBreakdown(item, driver);
+  const reservePercent = Math.round(parts.reserveRate * 100);
+  return (
+    <details className="mt-2 text-sm">
+      <summary className="cursor-pointer">Из чего складывается</summary>
+      <ul className="mt-2 space-y-1 text-muted">
+        <li>Медиана: {rub(parts.median)}</li>
+        <li>ОСАГО: {rub(parts.osago)}</li>
+        <li>Учёт: {rub(parts.registration)}</li>
+        {parts.diagnostic > 0 ? <li>Диагностическая карта: {rub(parts.diagnostic)}</li> : null}
+        <li>ТО: {rub(parts.service)}</li>
+        <li>Резерв {reservePercent}%: {rub(parts.reserve)}</li>
+        <li>Итого: {rub(parts.total)}</li>
+      </ul>
+    </details>
+  );
 }
 
 export function RoadFork({ items }: { items: CatalogItem[] }) {
@@ -58,7 +87,11 @@ export function RoadFork({ items }: { items: CatalogItem[] }) {
   const laterCar = later === null ? null : bestSafeAt(items, later, driver);
   const months = jump === null ? null : monthsToGoal(amount, data.monthly, jump, inflation);
   const laterMonths = later === null ? null : monthsToGoal(amount, data.monthly, later, inflation);
-  const nearest = [...items].filter((item) => item.median > 0).sort((left, right) => purchasePrice(left, driver) - purchasePrice(right, driver))[0];
+  const nearestAim = nextWithinReach(items, amount, driver);
+  const decentAim = nextDecentAt(items, amount, driver);
+  const showPair = (!today || today.score < DECENT_SCORE) && nearestAim !== null && decentAim !== null && nearestAim.slug !== decentAim.slug;
+  const nearestMonths = nearestAim ? monthsToGoal(amount, data.monthly, purchasePrice(nearestAim, driver), inflation) : null;
+  const decentMonths = decentAim ? monthsToGoal(amount, data.monthly, purchasePrice(decentAim, driver), inflation) : null;
   const window = roadWindow(preview, expanded);
   const posts = [
     ...window.behind.map((post) => ({ amount: post, you: false, tier: true })),
@@ -143,38 +176,52 @@ export function RoadFork({ items }: { items: CatalogItem[] }) {
               <p className="mt-2 text-sm">
                 Оценка {scoreText(today.score)}. {labels.verdict[today.bestGearbox]}.
               </p>
-              <p className="mt-2 text-sm text-muted">Медиана {rub(today.median)}. С расходами {rub(purchasePrice(today, driver))}. {priceStatus(today).join(" · ")}</p>
+              <p className="mt-2 text-sm text-muted">
+                Медиана {rub(today.median)}. С расходами {approxRub(purchasePrice(today, driver))}. {priceStatus(today).join(" · ")}
+              </p>
+              <PriceFacts item={today} driver={driver} />
             </>
           ) : (
             <>
               <h2 className="mt-1 text-xl font-semibold">В этой сумме машины нет</h2>
               <p className="mt-2 text-sm">
-                {nearest ? (
-                  <>
-                    Ближайшая с расходами — <Link href={`/cars/${nearest.slug}`}>{displayName(nearest)}</Link>, нужно {rub(purchasePrice(nearest, driver))}. Медиана {rub(nearest.median)}.
-                  </>
-                ) : (
-                  "В каталоге пока нет машин с ценой."
-                )}
+                {showPair
+                  ? "Сравнение двух целей — на соседней карточке. Суммы там округлены до тысяч."
+                  : nearestAim
+                    ? <>Ближайшая — <Link href={`/cars/${nearestAim.slug}`}>{displayName(nearestAim)}</Link>, {approxRub(purchasePrice(nearestAim, driver))}. Медиана {rub(nearestAim.median)}.</>
+                    : "В каталоге пока нет машин с ценой."}
               </p>
             </>
           )}
         </Card>
         <Card>
-          {jump !== null ? (
+          {showPair && nearestAim && decentAim ? (
             <>
-              <p className="text-sm text-muted">Накопить до {rub(jump)}</p>
+              <p className="text-sm text-muted">Две цели</p>
+              <h2 className="mt-1 text-xl font-semibold">Ближайшая или заметно лучше</h2>
+              <p className="mt-3 text-sm">
+                <Link href={`/cars/${nearestAim.slug}`}>{displayName(nearestAim)}</Link> — {approxRub(purchasePrice(nearestAim, driver))}, {waitLine(nearestMonths, data.monthly)}. Оценка {scoreText(nearestAim.score)}.
+              </p>
+              <PriceFacts item={nearestAim} driver={driver} />
+              <p className="mt-3 text-sm">
+                <Link href={`/cars/${decentAim.slug}`}>{displayName(decentAim)}</Link> — {approxRub(purchasePrice(decentAim, driver))}, {waitLine(decentMonths, data.monthly)}. Оценка {scoreText(decentAim.score)}. Это заметно лучше машина.
+              </p>
+              {nearestMonths !== null && decentMonths !== null && decentMonths > nearestMonths ? (
+                <p className="mt-2 text-sm text-muted">До неё на {decentMonths - nearestMonths} мес. дольше, чем до {displayName(nearestAim)}.</p>
+              ) : null}
+              <PriceFacts item={decentAim} driver={driver} />
+            </>
+          ) : jump !== null ? (
+            <>
+              <p className="text-sm text-muted">Накопить до {approxRub(jump)}</p>
               <h2 className="mt-1 text-xl font-semibold">{jumpCar ? <Link href={`/cars/${jumpCar.slug}`}>{displayName(jumpCar)}</Link> : "На этой отметке"}</h2>
               {jumpCar ? (
                 <p className="mt-2 text-sm">
                   Оценка {scoreText(jumpCar.score)}. {labels.verdict[jumpCar.bestGearbox]}.
                 </p>
               ) : null}
-              <p className="mt-2 text-sm">
-                {months === null
-                  ? "Срок появится, когда укажешь взнос в месяц."
-                  : `Около ${months} мес. при ${rub(data.monthly)} в месяц.`}
-              </p>
+              <p className="mt-2 text-sm">{months === null ? "Срок появится, когда укажешь взнос в месяц." : `Около ${months} мес. при ${rub(data.monthly)} в месяц.`}</p>
+              {jumpCar ? <PriceFacts item={jumpCar} driver={driver} /> : null}
             </>
           ) : (
             <>
@@ -185,7 +232,7 @@ export function RoadFork({ items }: { items: CatalogItem[] }) {
               <p className="mt-2 text-sm">
                 {later !== null && laterCar ? (
                   <>
-                    {today ? <>Лучше этой машины до {rub(later)} не будет. Там {displayName(laterCar)}</> : <>До {displayName(laterCar)} нужно {rub(later)}</>}
+                    {today ? <>Лучше этой машины до {approxRub(later)} не будет. Там {displayName(laterCar)}</> : <>До {displayName(laterCar)} нужно {approxRub(later)}</>}
                     {laterMonths === null
                       ? ". Срок появится, когда укажешь взнос в месяц."
                       : `: около ${laterMonths} мес. при ${rub(data.monthly)} в месяц.`}
@@ -195,6 +242,7 @@ export function RoadFork({ items }: { items: CatalogItem[] }) {
                   "Дальше по каталогу заметно лучше не станет. Можно брать сегодняшнюю."
                 )}
               </p>
+              {laterCar ? <PriceFacts item={laterCar} driver={driver} /> : null}
             </>
           )}
         </Card>

@@ -8,7 +8,7 @@ import { SegmentedControl } from "@/components/ui/segmented-control";
 import { Skeleton } from "@/components/ui/skeleton";
 import { adviseFor, markBest, trapsFor } from "@/lib/advice";
 import { labels } from "@/lib/content";
-import { rub } from "@/lib/format";
+import { approxRub, rub } from "@/lib/format";
 import { displayName, type CatalogItem } from "@/lib/market";
 import type { TTrap } from "@/lib/schema";
 import { TIER_MAX } from "@/lib/tiers";
@@ -215,7 +215,7 @@ export function CatalogBrowser({
                     ) : null}
                     <p className="mt-2 text-sm text-muted">
                       {rub(item.median)}
-                      {gap > 0 ? ` · ещё ${rub(gap)}` : ""} · {item.medianYear} · {item.medianMileageKm.toLocaleString("ru-RU")} км
+                      {gap > 0 ? ` · ещё ${approxRub(gap)}` : ""} · {item.medianYear} · {item.medianMileageKm.toLocaleString("ru-RU")} км
                     </p>
                     {status.length ? <p className="mt-1 text-sm text-muted">{status.join(" · ")}</p> : null}
                   </li>

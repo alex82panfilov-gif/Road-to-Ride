@@ -1,6 +1,6 @@
 import { adviseFor, type AdviceModel } from "../advice";
 import { monthsToGoal } from "../forecast";
-import { DEFAULT_DRIVER, realPrice, type DriverProfile } from "../meta";
+import { DEFAULT_DRIVER, meta, osagoRange, realPrice, type DriverProfile } from "../meta";
 import {
   bestAt,
   sweetSpotAmounts,
@@ -11,6 +11,8 @@ import { nextTierAmount, tierAmounts, tierFloor } from "../tiers";
 
 const SCORE_STEP = 0.5;
 const WAIT_WINDOW = 150_000;
+/** Ниже этой оценки вторая карточка сравнивает две цели, а не одну ближайшую. */
+export const DECENT_SCORE = 4.5;
 const GEARBOX_RANK = { avoid: 1, acceptable: 2, recommended: 3 } as const;
 
 export type SnapKind = "sweet" | "gearbox";
@@ -47,6 +49,63 @@ export function shownSavings(saved: number): number {
 /** Сколько нужно на машину с ОСАГО, учётом, ТО и резервом. Медиана остаётся ценой рынка. */
 export function purchasePrice(item: CatalogItem, driver: DriverProfile = DEFAULT_DRIVER): number {
   return realPrice(item.median, item.hp, driver);
+}
+
+export type PriceBreakdown = {
+  median: number;
+  osago: number;
+  registration: number;
+  diagnostic: number;
+  service: number;
+  reserve: number;
+  reserveRate: number;
+  total: number;
+};
+
+/** Состав realPrice. Сумма строк равна purchasePrice. */
+export function priceBreakdown(item: CatalogItem, driver: DriverProfile = DEFAULT_DRIVER): PriceBreakdown {
+  const reserve = Math.round(item.median * meta.reserveRate);
+  return {
+    median: item.median,
+    osago: osagoRange(item.hp, driver).mid,
+    registration: meta.registrationRub,
+    diagnostic: meta.diagnosticCardRub,
+    service: meta.firstServiceRub,
+    reserve,
+    reserveRate: meta.reserveRate,
+    total: purchasePrice(item, driver),
+  };
+}
+
+function openModels(items: CatalogItem[], driver: DriverProfile): CatalogItem[] {
+  const models = items.map(toAdvice);
+  return items.filter((item, index) => item.median > 0 && !blocked(item, models[index], purchasePrice(item, driver), models));
+}
+
+function soonest(items: CatalogItem[], amount: number, driver: DriverProfile): CatalogItem | null {
+  const ahead = items.filter((item) => purchasePrice(item, driver) > amount);
+  if (!ahead.length) return null;
+  return ahead.sort(
+    (a, b) =>
+      purchasePrice(a, driver) - purchasePrice(b, driver) ||
+      b.score - a.score ||
+      a.median - b.median ||
+      a.slug.localeCompare(b.slug, "ru"),
+  )[0];
+}
+
+/** Ближайшая модель, до которой ещё не хватает, по realPrice. */
+export function nextWithinReach(items: CatalogItem[], amount: number, driver: DriverProfile = DEFAULT_DRIVER): CatalogItem | null {
+  return soonest(openModels(items, driver), amount, driver);
+}
+
+/** Ближайшая модель с оценкой не ниже DECENT_SCORE, по realPrice. */
+export function nextDecentAt(items: CatalogItem[], amount: number, driver: DriverProfile = DEFAULT_DRIVER): CatalogItem | null {
+  return soonest(
+    openModels(items, driver).filter((item) => item.score >= DECENT_SCORE),
+    amount,
+    driver,
+  );
 }
 
 /** Модели, которые можно купить на эту сумму: реальная цена не выше копилки. */

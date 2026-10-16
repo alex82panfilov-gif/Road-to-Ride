@@ -66,6 +66,7 @@ export function ModelArticle({
       </header>
 
       <section className="space-y-3" aria-label="Вердикт">
+        {model.summary ? <p>{model.summary}</p> : null}
         <h2 className="text-lg font-semibold">Коробка</h2>
         <ul className="space-y-2 text-sm">
           {model.gearboxes.map((box) => (
@@ -79,7 +80,6 @@ export function ModelArticle({
           <AdviceMark advice={advice} items={items} open={adviceOpen} onToggle={() => setAdviceOpen((value) => !value)} />
         ) : null}
         <ScorePill score={scoreOf(model)} />
-        <p>{model.summary}</p>
       </section>
 
       <section className="space-y-2">

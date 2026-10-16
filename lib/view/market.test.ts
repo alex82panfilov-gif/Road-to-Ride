@@ -2,12 +2,17 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { catalog } from "../data.ts";
 import { bestAt } from "../market.ts";
+import { roundToThousands } from "../format.ts";
 import { realPrice } from "../meta.ts";
 import { tierFloor } from "../tiers.ts";
 import {
   bestSafeAt,
   catalogBands,
+  DECENT_SCORE,
+  nextDecentAt,
   nextJumpAfter,
+  nextWithinReach,
+  priceBreakdown,
   purchasePrice,
   shownSavings,
 } from "./market.ts";
@@ -77,6 +82,27 @@ test("nextJumpAfter 320000 reaches the real price of the next car", () => {
 
 test("Focus III is not the safe choice where it is affordable", () => {
   assert.notEqual(bestSafeAt(catalog, 700_000)?.slug, "ford-focus-3");
+});
+
+test("at 0 the fork names Matiz and a car scored at least 4.5", () => {
+  const nearest = nextWithinReach(catalog, 0);
+  const decent = nextDecentAt(catalog, 0);
+  assert.equal(nearest?.slug, "daewoo-matiz");
+  assert.ok(decent);
+  assert.ok(decent.score >= DECENT_SCORE);
+  assert.notEqual(decent.slug, "daewoo-matiz");
+  assert.ok(purchasePrice(decent) > purchasePrice(nearest!));
+  assert.equal(DECENT_SCORE, 4.5);
+});
+
+test("a purchase target rounds to thousands and the breakdown sums to the real price", () => {
+  const matiz = catalog.find((item) => item.slug === "daewoo-matiz");
+  assert.ok(matiz);
+  const price = purchasePrice(matiz);
+  assert.equal(roundToThousands(price), 202_000);
+  const parts = priceBreakdown(matiz);
+  assert.equal(parts.median + parts.osago + parts.registration + parts.diagnostic + parts.service + parts.reserve, parts.total);
+  assert.equal(parts.total, price);
 });
 
 test("the Solaris 9.9 fixture still separates bestAt from bestSafeAt", () => {
