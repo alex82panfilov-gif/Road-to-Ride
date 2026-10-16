@@ -204,7 +204,7 @@ export function RoadFork({ items }: { items: CatalogItem[] }) {
                 Медиана {rub(today.median)}. С расходами {approxRub(todayQuote?.total ?? purchasePrice(today, driver))}. {priceStatus(today).join(" · ")}
               </p>
               {todayQuote ? <PriceFacts item={today} quote={todayQuote} /> : null}
-              {almost ? <p className="mt-2 text-sm">{almostNote(almost.item, almost.gap)}</p> : null}
+              {almost ? <p className="mt-2 text-sm">{almostNote(almost.item, almost.gap, data.monthly)}</p> : null}
             </>
           ) : (
             <>
@@ -216,7 +216,7 @@ export function RoadFork({ items }: { items: CatalogItem[] }) {
                     ? <>Ближайшая — <Link href={`/cars/${nearestAim.slug}`}>{displayName(nearestAim)}</Link>, {approxRub(nearestQuote?.total ?? purchasePrice(nearestAim, driver))}. Медиана {rub(nearestAim.median)}.</>
                     : "В каталоге пока нет машин с ценой."}
               </p>
-              {almost ? <p className="mt-2 text-sm">{almostNote(almost.item, almost.gap)}</p> : null}
+              {almost ? <p className="mt-2 text-sm">{almostNote(almost.item, almost.gap, data.monthly)}</p> : null}
             </>
           )}
         </Card>

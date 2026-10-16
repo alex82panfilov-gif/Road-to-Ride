@@ -145,8 +145,9 @@ export function almostAffordable(
   return { item: candidates[0].item, gap: candidates[0].gap };
 }
 
-export function almostNote(item: CatalogItem, gap: number): string {
-  return `${displayName(item)} — не хватает ${approxRub(gap)}, это меньше одного взноса`;
+export function almostNote(item: CatalogItem, gap: number, monthly: number): string {
+  const reason = gap <= monthly ? "это меньше одного взноса" : "это меньше 3% цены";
+  return `${displayName(item)} — не хватает ${approxRub(gap)}, ${reason}`;
 }
 
 export function bestSafeAt(items: CatalogItem[], amount: number, driver: DriverProfile = DEFAULT_DRIVER): CatalogItem | null {

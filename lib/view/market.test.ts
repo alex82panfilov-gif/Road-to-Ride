@@ -63,8 +63,9 @@ test("at 320000 Elantra is affordable and Cerato is only short by less than a de
   assert.equal(almost?.item.slug, "kia-cerato-1");
   assert.ok(almost);
   assert.equal(roundToThousands(almost.gap), 1_000);
-  assert.match(almostNote(almost.item, almost.gap), /Cerato — не хватает/);
-  assert.match(almostNote(almost.item, almost.gap), /это меньше одного взноса/);
+  assert.match(almostNote(almost.item, almost.gap, 20_000), /Cerato — не хватает/);
+  assert.match(almostNote(almost.item, almost.gap, 20_000), /это меньше одного взноса/);
+  assert.match(almostNote(almost.item, 25_000, 20_000), /это меньше 3% цены/);
   assert.ok(almost.gap <= Math.max(20_000, purchasePrice(almost.item) * 0.03));
 });
 
