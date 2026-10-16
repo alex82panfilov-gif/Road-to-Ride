@@ -27,7 +27,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="ru" className="h-full antialiased">
+    <html lang="ru" className="h-full antialiased" suppressHydrationWarning>
       <body className="min-h-full">
         <script
           dangerouslySetInnerHTML={{
