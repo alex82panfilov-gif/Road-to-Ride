@@ -124,6 +124,10 @@ export function affordableReal(items: CatalogItem[], amount: number, driver: Dri
 }
 
 const ALMOST_RATE = 0.03;
+/** Ниже этого разрыва оценка «почти» не повод ждать. */
+export const ALMOST_SAME_SCORE = 0.3;
+/** С этого разрыва недобор стоит месяца ожидания. */
+export const ALMOST_WAIT_SCORE = 1.0;
 
 /** Недобор меньше взноса или меньше 3% реальной цены. Стартовый ориентир грубее этой щели. */
 export function almostAffordable(
@@ -145,7 +149,16 @@ export function almostAffordable(
   return { item: candidates[0].item, gap: candidates[0].gap };
 }
 
-export function almostNote(item: CatalogItem, gap: number, monthly: number): string {
+export function almostNote(item: CatalogItem, gap: number, monthly: number, todayScore: number | null = null): string {
+  if (todayScore !== null) {
+    const delta = item.score - todayScore;
+    if (delta < ALMOST_SAME_SCORE) {
+      return `${displayName(item)} почти по карману, но по оценке почти не отличается. Выбирайте по конкретному объявлению`;
+    }
+    if (delta >= ALMOST_WAIT_SCORE) {
+      return `За ${approxRub(gap)} — оценка ${scoreText(item.score)} вместо ${scoreText(todayScore)}. Стоит подождать`;
+    }
+  }
   const reason = gap <= monthly ? "это меньше одного взноса" : "это меньше 3% цены";
   return `${displayName(item)} — не хватает ${approxRub(gap)}, ${reason}`;
 }

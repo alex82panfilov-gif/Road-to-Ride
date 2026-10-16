@@ -7,6 +7,8 @@ import { purchaseQuote, realPrice } from "../meta.ts";
 import { tierFloor } from "../tiers.ts";
 import {
   aimContrast,
+  ALMOST_SAME_SCORE,
+  ALMOST_WAIT_SCORE,
   almostAffordable,
   almostNote,
   bestSafeAt,
@@ -62,11 +64,26 @@ test("at 320000 Elantra is affordable and Cerato is only short by less than a de
   const almost = almostAffordable(catalog, 320_000, 20_000);
   assert.equal(almost?.item.slug, "kia-cerato-1");
   assert.ok(almost);
+  const today = bestSafeAt(catalog, 320_000);
+  assert.ok(today && almost);
+  assert.ok(almost.item.score - today.score < ALMOST_SAME_SCORE);
   assert.equal(roundToThousands(almost.gap), 1_000);
-  assert.match(almostNote(almost.item, almost.gap, 20_000), /Cerato — не хватает/);
-  assert.match(almostNote(almost.item, almost.gap, 20_000), /это меньше одного взноса/);
-  assert.match(almostNote(almost.item, 25_000, 20_000), /это меньше 3% цены/);
+  const text = almostNote(almost.item, almost.gap, 20_000, today.score);
+  assert.match(text, /Cerato почти по карману, но по оценке почти не отличается/);
+  assert.match(text, /Выбирайте по конкретному объявлению/);
+  assert.doesNotMatch(text, /Стоит подождать/);
   assert.ok(almost.gap <= Math.max(20_000, purchasePrice(almost.item) * 0.03));
+});
+
+test("at 800000 Almera is a full point above Octavia and worth the short wait", () => {
+  const today = bestSafeAt(catalog, 800_000);
+  const almost = almostAffordable(catalog, 800_000, 20_000);
+  assert.equal(today?.slug, "skoda-octavia-a5");
+  assert.equal(almost?.item.slug, "nissan-almera-g15");
+  assert.ok(today && almost);
+  assert.ok(almost.item.score - today.score >= ALMOST_WAIT_SCORE);
+  const text = almostNote(almost.item, almost.gap, 20_000, today.score);
+  assert.match(text, /За .* — оценка 6,9 вместо 5,6\. Стоит подождать/);
 });
 
 test("at 320000 today is not Fusion because the real price is higher", () => {
