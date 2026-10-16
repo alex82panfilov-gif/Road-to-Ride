@@ -24,7 +24,8 @@
   --radius-lg: 22px;
   --radius-full: 999px;
 
-  --bg-primary: #ffffff;
+  --bg: #ffffff;
+  --bg-primary: var(--bg);
   --bg-secondary: #f5f5f7;
   --bg-elevated: #ffffff;
   --text-primary: #1d1d1f;
@@ -55,7 +56,8 @@
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg-primary: #000000;
+    --bg: #000000;
+    --bg-primary: var(--bg);
     --bg-secondary: #1c1c1e;
     --bg-elevated: #2c2c2e;
     --text-primary: #f5f5f7;
@@ -76,7 +78,8 @@
 }
 
 :root[data-theme="dark"] {
-  --bg-primary: #000000;
+  --bg: #000000;
+  --bg-primary: var(--bg);
   --bg-secondary: #1c1c1e;
   --bg-elevated: #2c2c2e;
   --text-primary: #f5f5f7;

@@ -17,6 +17,14 @@ export function Shell({ items, children }: { items: CatalogItem[]; children: Rea
   const { data, update } = useUser();
   const { setDepositOpen, setSearchOpen, searchOpen } = useUi();
   const [online, setOnline] = useState(true);
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 0);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   useEffect(() => {
     const sync = () => setOnline(navigator.onLine);
@@ -54,7 +62,7 @@ export function Shell({ items, children }: { items: CatalogItem[]; children: Rea
       <a href="#content" className="skip-link">
         К содержимому
       </a>
-      <header className="bar-blur sticky top-0 z-30 border-b border-line">
+      <header className={`site-header sticky top-0 z-30 ${scrolled ? "is-scrolled" : ""}`}>
         <div className="mx-auto flex min-h-16 max-w-5xl flex-wrap items-center gap-3 px-4 py-2">
           <Link href="/" className="leading-tight no-underline">
             <span className="block font-semibold text-ink">{labels.siteName}</span>
