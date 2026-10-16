@@ -6,6 +6,7 @@ import { Model, SnapshotFile } from "../lib/schema.ts";
 import { applyRows, gearboxTypeOf, listingIssues, quantile, rowsFromCsv } from "./import-listings.ts";
 
 const cerato = Model.parse(JSON.parse(fs.readFileSync(path.join("data", "models", "kia-cerato-1.json"), "utf8")));
+const elantra = Model.parse(JSON.parse(fs.readFileSync(path.join("data", "models", "hyundai-elantra-xd.json"), "utf8")));
 const snapshot = SnapshotFile.parse(JSON.parse(fs.readFileSync(path.join("data", "snapshots", "2026-10.json"), "utf8")));
 
 const header = "slug,platform,listingId,year,mileageKm,priceRub,engine,gearbox";
@@ -40,6 +41,20 @@ test("one Cerato row updates that model and leaves the month a seed", () => {
   assert.equal(applied.file.schemaVersion, 2);
   const untouched = applied.file.snapshots.find((item) => item.slug === "ford-fusion");
   assert.equal(untouched?.listings, undefined);
+});
+
+test("an Elantra 2.0 does not enter the 1.6 automatic sample", () => {
+  const parsed = rowsFromCsv(`${header}\nhyundai-elantra-xd,autoru,el2,2005,117894,289000,2.0,4АКПП`);
+  const applied = applyRows(snapshot, parsed.rows, new Map([[elantra.slug, elantra]]));
+  assert.ok(applied.errors.some((error) => error.includes("не бывает коробки AT")));
+  assert.equal(applied.file.snapshots.find((item) => item.slug === "hyundai-elantra-xd")?.listings, undefined);
+});
+
+test("an Elantra 1.6 automatic is accepted", () => {
+  const parsed = rowsFromCsv(`${header}\nhyundai-elantra-xd,autoru,el1,2005,117894,289000,1.6,4АКПП`);
+  const applied = applyRows(snapshot, parsed.rows, new Map([[elantra.slug, elantra]]));
+  assert.deepEqual(applied.errors, []);
+  assert.equal(applied.file.snapshots.find((item) => item.slug === "hyundai-elantra-xd")?.listings?.length, 1);
 });
 
 test("a gearbox the card does not allow is not written", () => {
