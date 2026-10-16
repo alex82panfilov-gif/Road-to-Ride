@@ -1,9 +1,11 @@
 import { adviseFor, type AdviceModel } from "../advice";
 import { scoreText } from "../cn";
 import { monthsToGoal } from "../forecast";
+import { approxRub } from "../format";
 import { DEFAULT_DRIVER, meta, osagoRange, realPrice, type DriverProfile } from "../meta";
 import {
   bestAt,
+  displayName,
   sweetSpotAmounts,
   type CatalogItem,
   type TierComparison,
@@ -119,6 +121,32 @@ export function nextDecentAt(items: CatalogItem[], amount: number, driver: Drive
 /** Модели, которые можно купить на эту сумму: реальная цена не выше копилки. */
 export function affordableReal(items: CatalogItem[], amount: number, driver: DriverProfile = DEFAULT_DRIVER): CatalogItem[] {
   return items.filter((item) => item.median > 0 && purchasePrice(item, driver) <= amount);
+}
+
+const ALMOST_RATE = 0.03;
+
+/** Недобор меньше взноса или меньше 3% реальной цены. Стартовый ориентир грубее этой щели. */
+export function almostAffordable(
+  items: CatalogItem[],
+  amount: number,
+  monthly: number,
+  driver: DriverProfile = DEFAULT_DRIVER,
+): { item: CatalogItem; gap: number } | null {
+  const candidates = openModels(items, driver)
+    .map((item) => {
+      const price = purchasePrice(item, driver);
+      return { item, gap: price - amount, price };
+    })
+    .filter(({ gap, price }) => gap > 0 && gap <= Math.max(monthly, price * ALMOST_RATE));
+  if (!candidates.length) return null;
+  candidates.sort(
+    (a, b) => b.item.score - a.item.score || a.gap - b.gap || a.item.slug.localeCompare(b.item.slug, "ru"),
+  );
+  return { item: candidates[0].item, gap: candidates[0].gap };
+}
+
+export function almostNote(item: CatalogItem, gap: number): string {
+  return `${displayName(item)} — не хватает ${approxRub(gap)}, это меньше одного взноса`;
 }
 
 export function bestSafeAt(items: CatalogItem[], amount: number, driver: DriverProfile = DEFAULT_DRIVER): CatalogItem | null {

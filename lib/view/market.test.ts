@@ -8,6 +8,8 @@ import { realPrice } from "../meta.ts";
 import { tierFloor } from "../tiers.ts";
 import {
   aimContrast,
+  almostAffordable,
+  almostNote,
   bestSafeAt,
   catalogBands,
   DECENT_SCORE,
@@ -54,6 +56,17 @@ test("320000 stays the exact piggy amount", () => {
   assert.ok(bands.pocket.every((item) => item.slug !== "ford-fusion"));
   assert.ok(bands.soon.some((item) => item.slug === "kia-cerato-1"));
   assert.ok(bands.soon.some((item) => item.slug === "ford-fusion"));
+});
+
+test("at 320000 Elantra is affordable and Cerato is only short by less than a deposit", () => {
+  assert.equal(bestSafeAt(catalog, 320_000)?.slug, "hyundai-elantra-xd");
+  const almost = almostAffordable(catalog, 320_000, 20_000);
+  assert.equal(almost?.item.slug, "kia-cerato-1");
+  assert.ok(almost);
+  assert.equal(roundToThousands(almost.gap), 1_000);
+  assert.match(almostNote(almost.item, almost.gap), /Cerato — не хватает/);
+  assert.match(almostNote(almost.item, almost.gap), /это меньше одного взноса/);
+  assert.ok(almost.gap <= Math.max(20_000, purchasePrice(almost.item) * 0.03));
 });
 
 test("at 320000 today is not Fusion because the real price is higher", () => {
