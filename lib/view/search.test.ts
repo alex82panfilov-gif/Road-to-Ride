@@ -68,18 +68,18 @@ test("a measured Polo uses the quartile band and still keeps the taxi floor", ()
   assert.match(result.caption, /1\.6 110 л\.с\., АКПП/);
 });
 
-test("Elantra XD seed has no model floor and stays at 105 hp, not the HD's 122", () => {
+test("Elantra XD seed has no model floor and keeps 105–107 hp, not the HD's 122", () => {
   const result = searchLinks(load("hyundai-elantra-xd"), { median: 200_000, isSeed: true, confidence: "low" });
   assert.equal(result.measured, false);
   assert.equal(result.priceFrom, PRICE_MIN);
   assert.equal(result.priceTo, 1_500_000);
-  assert.deepEqual(result.power, { from: 105, to: 105 });
-  assert.deepEqual(result.engines.map((engine) => engine.hp), [105]);
+  assert.deepEqual(result.power, { from: 105, to: 107 });
+  assert.deepEqual(result.engines.map((engine) => engine.hp), [105, 107]);
   assert.match(result.links.drom, /minprice=100000&maxprice=1500000/);
-  assert.match(result.links.drom, /minpower=105&maxpower=105/);
+  assert.match(result.links.drom, /minpower=105&maxpower=107/);
   assert.doesNotMatch(result.caption, /от /);
   assert.match(result.caption, /Цена пока не измерена — показываем весь рынок/);
-  assert.match(result.caption, /1\.6 105 л\.с\./);
+  assert.match(result.caption, /1\.6 105–107 л\.с\./);
 });
 
 test("Solaris at 800 000 keeps a piggy-bank link because that budget clears the taxi floor", () => {
