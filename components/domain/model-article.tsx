@@ -50,8 +50,9 @@ export function ModelArticle({
     return paired.find((row) => row.item.slug === model.slug)?.advice ?? null;
   }, [items, budget, model.slug]);
   const hp = model.engines.find((engine) => engine.recommended)?.hp ?? model.engines[0].hp;
-  const purchase = realPrice(price.median, hp, data.driver);
-  const osago = osagoRange(hp, data.driver);
+  const driver = { ...data.driver, onParentPolicy: data.onParentPolicy };
+  const purchase = realPrice(price.median, hp, driver);
+  const osago = osagoRange(hp, driver);
   const reserve = Math.round(price.median * meta.reserveRate);
   const tier = tierAmounts().find((amount) => amount >= price.median) ?? tierAmounts().at(-1)!;
   const expert = data.mode === "expert";

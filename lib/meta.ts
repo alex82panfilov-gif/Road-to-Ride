@@ -5,6 +5,8 @@ import { plural } from "./format";
 export type DriverProfile = {
   age: number;
   experienceYears: number;
+  /** Вписан в чужой полис и ездит без аварий. Класс КБМ тогда растёт от начального. */
+  onParentPolicy?: boolean;
 };
 
 export type Meta = {
@@ -27,6 +29,10 @@ export type Meta = {
     tbMax: number;
     territoryMoscow: number;
     kbmNewDriver: number;
+    kbmInitialClass: number;
+    kbmClasses: { class: string; coef: number }[];
+    kbmSourceTitle: string;
+    kbmSourceUrl: string;
     sourceTitle: string;
     sourceUrl: string;
     note: string;
@@ -86,12 +92,25 @@ export type PurchaseQuote = {
   age: number;
 };
 
-/** Цена к покупке и стаж на эту дату. КВС смотрит вперёд, КБМ — на стаж сегодня. */
+/** Класс КБМ на дату: без полиса остаётся начальным, с полисом +1 за каждый полный безаварийный год. */
+export function kbmClassAt(experienceYears: number, onParentPolicy: boolean): number {
+  if (!onParentPolicy) return meta.osago.kbmInitialClass;
+  return Math.min(13, meta.osago.kbmInitialClass + Math.floor(Math.max(0, experienceYears)));
+}
+
+export function kbmCoef(experienceYears: number, onParentPolicy: boolean): number {
+  const initial = meta.osago.kbmClasses.find((row) => row.class === String(meta.osago.kbmInitialClass))?.coef ?? meta.osago.kbmNewDriver;
+  const row = meta.osago.kbmClasses.find((item) => item.class === String(kbmClassAt(experienceYears, onParentPolicy)));
+  return row?.coef ?? initial;
+}
+
+/** Цена к покупке и стаж на эту дату. КВС и, если отмечен полис родителей, КБМ смотрят на дату покупки. */
 export function purchaseQuote(input: {
   median: number;
   hp: number;
   driver: DriverProfile;
   licenseDate: string | null;
+  onParentPolicy: boolean;
   saved: number;
   monthly: number;
   inflation: number;
@@ -103,7 +122,7 @@ export function purchaseQuote(input: {
   const priceAt = (assumed: number): PurchaseQuote => {
     const experienceYears = currentExperience + assumed / 12;
     const age = input.driver.age + assumed / 12;
-    const osago = osagoRange(input.hp, { age, experienceYears }, currentExperience).mid;
+    const osago = osagoRange(input.hp, { age, experienceYears, onParentPolicy: input.onParentPolicy }).mid;
     const reserve = Math.round(input.median * meta.reserveRate);
     const total =
       input.median + osago + meta.registrationRub + meta.diagnosticCardRub + meta.firstServiceRub + reserve;
@@ -131,14 +150,10 @@ export function purchaseQuote(input: {
   return quote;
 }
 
-export function osagoRange(
-  hp: number,
-  driver: DriverProfile = DEFAULT_DRIVER,
-  kbmExperience = driver.experienceYears,
-): { min: number; max: number; mid: number } {
+export function osagoRange(hp: number, driver: DriverProfile = DEFAULT_DRIVER): { min: number; max: number; mid: number } {
   const power = powerCoef(hp);
   const age = ageExperienceCoef(driver.age, driver.experienceYears);
-  const kbm = kbmExperience < 1 ? meta.osago.kbmNewDriver : 1;
+  const kbm = kbmCoef(driver.experienceYears, driver.onParentPolicy === true);
   const factor = power * meta.osago.territoryMoscow * kbm * age;
   const min = Math.round(meta.osago.tbMin * factor);
   const max = Math.round(meta.osago.tbMax * factor);

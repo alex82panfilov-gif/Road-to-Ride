@@ -82,7 +82,7 @@ export function RoadFork({ items }: { items: CatalogItem[] }) {
   if (!ready) return null;
 
   const amount = shownSavings(saved);
-  const driver = data.driver;
+  const driver = { ...data.driver, onParentPolicy: data.onParentPolicy };
   const inflation = inflationOf(data);
   const today = bestSafeAt(items, amount, driver);
   const almost = almostAffordable(items, amount, data.monthly, driver);
@@ -101,6 +101,7 @@ export function RoadFork({ items }: { items: CatalogItem[] }) {
       hp: car.hp,
       driver,
       licenseDate: data.licenseDate,
+      onParentPolicy: data.onParentPolicy,
       saved: amount,
       monthly: data.monthly,
       inflation,

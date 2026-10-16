@@ -116,6 +116,7 @@ test("at 0 the fork names Matiz and a car scored at least 4.5", () => {
       hp: item.hp,
       driver: { age: 20, experienceYears: 0 },
       licenseDate: null,
+      onParentPolicy: false,
       saved: 0,
       monthly: 20_000,
       inflation: 0.007,

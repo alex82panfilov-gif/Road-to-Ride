@@ -38,6 +38,7 @@ export function SavingsPanel({ items }: { items: CatalogItem[] }) {
         hp: goal.hp,
         driver: data.driver,
         licenseDate: data.licenseDate,
+        onParentPolicy: data.onParentPolicy,
         saved,
         monthly: data.monthly,
         inflation: inflationOf(data),

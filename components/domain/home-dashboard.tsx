@@ -46,6 +46,7 @@ export function HomeDashboard({ items }: { items: CatalogItem[] }) {
         hp: goal.hp,
         driver: data.driver,
         licenseDate: data.licenseDate,
+        onParentPolicy: data.onParentPolicy,
         saved: amount,
         monthly: data.monthly,
         inflation: inflationOf(data),
@@ -53,7 +54,7 @@ export function HomeDashboard({ items }: { items: CatalogItem[] }) {
       })
     : null;
   const goalPrice = goalQuote?.total ?? null;
-  const unlocked = level > data.seenLevel && level > 0 ? bestSafeAt(items, amountForLevel(level), data.driver) : null;
+  const unlocked = level > data.seenLevel && level > 0 ? bestSafeAt(items, amountForLevel(level), { ...data.driver, onParentPolicy: data.onParentPolicy }) : null;
   const people = new Set(data.deposits.map((deposit) => deposit.by)).size;
   const badges = earnedBadges({
     saved: amount,
@@ -118,6 +119,7 @@ export function HomeDashboard({ items }: { items: CatalogItem[] }) {
           asOf={asOf}
           driver={data.driver}
           licenseDate={data.licenseDate}
+          onParentPolicy={data.onParentPolicy}
         />
       ) : null}
       {badges.length ? (
@@ -143,6 +145,7 @@ function ForecastLine({
   asOf,
   driver,
   licenseDate,
+  onParentPolicy,
 }: {
   saved: number;
   monthly: number;
@@ -153,6 +156,7 @@ function ForecastLine({
   asOf: string | null;
   driver: DriverProfile;
   licenseDate: string | null;
+  onParentPolicy: boolean;
 }) {
   if (monthly <= 0) {
     return <p className="text-sm text-muted">Укажите ежемесячный взнос в копилке — появится прогноз до {name}.</p>;
@@ -166,6 +170,7 @@ function ForecastLine({
         hp: car.hp,
         driver,
         licenseDate,
+        onParentPolicy,
         saved,
         monthly,
         inflation,

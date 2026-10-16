@@ -39,6 +39,8 @@ export type UserData = {
   driver: DriverProfile;
   /** Дата прав категории B. null — меньше года назад. */
   licenseDate: string | null;
+  /** Вписан в полис родителей и ездит без аварий. */
+  onParentPolicy: boolean;
 };
 
 const DepositSchema = z.object({
@@ -74,6 +76,7 @@ const UserSchema = z.object({
     experienceYears: z.number().min(0).max(60),
   }),
   licenseDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable(),
+  onParentPolicy: z.boolean(),
 });
 
 export function defaultUser(): UserData {
@@ -93,6 +96,7 @@ export function defaultUser(): UserData {
     backupReminderMonth: null,
     driver: { ...DEFAULT_DRIVER },
     licenseDate: null,
+    onParentPolicy: false,
   };
 }
 
@@ -117,6 +121,7 @@ function migrate(raw: unknown): UserData {
     ...record,
     version: 1,
     licenseDate: licenseOf(record.licenseDate),
+    onParentPolicy: record.onParentPolicy === true,
     driver: { ...base.driver, ...(record.driver as object) },
   };
   const parsed = UserSchema.safeParse(candidate);
@@ -163,6 +168,7 @@ export function parseImport(raw: string): UserData {
     ...json,
     version: 1,
     licenseDate: licenseOf(json.licenseDate),
+    onParentPolicy: json.onParentPolicy === true,
     driver: { ...base.driver, ...driver },
   });
   if (!parsed.success) throw new Error("Файл копилки не подошёл");

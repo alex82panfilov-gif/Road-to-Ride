@@ -16,7 +16,10 @@ export function CostCalculator({ item, others }: { item: CatalogItem; others: Ca
   const [fuelPrice, setFuel] = useState(meta.fuelPriceRub);
   const [otherSlug, setOtherSlug] = useState("");
   const [asOf, setAsOf] = useState("");
-  const driver = data.driver;
+  const driver = useMemo(
+    () => ({ ...data.driver, onParentPolicy: data.onParentPolicy }),
+    [data.driver, data.onParentPolicy],
+  );
   useEffect(() => {
     setAsOf(todayIso());
   }, []);
@@ -25,6 +28,7 @@ export function CostCalculator({ item, others }: { item: CatalogItem; others: Ca
     hp: item.hp,
     driver,
     licenseDate: data.licenseDate,
+    onParentPolicy: data.onParentPolicy,
     saved,
     monthly: data.monthly,
     inflation: inflationOf(data),

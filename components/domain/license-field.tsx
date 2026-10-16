@@ -54,6 +54,16 @@ export function LicenseField() {
       ) : (
         <p className="text-sm text-muted">По умолчанию стаж меньше года. К дате покупки он вырастет, и полис посчитается уже с ним.</p>
       )}
+      <label className="flex items-start gap-3 text-sm">
+        <input
+          type="checkbox"
+          className="mt-1"
+          checked={data.onParentPolicy}
+          onChange={(event) => update((current) => ({ ...current, onParentPolicy: event.target.checked }))}
+        />
+        <span>Вписан в полис родителей, без аварий</span>
+      </label>
+      <p className="text-sm text-muted">Без галочки КБМ остаётся начальным. С галочкой класс растёт на один за каждый полный год без аварий.</p>
     </div>
   );
 }
