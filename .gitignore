@@ -43,3 +43,7 @@ next-env.d.ts
 # generated
 project_dump.md
 docs/agent-input-*.md
+
+# local agent files, not part of the site
+/export_project_UPD.py
+/used-car-price-snapshot.skill
