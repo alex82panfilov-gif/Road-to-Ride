@@ -1,0 +1,93 @@
+{
+  "fuelLPer100": 8.4,
+  "avoid": [
+    "Машины, у которых арки уже в пузырях под краской"
+  ],
+  "slug": "mitsubishi-lancer-9",
+  "aliases": [
+    "lancer-9"
+  ],
+  "brand": "Mitsubishi",
+  "model": "Lancer",
+  "generation": "IX",
+  "years": [
+    2003,
+    2010
+  ],
+  "body": "sedan",
+  "summary": "Надёжный автомат и простой мотор. Главный враг — ржавчина, а не коробка.",
+  "engines": [
+    {
+      "volumeL": 1.6,
+      "hp": 98,
+      "fuel": "petrol",
+      "timing": "belt",
+      "recommended": true
+    }
+  ],
+  "gearboxes": [
+    {
+      "type": "AT",
+      "name": "4АКПП INVECS-II",
+      "verdict": "recommended"
+    }
+  ],
+  "mileage": {
+    "goodMax": 150000,
+    "okMax": 220000,
+    "avoidFrom": 300000
+  },
+  "subScores": {
+    "reliability": 6,
+    "safety": 5,
+    "ownershipCost": 4.5,
+    "purchaseRisk": 5,
+    "liquidity": 5.5
+  },
+  "subScoreNotes": {
+    "reliability": "Автомат и мотор живучие. Кузов сдаётся раньше агрегатов.",
+    "safety": "Средний уровень тех лет.",
+    "ownershipCost": "Запчасти чуть дороже корейской тройки, но предсказуемые.",
+    "purchaseRisk": "Ищите гнилые арки и пороги. Переваренная машина — частая история.",
+    "liquidity": "Репутация помогает продать, если кузов честный."
+  },
+  "risks": [
+    {
+      "title": "Коррозия арок, порогов и стаканов",
+      "severity": "critical",
+      "stage": "purchase",
+      "howToCheck": "Подъёмник, эндоскоп скрытых полостей, магнит",
+      "repairCostRub": [
+        30000,
+        120000
+      ],
+      "sources": [
+        "https://www.drom.ru/catalog/mitsubishi/lancer/",
+        "https://www.zr.ru/"
+      ]
+    },
+    {
+      "title": "Ремень ГРМ",
+      "severity": "medium",
+      "stage": "ownership",
+      "howToCheck": "Срок замены по сервисной книжке или заказ-наряду",
+      "repairCostRub": [
+        8000,
+        18000
+      ],
+      "sources": [
+        "https://www.zr.ru/",
+        "https://www.zr.ru/"
+      ]
+    }
+  ],
+  "checklist": [
+    "Сверить VIN на кузове, в ПТС и на табличке",
+    "Проверить ограничения на сайте Госавтоинспекции и в реестре залогов",
+    "Посмотреть толщиномером крылья, стойки, крышу и пороги",
+    "Завести холодным и прогретым, послушать автомат при переключениях",
+    "Проехать 10–15 минут: разгон, торможение, поворот руля до упора",
+    "Попросить заказ-наряды по маслу в коробке и по двигателю",
+    "Открыть багажник и посмотреть нишу запасного колеса на ржавчину"
+  ]
+}

@@ -1,0 +1,98 @@
+{
+  "fuelLPer100": 7.5,
+  "avoid": [
+    "Вариатор без единой замены масла"
+  ],
+  "slug": "renault-logan-2",
+  "aliases": [
+    "logan-2"
+  ],
+  "brand": "Renault",
+  "model": "Logan",
+  "generation": "II",
+  "years": [
+    2014,
+    2022
+  ],
+  "body": "sedan",
+  "summary": "Дешёвый в содержании седан. Автомат DP2 приемлем, вариатор поздних лет — только со свежим маслом.",
+  "engines": [
+    {
+      "volumeL": 1.6,
+      "hp": 102,
+      "fuel": "petrol",
+      "timing": "belt",
+      "recommended": true
+    }
+  ],
+  "gearboxes": [
+    {
+      "type": "AT",
+      "name": "4АКПП DP2",
+      "verdict": "acceptable"
+    },
+    {
+      "type": "CVT",
+      "name": "вариатор JF015E",
+      "verdict": "acceptable"
+    }
+  ],
+  "mileage": {
+    "goodMax": 120000,
+    "okMax": 190000,
+    "avoidFrom": 260000
+  },
+  "subScores": {
+    "reliability": 6.5,
+    "safety": 5.5,
+    "ownershipCost": 8,
+    "purchaseRisk": 6,
+    "liquidity": 6
+  },
+  "subScoreNotes": {
+    "reliability": "Мотор простой. Обе коробки требуют обслуживания, но не сюрприз вроде PowerShift.",
+    "safety": "Базовая безопасность, без излишеств.",
+    "ownershipCost": "Один из лидеров по дешевизне запчастей и налога.",
+    "purchaseRisk": "Много бывших такси. Проверяйте пробег по заказ-нарядам.",
+    "liquidity": "Берут всегда, когда нужна просторная и недорогая машина."
+  },
+  "risks": [
+    {
+      "title": "Автомат DP2 перегревается в пробках",
+      "severity": "medium",
+      "stage": "purchase",
+      "howToCheck": "Долгая поездка и смотреть, не появляются ли толчки",
+      "repairCostRub": [
+        20000,
+        80000
+      ],
+      "sources": [
+        "https://www.drom.ru/catalog/renault/logan/",
+        "https://www.zr.ru/"
+      ]
+    },
+    {
+      "title": "Слабое ЛКП и сколы",
+      "severity": "low",
+      "stage": "ownership",
+      "howToCheck": "Капот и кромки дверей",
+      "repairCostRub": [
+        5000,
+        20000
+      ],
+      "sources": [
+        "https://www.zr.ru/",
+        "https://www.zr.ru/"
+      ]
+    }
+  ],
+  "checklist": [
+    "Сверить VIN на кузове, в ПТС и на табличке",
+    "Проверить ограничения на сайте Госавтоинспекции и в реестре залогов",
+    "Посмотреть толщиномером крылья, стойки, крышу и пороги",
+    "Завести холодным и прогретым, послушать автомат при переключениях",
+    "Проехать 10–15 минут: разгон, торможение, поворот руля до упора",
+    "Попросить заказ-наряды по маслу в коробке и по двигателю",
+    "Спросить, DP2 это или вариатор, и когда меняли масло"
+  ]
+}

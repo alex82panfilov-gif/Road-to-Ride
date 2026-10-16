@@ -1,0 +1,105 @@
+{
+  "fuelLPer100": 7.2,
+  "avoid": [
+    "Объявления без фото моторного отсека и VIN"
+  ],
+  "slug": "kia-rio-3",
+  "aliases": [
+    "rio-3"
+  ],
+  "brand": "Kia",
+  "model": "Rio",
+  "generation": "III",
+  "years": [
+    2011,
+    2017
+  ],
+  "body": "sedan",
+  "summary": "Близнец Соляриса по технике. Те же правила: 1.6, классический автомат, живой катализатор.",
+  "engines": [
+    {
+      "volumeL": 1.4,
+      "hp": 107,
+      "fuel": "petrol",
+      "timing": "chain",
+      "recommended": false
+    },
+    {
+      "volumeL": 1.6,
+      "hp": 123,
+      "fuel": "petrol",
+      "timing": "chain",
+      "recommended": true
+    }
+  ],
+  "gearboxes": [
+    {
+      "type": "AT",
+      "name": "4АКПП A4CF1",
+      "verdict": "recommended"
+    },
+    {
+      "type": "AT",
+      "name": "6АКПП A6GF1",
+      "verdict": "recommended"
+    }
+  ],
+  "mileage": {
+    "goodMax": 120000,
+    "okMax": 180000,
+    "avoidFrom": 240000
+  },
+  "subScores": {
+    "reliability": 7.6,
+    "safety": 7.5,
+    "ownershipCost": 7,
+    "purchaseRisk": 7,
+    "liquidity": 8
+  },
+  "subScoreNotes": {
+    "reliability": "Та же платформа, что у Solaris I. Разница чаще в салоне и комплектации, не в ресурсе.",
+    "safety": "Сопоставимо с Солярисом тех лет.",
+    "ownershipCost": "Обслуживание массовое и предсказуемое.",
+    "purchaseRisk": "Смотрите дубликаты объявлений и скрученный пробег — модель очень массовая.",
+    "liquidity": "Продаётся легко почти круглый год."
+  },
+  "risks": [
+    {
+      "title": "Износ катализатора",
+      "severity": "medium",
+      "stage": "ownership",
+      "howToCheck": "Эндоскопия и отсутствие ошибки по лямбда-зонду",
+      "repairCostRub": [
+        15000,
+        60000
+      ],
+      "sources": [
+        "https://www.drom.ru/catalog/kia/rio/",
+        "https://www.zr.ru/"
+      ]
+    },
+    {
+      "title": "Пыльники и рулевая",
+      "severity": "low",
+      "stage": "purchase",
+      "howToCheck": "Осмотр рейки и наконечников на подъёмнике",
+      "repairCostRub": [
+        7000,
+        25000
+      ],
+      "sources": [
+        "https://www.zr.ru/",
+        "https://www.zr.ru/"
+      ]
+    }
+  ],
+  "checklist": [
+    "Сверить VIN на кузове, в ПТС и на табличке",
+    "Проверить ограничения на сайте Госавтоинспекции и в реестре залогов",
+    "Посмотреть толщиномером крылья, стойки, крышу и пороги",
+    "Завести холодным и прогретым, послушать автомат при переключениях",
+    "Проехать 10–15 минут: разгон, торможение, поворот руля до упора",
+    "Попросить заказ-наряды по маслу в коробке и по двигателю",
+    "Сравнить пробег в объявлении с заказ-нарядами и состоянием руля"
+  ]
+}

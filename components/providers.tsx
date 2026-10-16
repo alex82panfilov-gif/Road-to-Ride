@@ -1,0 +1,187 @@
+"use client";
+
+import { Sheet } from "@/components/ui/sheet";
+import { ToastProvider, useToast } from "@/components/ui/toast";
+import { labels } from "@/lib/content";
+import { todayIso } from "@/lib/format";
+import {
+  defaultUser,
+  loadUser,
+  parseImport,
+  saveUser,
+  savedAmount,
+  type ContributorId,
+  type Deposit,
+  type UserData,
+} from "@/lib/storage";
+import { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
+
+type UserApi = {
+  ready: boolean;
+  data: UserData;
+  saved: number;
+  update: (recipe: (current: UserData) => UserData) => void;
+  addDeposit: (input: { amount: number; date: string; by: ContributorId; note?: string }) => void;
+  removeDeposit: (id: string) => void;
+  replaceAll: (next: UserData) => void;
+};
+
+const UserContext = createContext<UserApi | null>(null);
+const UiContext = createContext<{
+  depositOpen: boolean;
+  setDepositOpen: (open: boolean) => void;
+  searchOpen: boolean;
+  setSearchOpen: (open: boolean) => void;
+} | null>(null);
+
+export function useUser() {
+  const value = useContext(UserContext);
+  if (!value) throw new Error("useUser вне провайдера");
+  return value;
+}
+
+export function useUi() {
+  const value = useContext(UiContext);
+  if (!value) throw new Error("useUi вне провайдера");
+  return value;
+}
+
+function applyTheme(theme: UserData["theme"]) {
+  if (theme === "system") delete document.documentElement.dataset.theme;
+  else document.documentElement.dataset.theme = theme;
+}
+
+function UserState({ children }: { children: React.ReactNode }) {
+  const [data, setData] = useState<UserData>(defaultUser);
+  const [ready, setReady] = useState(false);
+  const toast = useToast();
+  const dataRef = useRef(data);
+  dataRef.current = data;
+
+  useEffect(() => {
+    const loaded = loadUser();
+    setData(loaded);
+    applyTheme(loaded.theme);
+    setReady(true);
+  }, []);
+
+  useEffect(() => {
+    if (!ready) return;
+    saveUser(data);
+    applyTheme(data.theme);
+  }, [data, ready]);
+
+  const api = useMemo<UserApi>(() => {
+    const update = (recipe: (current: UserData) => UserData) => setData((current) => recipe(current));
+    return {
+      ready,
+      data,
+      saved: savedAmount(data),
+      update,
+      addDeposit: (input) => {
+        const deposit: Deposit = { id: crypto.randomUUID(), ...input };
+        update((current) => ({ ...current, deposits: [...current.deposits, deposit] }));
+      },
+      removeDeposit: (id) => {
+        const removed = dataRef.current.deposits.find((item) => item.id === id);
+        if (!removed) return;
+        setData((current) => ({ ...current, deposits: current.deposits.filter((item) => item.id !== id) }));
+        toast({
+          text: "Взнос удалён.",
+          action: "Отменить",
+          duration: 8000,
+          onAction: () =>
+            setData((current) =>
+              current.deposits.some((item) => item.id === removed.id)
+                ? current
+                : { ...current, deposits: [...current.deposits, removed] },
+            ),
+        });
+      },
+      replaceAll: (next) => setData(next),
+    };
+  }, [data, ready, toast]);
+
+  return <UserContext.Provider value={api}>{children}</UserContext.Provider>;
+}
+
+export function Providers({ children }: { children: React.ReactNode }) {
+  const [depositOpen, setDepositOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+
+  return (
+    <ToastProvider>
+      <UserState>
+        <UiContext.Provider value={{ depositOpen, setDepositOpen, searchOpen, setSearchOpen }}>
+          {children}
+          <DepositSheet open={depositOpen} onClose={() => setDepositOpen(false)} />
+        </UiContext.Provider>
+      </UserState>
+    </ToastProvider>
+  );
+}
+
+function DepositSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const { addDeposit, data } = useUser();
+  const [amount, setAmount] = useState("");
+  const [date, setDate] = useState("");
+  const [by, setBy] = useState<ContributorId>("me");
+  const [note, setNote] = useState("");
+
+  useEffect(() => {
+    setDate(todayIso());
+  }, []);
+
+  return (
+    <Sheet open={open} title={data.deposits.length ? "Новый взнос" : "Первый взнос"} onClose={onClose}>
+      <form
+        className="space-y-4"
+        onSubmit={(event) => {
+          event.preventDefault();
+          const value = Number(amount);
+          if (!Number.isFinite(value) || value <= 0) return;
+          addDeposit({ amount: Math.round(value), date, by, note: note.trim() || undefined });
+          setAmount("");
+          setNote("");
+          onClose();
+        }}
+      >
+        <label className="block text-sm">
+          Сумма, ₽
+          <input
+            inputMode="numeric"
+            required
+            value={amount}
+            onChange={(event) => setAmount(event.target.value)}
+            className="mt-1 h-12 w-full rounded-2xl bg-canvas-secondary px-4"
+          />
+        </label>
+        <label className="block text-sm">
+          Дата
+          <input type="date" required value={date} onChange={(event) => setDate(event.target.value)} className="mt-1 h-12 w-full rounded-2xl bg-canvas-secondary px-4" />
+        </label>
+        <label className="block text-sm">
+          От кого
+          <select value={by} onChange={(event) => setBy(event.target.value as ContributorId)} className="mt-1 h-12 w-full rounded-2xl bg-canvas-secondary px-4">
+            {Object.entries(labels.contributors).map(([id, label]) => (
+              <option key={id} value={id}>
+                {label}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="block text-sm">
+          Заметка
+          <input value={note} onChange={(event) => setNote(event.target.value)} className="mt-1 h-12 w-full rounded-2xl bg-canvas-secondary px-4" />
+        </label>
+        <button type="submit" className="h-12 w-full rounded-full bg-accent font-medium text-accent-ink">
+          Добавить взнос
+        </button>
+      </form>
+    </Sheet>
+  );
+}
+
+export function importUserJson(raw: string): UserData {
+  return parseImport(raw);
+}

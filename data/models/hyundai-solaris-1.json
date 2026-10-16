@@ -1,0 +1,120 @@
+{
+  "fuelLPer100": 7.2,
+  "avoid": [
+    "Машины без единого ТО по коробке",
+    "Сильный расход масла больше 0,5 л на 1000 км"
+  ],
+  "slug": "hyundai-solaris-1",
+  "aliases": [
+    "solaris-1"
+  ],
+  "brand": "Hyundai",
+  "model": "Solaris",
+  "generation": "I",
+  "years": [
+    2010,
+    2017
+  ],
+  "body": "sedan",
+  "summary": "Ориентир «нормальной первой машины». Берите 1.6 с классическим автоматом и подтверждённой заменой масла.",
+  "engines": [
+    {
+      "volumeL": 1.4,
+      "hp": 107,
+      "fuel": "petrol",
+      "timing": "chain",
+      "recommended": false
+    },
+    {
+      "volumeL": 1.6,
+      "hp": 123,
+      "fuel": "petrol",
+      "timing": "chain",
+      "recommended": true
+    }
+  ],
+  "gearboxes": [
+    {
+      "type": "AT",
+      "name": "4АКПП A4CF1",
+      "verdict": "recommended"
+    },
+    {
+      "type": "AT",
+      "name": "6АКПП A6GF1",
+      "verdict": "recommended"
+    }
+  ],
+  "mileage": {
+    "goodMax": 120000,
+    "okMax": 180000,
+    "avoidFrom": 240000
+  },
+  "subScores": {
+    "reliability": 7.5,
+    "safety": 7.5,
+    "ownershipCost": 7,
+    "purchaseRisk": 7,
+    "liquidity": 8
+  },
+  "subScoreNotes": {
+    "reliability": "Цепь и автомат A6GF1 предсказуемы, если масло в коробке меняли каждые 40–60 тыс. км.",
+    "safety": "Есть подушки и ESP на большинстве машин после рестайлинга.",
+    "ownershipCost": "Запчасти массовые, расход умеренный.",
+    "purchaseRisk": "Рынок большой, поэтому проще найти экземпляр с историей, но и перекупщиков много.",
+    "liquidity": "Одна из самых ликвидных машин каталога."
+  },
+  "risks": [
+    {
+      "title": "Катализатор и расход масла на больших пробегах",
+      "severity": "medium",
+      "stage": "ownership",
+      "howToCheck": "Эндоскопия цилиндров и анализ выхлопа, если мотор ест масло",
+      "repairCostRub": [
+        15000,
+        60000
+      ],
+      "sources": [
+        "https://www.drom.ru/catalog/hyundai/solaris/",
+        "https://www.zr.ru/"
+      ]
+    },
+    {
+      "title": "Стук рулевой рейки",
+      "severity": "medium",
+      "stage": "purchase",
+      "howToCheck": "Переставка на щебёнке и покачивание руля",
+      "repairCostRub": [
+        15000,
+        40000
+      ],
+      "sources": [
+        "https://www.zr.ru/",
+        "https://www.zr.ru/"
+      ]
+    },
+    {
+      "title": "Масло в автомате «на весь срок»",
+      "severity": "high",
+      "stage": "purchase",
+      "howToCheck": "Заказ-наряды. Если замен не было после 60 тыс. км — торг или отказ",
+      "repairCostRub": [
+        8000,
+        15000
+      ],
+      "sources": [
+        "https://www.zr.ru/",
+        "https://www.zr.ru/"
+      ]
+    }
+  ],
+  "checklist": [
+    "Сверить VIN на кузове, в ПТС и на табличке",
+    "Проверить ограничения на сайте Госавтоинспекции и в реестре залогов",
+    "Посмотреть толщиномером крылья, стойки, крышу и пороги",
+    "Завести холодным и прогретым, послушать автомат при переключениях",
+    "Проехать 10–15 минут: разгон, торможение, поворот руля до упора",
+    "Попросить заказ-наряды по маслу в коробке и по двигателю",
+    "Узнать, 4 или 6 ступеней, и дату последней замены масла ATF"
+  ]
+}

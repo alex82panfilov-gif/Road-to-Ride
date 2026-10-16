@@ -1,0 +1,107 @@
+{
+  "fuelLPer100": 7,
+  "avoid": [
+    "DSG DQ200",
+    "CFNA с расходом масла без ремонта поршневой"
+  ],
+  "slug": "volkswagen-polo-sedan",
+  "aliases": [
+    "polo-sedan",
+    "polo"
+  ],
+  "brand": "Volkswagen",
+  "model": "Polo",
+  "generation": "Sedan I",
+  "years": [
+    2010,
+    2020
+  ],
+  "body": "sedan",
+  "summary": "Выгодная точка около 850 тысяч. Берите поздний 1.6 CWVA с автоматом Aisin, не ранний CFNA и не DSG.",
+  "engines": [
+    {
+      "volumeL": 1.6,
+      "hp": 105,
+      "fuel": "petrol",
+      "timing": "chain",
+      "recommended": false
+    },
+    {
+      "volumeL": 1.6,
+      "hp": 110,
+      "fuel": "petrol",
+      "timing": "belt",
+      "recommended": true
+    }
+  ],
+  "gearboxes": [
+    {
+      "type": "AT",
+      "name": "6АКПП Aisin 09G",
+      "verdict": "recommended"
+    },
+    {
+      "type": "DCT",
+      "name": "DSG DQ200",
+      "verdict": "avoid"
+    }
+  ],
+  "mileage": {
+    "goodMax": 110000,
+    "okMax": 170000,
+    "avoidFrom": 230000
+  },
+  "subScores": {
+    "reliability": 8,
+    "safety": 8.5,
+    "ownershipCost": 6.5,
+    "purchaseRisk": 7.5,
+    "liquidity": 8.5
+  },
+  "subScoreNotes": {
+    "reliability": "CWVA с ремнём и Aisin — удачная пара. Ранний CFNA известен расходом масла.",
+    "safety": "Один из самых спокойных вариантов каталога по защите седоков.",
+    "ownershipCost": "Чуть дороже Соляриса в обслуживании, но без сюрпризов у рекомендованной версии.",
+    "purchaseRisk": "Путаница CFNA/CWVA и редкие DSG. Это проверяется по году и коду мотора.",
+    "liquidity": "Polo sedan уходит быстро, если обслуживание подтверждено."
+  },
+  "risks": [
+    {
+      "title": "Расход масла мотора CFNA",
+      "severity": "high",
+      "stage": "purchase",
+      "howToCheck": "Код двигателя и уровень масла. CFNA — до рестайлинга, CWVA предпочтительнее",
+      "repairCostRub": [
+        20000,
+        80000
+      ],
+      "sources": [
+        "https://www.drom.ru/catalog/volkswagen/polo/",
+        "https://www.zr.ru/"
+      ]
+    },
+    {
+      "title": "DSG вместо автомата",
+      "severity": "critical",
+      "stage": "purchase",
+      "howToCheck": "Селектор и код коробки. Нужен Aisin 09G",
+      "repairCostRub": [
+        60000,
+        150000
+      ],
+      "sources": [
+        "https://www.zr.ru/",
+        "https://www.zr.ru/"
+      ]
+    }
+  ],
+  "checklist": [
+    "Сверить VIN на кузове, в ПТС и на табличке",
+    "Проверить ограничения на сайте Госавтоинспекции и в реестре залогов",
+    "Посмотреть толщиномером крылья, стойки, крышу и пороги",
+    "Завести холодным и прогретым, послушать автомат при переключениях",
+    "Проехать 10–15 минут: разгон, торможение, поворот руля до упора",
+    "Попросить заказ-наряды по маслу в коробке и по двигателю",
+    "Сфотографировать шильду мотора: CWVA предпочтительнее CFNA"
+  ]
+}

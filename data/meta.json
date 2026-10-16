@@ -1,0 +1,48 @@
+{
+  "updatedAt": "2026-10-01",
+  "regionLabel": "Москва и Московская область",
+  "monthlyInflation": 0.007,
+  "reserveRate": 0.12,
+  "registrationRub": 2850,
+  "diagnosticCardRub": 0,
+  "firstServiceRub": 9000,
+  "annualServiceRub": 12000,
+  "fuelPriceRub": 64,
+  "kmPerMonthDefault": 1000,
+  "feedbackEmail": "",
+  "githubIssuesUrl": "",
+  "sweetSpots": [350000, 700000, 850000],
+  "disclaimer": "Цены — ориентир по открытым данным на дату обновления. Не является финансовой рекомендацией. Конкретную машину проверяйте на диагностике.",
+  "osago": {
+    "tbMin": 1646,
+    "tbMax": 7535,
+    "territoryMoscow": 1.8,
+    "kbmNewDriver": 1.17,
+    "note": "Упрощённая вилка: базовый тариф × территория Москвы × мощность × возраст/стаж × КБМ. Это не расчёт страховой и не сетка ЦБ один в один. Обновляйте коэффициенты в meta.json."
+  },
+  "powerCoef": [
+    { "upToHp": 50, "coef": 0.6 },
+    { "upToHp": 70, "coef": 1 },
+    { "upToHp": 100, "coef": 1.1 },
+    { "upToHp": 120, "coef": 1.2 },
+    { "upToHp": 150, "coef": 1.4 },
+    { "upToHp": 200, "coef": 1.6 },
+    { "upToHp": 999, "coef": 1.6 }
+  ],
+  "transportTax": [
+    { "upToHp": 100, "rubPerHp": 12 },
+    { "upToHp": 125, "rubPerHp": 25 },
+    { "upToHp": 150, "rubPerHp": 35 },
+    { "upToHp": 175, "rubPerHp": 45 },
+    { "upToHp": 200, "rubPerHp": 50 },
+    { "upToHp": 225, "rubPerHp": 65 },
+    { "upToHp": 250, "rubPerHp": 75 },
+    { "upToHp": 999, "rubPerHp": 150 }
+  ],
+  "sources": [
+    { "title": "Автостат", "url": "https://www.autostat.ru/" },
+    { "title": "Банк России", "url": "https://www.cbr.ru/" },
+    { "title": "Госавтоинспекция", "url": "https://xn--90adear.xn--p1ai/check/auto" },
+    { "title": "Реестр залогов", "url": "https://www.reestr-zalogov.ru/search/index" }
+  ]
+}

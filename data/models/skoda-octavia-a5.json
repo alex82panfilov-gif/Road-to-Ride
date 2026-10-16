@@ -1,0 +1,106 @@
+{
+  "fuelLPer100": 7.6,
+  "avoid": [
+    "Любая комплектация с DSG DQ200",
+    "1.8 TSI без истории по маслу"
+  ],
+  "slug": "skoda-octavia-a5",
+  "aliases": [
+    "octavia-a5"
+  ],
+  "brand": "Skoda",
+  "model": "Octavia",
+  "generation": "A5",
+  "years": [
+    2004,
+    2013
+  ],
+  "body": "wagon",
+  "summary": "Просторный универсал. Берите 1.6 с автоматом Aisin. Робот DSG и турбо 1.8 — другая история расходов.",
+  "engines": [
+    {
+      "volumeL": 1.6,
+      "hp": 102,
+      "fuel": "petrol",
+      "timing": "belt",
+      "recommended": true
+    },
+    {
+      "volumeL": 1.8,
+      "hp": 152,
+      "fuel": "petrol",
+      "timing": "chain",
+      "recommended": false
+    }
+  ],
+  "gearboxes": [
+    {
+      "type": "AT",
+      "name": "6АКПП Aisin 09G",
+      "verdict": "recommended"
+    },
+    {
+      "type": "DCT",
+      "name": "DSG DQ200",
+      "verdict": "avoid"
+    }
+  ],
+  "mileage": {
+    "goodMax": 140000,
+    "okMax": 210000,
+    "avoidFrom": 280000
+  },
+  "subScores": {
+    "reliability": 5.5,
+    "safety": 7.5,
+    "ownershipCost": 4.5,
+    "purchaseRisk": 5,
+    "liquidity": 6
+  },
+  "subScoreNotes": {
+    "reliability": "1.6 с Aisin — спокойный выбор. 1.8 TSI и DSG требуют бюджета на ремонт.",
+    "safety": "Платформа тех лет с нормальным набором подушек.",
+    "ownershipCost": "Подвеска и электрика дороже, чем у Соляриса.",
+    "purchaseRisk": "Важно не перепутать автомат и DSG в объявлении.",
+    "liquidity": "Универсал охотно берут семьи, продаётся уверенно."
+  },
+  "risks": [
+    {
+      "title": "Робот DSG DQ200",
+      "severity": "critical",
+      "stage": "purchase",
+      "howToCheck": "В объявлении и по VIN отличить DSG от автомата Aisin",
+      "repairCostRub": [
+        60000,
+        150000
+      ],
+      "sources": [
+        "https://www.drom.ru/catalog/skoda/octavia/",
+        "https://www.zr.ru/"
+      ]
+    },
+    {
+      "title": "Расход масла на 1.8 TSI",
+      "severity": "high",
+      "stage": "ownership",
+      "howToCheck": "Уровень масла и дым на перегазовке после трассы",
+      "repairCostRub": [
+        20000,
+        90000
+      ],
+      "sources": [
+        "https://www.zr.ru/",
+        "https://www.zr.ru/"
+      ]
+    }
+  ],
+  "checklist": [
+    "Сверить VIN на кузове, в ПТС и на табличке",
+    "Проверить ограничения на сайте Госавтоинспекции и в реестре залогов",
+    "Посмотреть толщиномером крылья, стойки, крышу и пороги",
+    "Завести холодным и прогретым, послушать автомат при переключениях",
+    "Проехать 10–15 минут: разгон, торможение, поворот руля до упора",
+    "Попросить заказ-наряды по маслу в коробке и по двигателю",
+    "По коду коробки понять, что это Aisin, а не робот"
+  ]
+}

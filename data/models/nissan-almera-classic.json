@@ -1,0 +1,107 @@
+{
+  "fuelLPer100": 8,
+  "avoid": [
+    "Сильные удары при включении D и R"
+  ],
+  "slug": "nissan-almera-classic",
+  "aliases": [
+    "almera-classic"
+  ],
+  "brand": "Nissan",
+  "model": "Almera Classic",
+  "generation": "B10",
+  "years": [
+    2006,
+    2013
+  ],
+  "body": "sedan",
+  "summary": "Первая заметная ступенька каталога. Простой 4-ступенчатый автомат и понятная конструкция.",
+  "engines": [
+    {
+      "volumeL": 1.6,
+      "hp": 107,
+      "fuel": "petrol",
+      "timing": "chain",
+      "recommended": true
+    }
+  ],
+  "gearboxes": [
+    {
+      "type": "AT",
+      "name": "4АКПП RE4F03B",
+      "verdict": "recommended"
+    }
+  ],
+  "mileage": {
+    "goodMax": 150000,
+    "okMax": 220000,
+    "avoidFrom": 300000
+  },
+  "subScores": {
+    "reliability": 5,
+    "safety": 4,
+    "ownershipCost": 5,
+    "purchaseRisk": 4,
+    "liquidity": 4
+  },
+  "subScoreNotes": {
+    "reliability": "Цепь и простой автомат прощают больше, чем роботы тех лет. Слабое место — возраст кузова.",
+    "safety": "Одна-две подушки в типичной машине. Для города терпимо, не эталон.",
+    "ownershipCost": "Запчасти распространены, налог умеренный.",
+    "purchaseRisk": "Много машин после такси и с перекрасом. Пробег часто не совпадает с возрастом.",
+    "liquidity": "Имя знакомое, продать реально, но уже не быстро."
+  },
+  "risks": [
+    {
+      "title": "Растяжение цепи и шум на холодную",
+      "severity": "medium",
+      "stage": "purchase",
+      "howToCheck": "Послушать секунд 10 после ночной стоянки",
+      "repairCostRub": [
+        15000,
+        40000
+      ],
+      "sources": [
+        "https://www.drom.ru/catalog/nissan/almera/",
+        "https://www.zr.ru/"
+      ]
+    },
+    {
+      "title": "Ржавчина задних арок",
+      "severity": "medium",
+      "stage": "purchase",
+      "howToCheck": "Заглянуть под уплотнитель крышки багажника и в арки",
+      "repairCostRub": [
+        10000,
+        40000
+      ],
+      "sources": [
+        "https://www.zr.ru/",
+        "https://www.zr.ru/"
+      ]
+    },
+    {
+      "title": "Автомат без свежего масла",
+      "severity": "medium",
+      "stage": "ownership",
+      "howToCheck": "Плавный разгон 40–80 км/ч без ударов",
+      "repairCostRub": [
+        8000,
+        20000
+      ],
+      "sources": [
+        "https://www.zr.ru/",
+        "https://www.zr.ru/"
+      ]
+    }
+  ],
+  "checklist": [
+    "Сверить VIN на кузове, в ПТС и на табличке",
+    "Проверить ограничения на сайте Госавтоинспекции и в реестре залогов",
+    "Посмотреть толщиномером крылья, стойки, крышу и пороги",
+    "Завести холодным и прогретым, послушать автомат при переключениях",
+    "Проехать 10–15 минут: разгон, торможение, поворот руля до упора",
+    "Попросить заказ-наряды по маслу в коробке и по двигателю",
+    "Холодный пуск: цепь не должна долго греметь"
+  ]
+}

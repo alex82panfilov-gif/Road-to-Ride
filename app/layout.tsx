@@ -1,0 +1,44 @@
+import type { Metadata, Viewport } from "next";
+import { Analytics } from "@vercel/analytics/next";
+import { Providers } from "@/components/providers";
+import { Shell } from "@/components/shell";
+import { catalog } from "@/lib/data";
+import "./globals.css";
+
+export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
+  title: {
+    default: "Первая машина",
+    template: "%s — Первая машина",
+  },
+  description: "Какую надёжную машину на автомате можно купить за свою сумму, сколько накопить до лучшего варианта и как не нарваться на проблемы.",
+  applicationName: "Первая машина",
+  manifest: "/manifest.webmanifest",
+};
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#000000" },
+  ],
+  width: "device-width",
+  initialScale: 1,
+};
+
+export default function RootLayout({ children }: LayoutProps<"/">) {
+  return (
+    <html lang="ru" className="h-full antialiased">
+      <body className="min-h-full">
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var t=localStorage.getItem("fm:theme");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t;}catch(e){}})();`,
+          }}
+        />
+        <Providers>
+          <Shell items={catalog}>{children}</Shell>
+        </Providers>
+        <Analytics />
+      </body>
+    </html>
+  );
+}

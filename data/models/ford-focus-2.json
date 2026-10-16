@@ -1,0 +1,100 @@
+{
+  "fuelLPer100": 8,
+  "avoid": [
+    "Версии 2.0, если бюджет на обслуживание как у 1.6"
+  ],
+  "slug": "ford-focus-2",
+  "aliases": [
+    "focus-2"
+  ],
+  "brand": "Ford",
+  "model": "Focus",
+  "generation": "II",
+  "years": [
+    2005,
+    2011
+  ],
+  "body": "hatchback",
+  "summary": "Приятный в ходу хэтчбек. Берите 1.6 с обычным 4-ступенчатым автоматом и живым кузовом.",
+  "engines": [
+    {
+      "volumeL": 1.6,
+      "hp": 115,
+      "fuel": "petrol",
+      "timing": "belt",
+      "recommended": true
+    },
+    {
+      "volumeL": 2,
+      "hp": 145,
+      "fuel": "petrol",
+      "timing": "chain",
+      "recommended": false
+    }
+  ],
+  "gearboxes": [
+    {
+      "type": "AT",
+      "name": "4АКПП 4F27E",
+      "verdict": "recommended"
+    }
+  ],
+  "mileage": {
+    "goodMax": 140000,
+    "okMax": 200000,
+    "avoidFrom": 270000
+  },
+  "subScores": {
+    "reliability": 5.2,
+    "safety": 6.5,
+    "ownershipCost": 4.5,
+    "purchaseRisk": 4.5,
+    "liquidity": 5.5
+  },
+  "subScoreNotes": {
+    "reliability": "Связка 1.6 и 4F27E понятная. Двухлитровые машины дороже в содержании.",
+    "safety": "Для своего времени Focus II оценивали хорошо, подушек обычно несколько.",
+    "ownershipCost": "Подвеска и рулевое требуют денег чаще, чем у Логана.",
+    "purchaseRisk": "Очень много машин после такси и с ремонтом переда. Нужна диагностика.",
+    "liquidity": "Имя по-прежнему продаёт машину быстрее ровесников."
+  },
+  "risks": [
+    {
+      "title": "Задняя подвеска и ступицы",
+      "severity": "medium",
+      "stage": "ownership",
+      "howToCheck": "Послушать гул на скорости 60–80 км/ч",
+      "repairCostRub": [
+        10000,
+        35000
+      ],
+      "sources": [
+        "https://www.drom.ru/catalog/ford/focus/",
+        "https://www.zr.ru/"
+      ]
+    },
+    {
+      "title": "Рулевая рейка",
+      "severity": "medium",
+      "stage": "purchase",
+      "howToCheck": "Покачать руль на заведённой машине: люфт и стук",
+      "repairCostRub": [
+        15000,
+        40000
+      ],
+      "sources": [
+        "https://www.zr.ru/",
+        "https://www.zr.ru/"
+      ]
+    }
+  ],
+  "checklist": [
+    "Сверить VIN на кузове, в ПТС и на табличке",
+    "Проверить ограничения на сайте Госавтоинспекции и в реестре залогов",
+    "Посмотреть толщиномером крылья, стойки, крышу и пороги",
+    "Завести холодным и прогретым, послушать автомат при переключениях",
+    "Проехать 10–15 минут: разгон, торможение, поворот руля до упора",
+    "Попросить заказ-наряды по маслу в коробке и по двигателю",
+    "Проверить люфт руля и гул задних ступиц на ходу"
+  ]
+}

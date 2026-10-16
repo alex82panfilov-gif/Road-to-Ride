@@ -1,0 +1,308 @@
+{
+  "month": "2026-10",
+  "generatedAt": "2026-10-01T09:00:00.000Z",
+  "marketSummary": {
+    "trend": "Стартовый ряд заложен с ростом около 0,7% в месяц от мая к октябрю. Это не замер рынка, а каркас, чтобы графики и уровни уже работали.",
+    "sources": [
+      "https://www.autostat.ru/"
+    ]
+  },
+  "snapshots": [
+    {
+      "month": "2026-10",
+      "slug": "hyundai-accent-2",
+      "region": "moscow",
+      "sampleSize": 0,
+      "p25": 234000,
+      "median": 260000,
+      "p75": 291000,
+      "medianMileageKm": 230000,
+      "medianYear": 2007,
+      "confidence": "low",
+      "sources": [
+        "https://www.autostat.ru/"
+      ],
+      "notes": "Стартовый ориентир для запуска каталога, не подсчёт объявлений. Замените снимок по docs/AGENT_PROMPT.md."
+    },
+    {
+      "month": "2026-10",
+      "slug": "kia-spectra",
+      "region": "moscow",
+      "sampleSize": 0,
+      "p25": 288000,
+      "median": 320000,
+      "p75": 358000,
+      "medianMileageKm": 200000,
+      "medianYear": 2008,
+      "confidence": "low",
+      "sources": [
+        "https://www.autostat.ru/"
+      ],
+      "notes": "Стартовый ориентир для запуска каталога, не подсчёт объявлений. Замените снимок по docs/AGENT_PROMPT.md."
+    },
+    {
+      "month": "2026-10",
+      "slug": "nissan-almera-classic",
+      "region": "moscow",
+      "sampleSize": 0,
+      "p25": 315000,
+      "median": 350000,
+      "p75": 392000,
+      "medianMileageKm": 185000,
+      "medianYear": 2009,
+      "confidence": "low",
+      "sources": [
+        "https://www.autostat.ru/"
+      ],
+      "notes": "Стартовый ориентир для запуска каталога, не подсчёт объявлений. Замените снимок по docs/AGENT_PROMPT.md."
+    },
+    {
+      "month": "2026-10",
+      "slug": "chevrolet-lacetti",
+      "region": "moscow",
+      "sampleSize": 0,
+      "p25": 396000,
+      "median": 440000,
+      "p75": 493000,
+      "medianMileageKm": 175000,
+      "medianYear": 2008,
+      "confidence": "low",
+      "sources": [
+        "https://www.autostat.ru/"
+      ],
+      "notes": "Стартовый ориентир для запуска каталога, не подсчёт объявлений. Замените снимок по docs/AGENT_PROMPT.md."
+    },
+    {
+      "month": "2026-10",
+      "slug": "ford-focus-2",
+      "region": "moscow",
+      "sampleSize": 0,
+      "p25": 468000,
+      "median": 520000,
+      "p75": 582000,
+      "medianMileageKm": 168000,
+      "medianYear": 2008,
+      "confidence": "low",
+      "sources": [
+        "https://www.autostat.ru/"
+      ],
+      "notes": "Стартовый ориентир для запуска каталога, не подсчёт объявлений. Замените снимок по docs/AGENT_PROMPT.md."
+    },
+    {
+      "month": "2026-10",
+      "slug": "mitsubishi-lancer-9",
+      "region": "moscow",
+      "sampleSize": 0,
+      "p25": 513000,
+      "median": 570000,
+      "p75": 638000,
+      "medianMileageKm": 190000,
+      "medianYear": 2007,
+      "confidence": "low",
+      "sources": [
+        "https://www.autostat.ru/"
+      ],
+      "notes": "Стартовый ориентир для запуска каталога, не подсчёт объявлений. Замените снимок по docs/AGENT_PROMPT.md."
+    },
+    {
+      "month": "2026-10",
+      "slug": "nissan-qashqai-j10",
+      "region": "moscow",
+      "sampleSize": 0,
+      "p25": 567000,
+      "median": 630000,
+      "p75": 706000,
+      "medianMileageKm": 160000,
+      "medianYear": 2010,
+      "confidence": "low",
+      "sources": [
+        "https://www.autostat.ru/"
+      ],
+      "notes": "Стартовый ориентир для запуска каталога, не подсчёт объявлений. Замените снимок по docs/AGENT_PROMPT.md."
+    },
+    {
+      "month": "2026-10",
+      "slug": "skoda-octavia-a5",
+      "region": "moscow",
+      "sampleSize": 0,
+      "p25": 594000,
+      "median": 660000,
+      "p75": 739000,
+      "medianMileageKm": 175000,
+      "medianYear": 2010,
+      "confidence": "low",
+      "sources": [
+        "https://www.autostat.ru/"
+      ],
+      "notes": "Стартовый ориентир для запуска каталога, не подсчёт объявлений. Замените снимок по docs/AGENT_PROMPT.md."
+    },
+    {
+      "month": "2026-10",
+      "slug": "ford-focus-3",
+      "region": "moscow",
+      "sampleSize": 0,
+      "p25": 612000,
+      "median": 680000,
+      "p75": 762000,
+      "medianMileageKm": 145000,
+      "medianYear": 2013,
+      "confidence": "low",
+      "sources": [
+        "https://www.autostat.ru/"
+      ],
+      "notes": "Стартовый ориентир для запуска каталога, не подсчёт объявлений. Замените снимок по docs/AGENT_PROMPT.md."
+    },
+    {
+      "month": "2026-10",
+      "slug": "nissan-almera-g15",
+      "region": "moscow",
+      "sampleSize": 0,
+      "p25": 630000,
+      "median": 700000,
+      "p75": 784000,
+      "medianMileageKm": 140000,
+      "medianYear": 2015,
+      "confidence": "low",
+      "sources": [
+        "https://www.autostat.ru/"
+      ],
+      "notes": "Стартовый ориентир для запуска каталога, не подсчёт объявлений. Замените снимок по docs/AGENT_PROMPT.md."
+    },
+    {
+      "month": "2026-10",
+      "slug": "mazda-3-bl",
+      "region": "moscow",
+      "sampleSize": 0,
+      "p25": 666000,
+      "median": 740000,
+      "p75": 829000,
+      "medianMileageKm": 155000,
+      "medianYear": 2011,
+      "confidence": "low",
+      "sources": [
+        "https://www.autostat.ru/"
+      ],
+      "notes": "Стартовый ориентир для запуска каталога, не подсчёт объявлений. Замените снимок по docs/AGENT_PROMPT.md."
+    },
+    {
+      "month": "2026-10",
+      "slug": "renault-logan-2",
+      "region": "moscow",
+      "sampleSize": 0,
+      "p25": 702000,
+      "median": 780000,
+      "p75": 874000,
+      "medianMileageKm": 135000,
+      "medianYear": 2017,
+      "confidence": "low",
+      "sources": [
+        "https://www.autostat.ru/"
+      ],
+      "notes": "Стартовый ориентир для запуска каталога, не подсчёт объявлений. Замените снимок по docs/AGENT_PROMPT.md."
+    },
+    {
+      "month": "2026-10",
+      "slug": "hyundai-solaris-1",
+      "region": "moscow",
+      "sampleSize": 0,
+      "p25": 738000,
+      "median": 820000,
+      "p75": 918000,
+      "medianMileageKm": 125000,
+      "medianYear": 2015,
+      "confidence": "low",
+      "sources": [
+        "https://www.autostat.ru/"
+      ],
+      "notes": "Стартовый ориентир для запуска каталога, не подсчёт объявлений. Замените снимок по docs/AGENT_PROMPT.md."
+    },
+    {
+      "month": "2026-10",
+      "slug": "kia-rio-3",
+      "region": "moscow",
+      "sampleSize": 0,
+      "p25": 756000,
+      "median": 840000,
+      "p75": 941000,
+      "medianMileageKm": 128000,
+      "medianYear": 2015,
+      "confidence": "low",
+      "sources": [
+        "https://www.autostat.ru/"
+      ],
+      "notes": "Стартовый ориентир для запуска каталога, не подсчёт объявлений. Замените снимок по docs/AGENT_PROMPT.md."
+    },
+    {
+      "month": "2026-10",
+      "slug": "volkswagen-polo-sedan",
+      "region": "moscow",
+      "sampleSize": 0,
+      "p25": 765000,
+      "median": 850000,
+      "p75": 952000,
+      "medianMileageKm": 112000,
+      "medianYear": 2017,
+      "confidence": "low",
+      "sources": [
+        "https://www.autostat.ru/"
+      ],
+      "notes": "Стартовый ориентир для запуска каталога, не подсчёт объявлений. Замените снимок по docs/AGENT_PROMPT.md."
+    },
+    {
+      "month": "2026-10",
+      "slug": "kia-ceed-2",
+      "region": "moscow",
+      "sampleSize": 0,
+      "p25": 837000,
+      "median": 930000,
+      "p75": 1042000,
+      "medianMileageKm": 130000,
+      "medianYear": 2015,
+      "confidence": "low",
+      "sources": [
+        "https://www.autostat.ru/"
+      ],
+      "notes": "Стартовый ориентир для запуска каталога, не подсчёт объявлений. Замените снимок по docs/AGENT_PROMPT.md."
+    },
+    {
+      "month": "2026-10",
+      "slug": "lada-vesta",
+      "region": "moscow",
+      "sampleSize": 0,
+      "p25": 864000,
+      "median": 960000,
+      "p75": 1075000,
+      "medianMileageKm": 110000,
+      "medianYear": 2019,
+      "confidence": "low",
+      "sources": [
+        "https://www.autostat.ru/"
+      ],
+      "notes": "Стартовый ориентир для запуска каталога, не подсчёт объявлений. Замените снимок по docs/AGENT_PROMPT.md."
+    },
+    {
+      "month": "2026-10",
+      "slug": "toyota-corolla-e150",
+      "region": "moscow",
+      "sampleSize": 0,
+      "p25": 891000,
+      "median": 990000,
+      "p75": 1109000,
+      "medianMileageKm": 165000,
+      "medianYear": 2010,
+      "confidence": "low",
+      "sources": [
+        "https://www.autostat.ru/"
+      ],
+      "notes": "Стартовый ориентир для запуска каталога, не подсчёт объявлений. Замените снимок по docs/AGENT_PROMPT.md."
+    }
+  ],
+  "newModels": [],
+  "flags": [
+    {
+      "slug": "all",
+      "issue": "Все медианы — стартовые ориентиры с confidence=low. Замените живым снимком."
+    }
+  ],
+  "changelog": "Октябрь 2026. В каталоге 18 моделей с автоматом от Accent до Corolla. Цены — стартовые ориентиры по Москве, уверенность низкая, выборки объявлений нет. Уровни 350, 700 и 850 тысяч заложены как заметные скачки оценки. Перед публичным запуском замените data/snapshots/2026-10.json снимком по методике."
+}
