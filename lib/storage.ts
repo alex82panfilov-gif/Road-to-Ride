@@ -30,6 +30,7 @@ export type UserData = {
   inflation: number | null;
   quizPassed: boolean;
   vinGuideDone: boolean;
+  vinSectionRead: boolean;
   mode: "beginner" | "expert";
   theme: "system" | "light" | "dark";
   checklists: Record<string, ChecklistState>;
@@ -54,6 +55,7 @@ const UserSchema = z.object({
   inflation: z.number().min(0).max(0.2).nullable(),
   quizPassed: z.boolean(),
   vinGuideDone: z.boolean(),
+  vinSectionRead: z.boolean(),
   mode: z.enum(["beginner", "expert"]),
   theme: z.enum(["system", "light", "dark"]),
   checklists: z.record(
@@ -80,6 +82,7 @@ export function defaultUser(): UserData {
     inflation: null,
     quizPassed: false,
     vinGuideDone: false,
+    vinSectionRead: false,
     mode: "beginner",
     theme: "system",
     checklists: {},

@@ -13,6 +13,18 @@ export function TierDelta({ comparison }: { comparison: TierComparison }) {
     );
   }
 
+  if (!comparison.current && comparison.next) {
+    return (
+      <Card>
+        <p className="text-sm text-muted">+50 000 = ?</p>
+        <h2 className="mt-1 text-lg font-semibold">Следующий уровень — {rub(comparison.nextBudget ?? 0)}</h2>
+        <p className="mt-3 text-sm">
+          {displayName(comparison.next)}, оценка {comparison.next.score.toFixed(1).replace(".", ",")}
+        </p>
+      </Card>
+    );
+  }
+
   if (!comparison.next) {
     return (
       <Card>

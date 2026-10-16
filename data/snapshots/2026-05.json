@@ -299,5 +299,7 @@
   ],
   "newModels": [],
   "flags": [],
-  "changelog": "Служебная точка стартового ряда цен."
+  "changelog": "Служебная точка стартового ряда цен.",
+  "schemaVersion": 2,
+  "seed": true
 }

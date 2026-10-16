@@ -16,12 +16,17 @@ const baseCheck = [
 ];
 
 function car(partial) {
-  return {
+  const model = {
     fuelLPer100: 8,
     avoid: [],
     ...partial,
     checklist: [...baseCheck, ...(partial.checklist ?? [])],
   };
+  model.engines = (model.engines ?? []).map((engine) => ({
+    ...engine,
+    code: engine.code ?? `${engine.volumeL} л / ${engine.hp} л.с.`,
+  }));
+  return model;
 }
 
 const models = [
@@ -637,8 +642,10 @@ const modelDir = path.join(root, "data", "models");
 fs.rmSync(modelDir, { recursive: true, force: true });
 fs.mkdirSync(modelDir, { recursive: true });
 
+const keepCards = new Set(["ford-focus-3", "mitsubishi-lancer-10"]);
 for (const item of models) {
   const { median, medianMileageKm, medianYear, ...model } = item;
+  if (keepCards.has(model.slug)) continue;
   writeJson(path.join(modelDir, `${model.slug}.json`), model);
 }
 
@@ -665,6 +672,8 @@ for (const [index, month] of months.entries()) {
     };
   });
   writeJson(path.join(snapshotDir, `${month}.json`), {
+    schemaVersion: 2,
+    seed: true,
     month,
     generatedAt: `${month}-01T09:00:00.000Z`,
     marketSummary: {
@@ -678,7 +687,7 @@ for (const [index, month] of months.entries()) {
     newModels: [],
     flags:
       month === "2026-10"
-        ? [{ slug: "all", issue: "Все медианы — стартовые ориентиры с confidence=low. Замените живым снимком." }]
+        ? [{ slug: "*", issue: "Все медианы — стартовые ориентиры с confidence=low. Замените живым снимком." }]
         : [],
     changelog:
       month === "2026-10"

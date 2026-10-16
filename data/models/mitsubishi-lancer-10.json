@@ -1,0 +1,108 @@
+{
+  "slug": "mitsubishi-lancer-10",
+  "aliases": ["lancer-10", "lancer-x"],
+  "brand": "Mitsubishi",
+  "model": "Lancer",
+  "generation": "X (2007–2017)",
+  "years": [2007, 2017],
+  "body": "sedan",
+  "summary": "Классический автомат только у моторов 1.5 и 1.6. Версии 1.8 и 2.0 идут с вариатором, для первой машины они не подходят.",
+  "fuelLPer100": 8.2,
+  "engines": [
+    { "code": "4A91", "volumeL": 1.5, "hp": 109, "fuel": "petrol", "timing": "chain", "recommended": true },
+    { "code": "4A92", "volumeL": 1.6, "hp": 117, "fuel": "petrol", "timing": "chain", "recommended": true },
+    { "code": "4B10", "volumeL": 1.8, "hp": 143, "fuel": "petrol", "timing": "chain", "recommended": false },
+    { "code": "4B11", "volumeL": 2.0, "hp": 150, "fuel": "petrol", "timing": "chain", "recommended": false }
+  ],
+  "gearboxes": [
+    {
+      "type": "AT",
+      "name": "4АКПП",
+      "verdict": "recommended",
+      "engineCodes": ["4A91", "4A92"],
+      "note": "Старая, но выносливая. Разгон вялый — это норма для этой связки."
+    },
+    {
+      "type": "CVT",
+      "name": "Вариатор Jatco JF011E",
+      "verdict": "avoid",
+      "engineCodes": ["4B10", "4B11"],
+      "note": "Склонен к перегреву. Для первой машины с ограниченным бюджетом не подходит."
+    }
+  ],
+  "mileage": { "goodMax": 150000, "okMax": 230000, "avoidFrom": 280000 },
+  "subScores": { "reliability": 7, "safety": 6, "ownershipCost": 7, "purchaseRisk": 5, "liquidity": 6 },
+  "subScoreNotes": {
+    "reliability": "Связка 1.5/1.6 + 4АКПП простая и выносливая. Основные проблемы — кузов и мелочи подвески и рулевого.",
+    "safety": "Конструкция 2007 года. Набор систем безопасности зависит от комплектации — проверяйте конкретную машину.",
+    "ownershipCost": "Атмосферный мотор с цепью, распространённые запчасти, недорогое ТО.",
+    "purchaseRisk": "Возраст 9–19 лет, слабая краска и коррозия, под видом «автомата» часто продают 1.8 и 2.0 с вариатором.",
+    "liquidity": "Модель популярна, но машины старые, поэтому продавать их будут долго."
+  },
+  "risks": [
+    {
+      "title": "Под видом «автомата» продают 1.8 или 2.0 с вариатором",
+      "severity": "high",
+      "stage": "purchase",
+      "howToCheck": "Объём мотора по ПТС: 1.8 и 2.0 = вариатор JF011E. Брать только 1.5 или 1.6 с 4АКПП.",
+      "sources": ["https://virgin-auto.ru/mitsubishi-lancer-x-18-cvt", "https://forum.lancerx.ru/viewtopic.php?t=26095"]
+    },
+    {
+      "title": "Слабая краска и коррозия: арки, пороги, кромки капота, рамка лобового стекла",
+      "severity": "high",
+      "stage": "purchase",
+      "howToCheck": "Толщиномер по всему кузову, осмотр арок, порогов и мест под уплотнителями дверей.",
+      "repairCostRub": [30000, 100000],
+      "sources": ["https://virgin-auto.ru/mitsubishi-lancer-x-18-cvt"]
+    },
+    {
+      "title": "Отзыв подушек безопасности Takata",
+      "severity": "high",
+      "stage": "purchase",
+      "howToCheck": "Проверить по VIN участие в отзывной кампании и отметку о выполнении.",
+      "sources": ["https://virgin-auto.ru/mitsubishi-lancer-x-18-cvt"]
+    },
+    {
+      "title": "Стуки рулевой рейки",
+      "severity": "medium",
+      "stage": "ownership",
+      "howToCheck": "Стук на мелких неровностях и люфт руля на тест-драйве, осмотр на подъёмнике.",
+      "repairCostRub": [35000, 70000],
+      "sources": ["https://virgin-auto.ru/mitsubishi-lancer-x-18-cvt"]
+    },
+    {
+      "title": "Компрессор кондиционера и генератор",
+      "severity": "medium",
+      "stage": "ownership",
+      "howToCheck": "Кондиционер должен холодить без гула. Напряжение зарядки на работающем моторе 13,8–14,5 В.",
+      "repairCostRub": [15000, 60000],
+      "sources": ["https://virgin-auto.ru/mitsubishi-lancer-x-18-cvt"]
+    },
+    {
+      "title": "Закисание задних суппортов",
+      "severity": "low",
+      "stage": "ownership",
+      "howToCheck": "Равномерный износ задних колодок, скрежет или писк при торможении.",
+      "repairCostRub": [10000, 20000],
+      "sources": ["https://virgin-auto.ru/mitsubishi-lancer-x-18-cvt"]
+    }
+  ],
+  "avoid": [
+    "Версии 1.8 и 2.0 с вариатором",
+    "Кузова со вздутиями краски на арках и порогах",
+    "Машины без подтверждения, что отзыв по подушкам безопасности выполнен"
+  ],
+  "checklist": [
+    "Мотор 1.5 или 1.6 по ПТС, коробка 4АКПП",
+    "Толщиномер, арки, пороги, кромки капота",
+    "Отзыв подушек безопасности Takata выполнен (по VIN)",
+    "Холодный запуск: цепь не гремит",
+    "Руль без стуков и люфта",
+    "Кондиционер холодит",
+    "Переключения 4АКПП плавные"
+  ],
+  "listingRules": [
+    "В выборку только моторы 1.5 (4A91) и 1.6 (4A92) с 4АКПП.",
+    "Объявления 1.8 и 2.0 не включать: там вариатор, даже если написано «автомат»."
+  ]
+}

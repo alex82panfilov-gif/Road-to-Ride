@@ -22,7 +22,8 @@
       "hp": 105,
       "fuel": "petrol",
       "timing": "chain",
-      "recommended": true
+      "recommended": true,
+      "code": "1.6 л / 105 л.с."
     }
   ],
   "gearboxes": [

@@ -23,14 +23,16 @@
       "hp": 102,
       "fuel": "petrol",
       "timing": "belt",
-      "recommended": true
+      "recommended": true,
+      "code": "1.6 л / 102 л.с."
     },
     {
       "volumeL": 1.8,
       "hp": 152,
       "fuel": "petrol",
       "timing": "chain",
-      "recommended": false
+      "recommended": false,
+      "code": "1.8 л / 152 л.с."
     }
   ],
   "gearboxes": [

@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 2,
+  "month": "2026-11",
+  "generatedAt": "2026-11-01T10:00:00+03:00",
+  "marketSummary": { "trend": "Тестовый снимок.", "sources": ["https://www.autostat.ru/"] },
+  "snapshots": [
+    {
+      "month": "2026-11",
+      "slug": "ford-focus-3",
+      "region": "moscow",
+      "sampleSize": 1,
+      "p25": 650000,
+      "median": 650000,
+      "p75": 650000,
+      "medianMileageKm": 160000,
+      "medianYear": 2012,
+      "confidence": "low",
+      "sources": ["https://auto.drom.ru/ford/focus/"],
+      "notes": "В объявлении написано «автомат», мотор 1.6 2012 года.",
+      "listings": [
+        {
+          "id": "2002",
+          "platform": "drom",
+          "year": 2012,
+          "mileageKm": 160000,
+          "priceRub": 650000,
+          "engineL": 1.6,
+          "hp": 125,
+          "gearboxType": "AT",
+          "gearboxRaw": "автомат"
+        }
+      ]
+    }
+  ],
+  "newModels": [],
+  "flags": []
+}

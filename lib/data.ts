@@ -2,6 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { meta, realPrice } from "./meta";
 import { bestGearbox, findModel, type CatalogItem, type PricePoint } from "./market";
+import { pickPrice } from "./prices";
 import { modelScore } from "./score";
 import { Model, SnapshotFile, type Model as CarModel, type SnapshotFile as MonthFile } from "./schema";
 
@@ -31,34 +32,50 @@ export function getModel(slug: string): CarModel | undefined {
   return models.find((model) => model.slug === key || model.aliases?.includes(key));
 }
 
+export function loadModels() {
+  return models;
+}
+
+export function loadSnapshot(month: string) {
+  return snapshotFiles.find((file) => file.month === month) ?? null;
+}
+
+export function prevMonth(month: string) {
+  const [year, value] = month.split("-").map(Number);
+  const date = new Date(Date.UTC(year, value - 2, 1));
+  return `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, "0")}`;
+}
+
 export function priceHistory(slug: string): PricePoint[] {
-  return snapshotFiles.flatMap((file) =>
-    file.snapshots
-      .filter((snapshot) => snapshot.slug === slug)
-      .map((snapshot) => ({
-        month: snapshot.month,
-        p25: snapshot.p25,
-        median: snapshot.median,
-        p75: snapshot.p75,
-        medianMileageKm: snapshot.medianMileageKm,
-        confidence: snapshot.confidence,
-        sampleSize: snapshot.sampleSize,
-      })),
-  );
+  return snapshotFiles
+    .filter((file) => !file.seed)
+    .flatMap((file) =>
+      file.snapshots
+        .filter((snapshot) => snapshot.slug === slug)
+        .map((snapshot) => ({
+          month: snapshot.month,
+          p25: snapshot.p25,
+          median: snapshot.median,
+          p75: snapshot.p75,
+          medianMileageKm: snapshot.medianMileageKm,
+          confidence: snapshot.confidence,
+          sampleSize: snapshot.sampleSize,
+        })),
+    );
 }
 
 export function latestPrice(slug: string) {
-  return latestSnapshot?.snapshots.find((snapshot) => snapshot.slug === slug);
+  return pickPrice(slug, snapshotFiles);
 }
 
 function recommendedHp(model: CarModel): number {
   return model.engines.find((engine) => engine.recommended)?.hp ?? model.engines[0].hp;
 }
 
-export const catalog: CatalogItem[] = models.map((model) => {
+export const catalog: CatalogItem[] = models.flatMap((model) => {
   const price = latestPrice(model.slug);
-  if (!price) throw new Error(`Нет цены для ${model.slug}`);
-  return {
+  if (!price) return [];
+  return [{
     slug: model.slug,
     aliases: model.aliases ?? [],
     brand: model.brand,
@@ -80,9 +97,13 @@ export const catalog: CatalogItem[] = models.map((model) => {
     sampleSize: price.sampleSize,
     month: price.month,
     notes: price.notes,
+    isSeed: price.isSeed,
+    isFallback: price.isFallback,
     bestGearbox: bestGearbox(model),
-  };
+  }];
 });
+
+export const unpricedModels = models.filter((model) => !latestPrice(model.slug));
 
 export function catalogRealPrice(item: CatalogItem): number {
   return realPrice(item.median, item.hp);

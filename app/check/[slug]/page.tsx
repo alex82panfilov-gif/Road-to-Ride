@@ -17,8 +17,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function CheckPage({ params }: Props) {
   const { slug } = await params;
-  const item = findCatalog(slug);
   const model = getModel(slug);
-  if (!item || !model) notFound();
-  return <ChecklistView item={item} points={model.checklist} />;
+  if (!model) notFound();
+  return <ChecklistView item={{ slug: model.slug, brand: model.brand, model: model.model }} points={model.checklist} />;
 }

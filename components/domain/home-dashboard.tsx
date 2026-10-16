@@ -82,7 +82,10 @@ export function HomeDashboard({ items }: { items: CatalogItem[] }) {
         <Button className="w-full" onClick={() => setDepositOpen(true)}>
           {data.deposits.length ? "Добавить взнос" : "Добавить первый взнос"}
         </Button>
-        <label className="block text-sm">
+      </header>
+      <Card>
+        <h2 className="text-lg font-semibold">Цель</h2>
+        <label className="mt-3 block text-sm">
           Машина-цель
           <select
             className="mt-1 h-12 w-full rounded-2xl bg-canvas-secondary px-4"
@@ -97,7 +100,7 @@ export function HomeDashboard({ items }: { items: CatalogItem[] }) {
             ))}
           </select>
         </label>
-      </header>
+      </Card>
 
       {unlocked ? (
         <Card className="unlock-pop">

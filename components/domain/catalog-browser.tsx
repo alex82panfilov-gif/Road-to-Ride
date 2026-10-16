@@ -7,7 +7,7 @@ import { SegmentedControl } from "@/components/ui/segmented-control";
 import { Skeleton } from "@/components/ui/skeleton";
 import { labels } from "@/lib/content";
 import { rub } from "@/lib/format";
-import { displayName, type CatalogItem } from "@/lib/market";
+import { displayName, firstPricedTier, type CatalogItem } from "@/lib/market";
 import { TIER_MAX, TIER_MIN, TIER_STEP } from "@/lib/tiers";
 import { SlidersHorizontal } from "lucide-react";
 import Link from "next/link";
@@ -21,11 +21,11 @@ const sorts = {
   year: "Год",
 } as const;
 
-export function CatalogBrowser({ items }: { items: CatalogItem[] }) {
+export function CatalogBrowser({ items, pending = [] }: { items: CatalogItem[]; pending?: { slug: string; brand: string; model: string }[] }) {
   const params = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
-  const { saved, data } = useUser();
+  const { saved, data, ready: userReady } = useUser();
   const [budget, setBudget] = useState(TIER_MIN * 3 + TIER_STEP);
   const [body, setBody] = useState("");
   const [sort, setSort] = useState<keyof typeof sorts>("score");
@@ -36,8 +36,11 @@ export function CatalogBrowser({ items }: { items: CatalogItem[] }) {
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    const fromUrl = Number(params.get("budget"));
-    if (Number.isFinite(fromUrl)) setBudget(clampBudget(fromUrl));
+    if (!userReady) return;
+    const rawBudget = params.get("budget");
+    const fromUrl = Number(rawBudget);
+    if (rawBudget && Number.isFinite(fromUrl)) setBudget(clampBudget(fromUrl));
+    else setBudget(saved > 0 ? clampBudget(saved) : firstPricedTier(items));
     const nextBody = params.get("body") ?? "";
     setBody(nextBody in labels.bodies ? nextBody : "");
     const nextSort = params.get("sort");
@@ -46,7 +49,7 @@ export function CatalogBrowser({ items }: { items: CatalogItem[] }) {
     const nextView = params.get("view");
     setView(nextView === "mine" || nextView === "goal" ? nextView : "all");
     setReady(true);
-  }, [params]);
+  }, [params, userReady, saved, items]);
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
@@ -123,35 +126,70 @@ export function CatalogBrowser({ items }: { items: CatalogItem[] }) {
       </div>
 
       <label className="block">
-        <span className="text-sm text-muted">Бюджет {rub(budget)}</span>
-        <input
-          type="range"
-          min={TIER_MIN}
-          max={TIER_MAX}
-          step={TIER_STEP}
-          value={budget}
-          aria-valuetext={rub(budget)}
-          onChange={(event) => setBudget(clampBudget(Number(event.target.value)))}
-          onPointerUp={(event) => {
-            const next = clampBudget(Number(event.currentTarget.value));
-            setBudget(next);
-            writeUrl({ budget: next, view: "all" });
-          }}
-          onKeyUp={(event) => {
-            const next = clampBudget(Number(event.currentTarget.value));
-            setBudget(next);
-            writeUrl({ budget: next });
-          }}
-          className="mt-3 w-full accent-[var(--accent)]"
-        />
+        <span className="text-sm text-muted">Бюджет</span>
+        <span className="relative mt-8 block">
+          <span
+            className="pointer-events-none absolute -top-7 -translate-x-1/2 text-sm font-medium whitespace-nowrap"
+            style={{ left: `${((budget - TIER_MIN) / (TIER_MAX - TIER_MIN)) * 100}%` }}
+          >
+            {rub(budget)}
+          </span>
+          <input
+            type="range"
+            min={TIER_MIN}
+            max={TIER_MAX}
+            step={TIER_STEP}
+            value={budget}
+            aria-valuetext={rub(budget)}
+            onChange={(event) => setBudget(clampBudget(Number(event.target.value)))}
+            onPointerUp={(event) => {
+              const next = clampBudget(Number(event.currentTarget.value));
+              setBudget(next);
+              writeUrl({ budget: next, view: "all" });
+            }}
+            onKeyUp={(event) => {
+              const next = clampBudget(Number(event.currentTarget.value));
+              setBudget(next);
+              writeUrl({ budget: next });
+            }}
+            className="w-full accent-[var(--accent)]"
+          />
+        </span>
+        <span className="mt-1 flex justify-between text-xs text-muted">
+          <span>150 тыс</span>
+          <span>500 тыс</span>
+          <span>1 млн</span>
+        </span>
       </label>
 
       <p className="text-sm text-muted">
-        Данные за {items[0]?.month ?? "—"}. Уверенность: {labels.confidence.low}. Это стартовые ориентиры, не подсчёт объявлений.
+        Данные за {items[0]?.month ?? "—"}. Уверенность: {items[0] ? labels.confidence[items[0].confidence] : "—"}.
+        {items.every((item) => item.isSeed) ? " Это стартовые ориентиры, не подсчёт объявлений." : ""}
       </p>
 
       {rows.length === 0 ? (
-        <p className="card p-6 text-sm">В этом сочетании фильтров машин нет. Сдвиньте бюджет или сбросьте кузов.</p>
+        <div className="card space-y-3 p-6 text-sm">
+          {view === "all" && !body ? (
+            <>
+              <p>
+                За {rub(budget)} машин с автоматом нет. Ближайшие от {rub(Math.min(...items.map((item) => item.median)))}.
+              </p>
+              <button
+                type="button"
+                className="inline-flex h-11 items-center rounded-full bg-accent px-4 font-medium text-accent-ink"
+                onClick={() => {
+                  const next = firstPricedTier(items);
+                  setBudget(next);
+                  writeUrl({ budget: next, view: "all" });
+                }}
+              >
+                Показать
+              </button>
+            </>
+          ) : (
+            <p>В этом сочетании фильтров машин нет. Сдвиньте бюджет или сбросьте кузов.</p>
+          )}
+        </div>
       ) : (
         <>
           <div className="hidden md:block">
@@ -216,11 +254,44 @@ export function CatalogBrowser({ items }: { items: CatalogItem[] }) {
                 <p className="mt-2 text-sm text-muted">
                   {rub(item.median)} · {item.medianYear} · {item.medianMileageKm.toLocaleString("ru-RU")} км
                 </p>
+                {item.isFallback ? <p className="mt-1 text-sm text-muted">В этом месяце мало объявлений, показана цена за {item.month}.</p> : null}
               </li>
             ))}
           </ul>
         </>
       )}
+
+      {items.some((item) => item.median > TIER_MAX) ? (
+        <section className="space-y-2">
+          <h2 className="text-lg font-semibold">Пока вне бюджета</h2>
+          <ul className="space-y-2 text-sm">
+            {items
+              .filter((item) => item.median > TIER_MAX)
+              .map((item) => (
+                <li key={item.slug}>
+                  <Link href={`/cars/${item.slug}`}>{displayName(item)}</Link>
+                  <span className="text-muted"> — медиана {rub(item.median)}</span>
+                </li>
+              ))}
+          </ul>
+        </section>
+      ) : null}
+
+      {pending.length ? (
+        <section className="space-y-2">
+          <h2 className="text-lg font-semibold">Цены пока нет</h2>
+          <ul className="space-y-2 text-sm">
+            {pending.map((item) => (
+              <li key={item.slug}>
+                <Link href={`/cars/${item.slug}`}>
+                  {item.brand} {item.model}
+                </Link>
+                <span className="text-muted"> — снимок ещё не прошёл проверку</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
 
       {picked.length >= 2 ? (
         <Link href={`/compare?m=${picked.join(",")}`} className="inline-flex h-12 items-center rounded-full bg-accent px-5 font-medium text-accent-ink">

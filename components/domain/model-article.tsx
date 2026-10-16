@@ -10,7 +10,8 @@ import { labels, sellerScript } from "@/lib/content";
 import { km, rub } from "@/lib/format";
 import { realPrice, osagoRange, meta } from "@/lib/meta";
 import { displayName, type PricePoint } from "@/lib/market";
-import type { Model, PriceSnapshot } from "@/lib/schema";
+import type { PickedPrice } from "@/lib/prices";
+import type { Model } from "@/lib/schema";
 import { tierAmounts } from "@/lib/tiers";
 import Link from "next/link";
 import { useState } from "react";
@@ -21,7 +22,7 @@ export function ModelArticle({
   history,
 }: {
   model: Model;
-  price: PriceSnapshot;
+  price: PickedPrice;
   history: PricePoint[];
 }) {
   const { data } = useUser();
@@ -72,17 +73,18 @@ export function ModelArticle({
         <h2 className="text-lg font-semibold">Моторы и коробки</h2>
         <ul className="mt-3 space-y-2 text-sm">
           {model.engines.map((engine) => (
-            <li key={`${engine.volumeL}-${engine.hp}`}>
+            <li key={engine.code}>
               {engine.volumeL} л, {engine.hp} л.с., {engine.fuel === "petrol" ? "бензин" : engine.fuel},{" "}
               {engine.timing === "belt" ? "ремень ГРМ" : "цепь ГРМ"}
               {engine.recommended ? " — предпочтительный" : ""}
-              {expert ? ` · ${engine.timing}` : ""}
+              {expert ? ` · ${engine.code}` : ""}
             </li>
           ))}
           {model.gearboxes.map((box) => (
             <li key={box.name}>
               {expert ? box.name : labels.gearbox[box.type]} — {labels.verdict[box.verdict]}
               {expert ? ` · ${labels.gearbox[box.type]}` : ""}
+              {box.note ? <span className="text-muted"> {box.note}</span> : null}
             </li>
           ))}
         </ul>
@@ -98,7 +100,10 @@ export function ModelArticle({
 
       <section>
         <h2 className="text-lg font-semibold">Ориентир цены</h2>
-        <PriceChart points={history} />
+        {history.length >= 2 ? <PriceChart points={history} /> : <p className="mt-2 text-sm text-muted">Истории цен пока нет: стартовые ориентиры на график не выводятся.</p>}
+        {price.isSeed ? <p className="mt-2 text-sm text-muted">Это стартовый ориентир, не подсчёт объявлений.</p> : null}
+        {price.isFallback ? <p className="mt-2 text-sm">В этом месяце мало объявлений, показана цена за {price.month}.</p> : null}
+        {price.median > 1_000_000 ? <p className="mt-2 text-sm">Пока вне бюджета: медиана выше 1 000 000 ₽.</p> : null}
         {price.notes ? <p className="mt-2 text-sm text-muted">{price.notes}</p> : null}
       </section>
 

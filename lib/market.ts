@@ -1,6 +1,6 @@
 import type { Model, PriceSnapshot, SubScores } from "./schema";
 import { modelScore, scoreBand } from "./score";
-import { levelForAmount, nextTierAmount, tierAmounts, tierFloor } from "./tiers";
+import { levelForAmount, nextTierAmount, TIER_MAX, tierAmounts, tierFloor } from "./tiers";
 
 export type Confidence = PriceSnapshot["confidence"];
 
@@ -26,6 +26,8 @@ export type CatalogItem = {
   sampleSize: number;
   month: string;
   notes?: string;
+  isSeed: boolean;
+  isFallback: boolean;
   bestGearbox: Model["gearboxes"][number]["verdict"];
 };
 
@@ -83,6 +85,13 @@ export type TierStep = {
   score: number;
 };
 
+export function firstPricedTier(items: CatalogItem[]): number {
+  const priced = items.filter((item) => item.median > 0 && item.median <= TIER_MAX);
+  if (!priced.length) return TIER_MAX;
+  const cheapest = Math.min(...priced.map((item) => item.median));
+  return tierAmounts().find((amount) => amount >= cheapest) ?? TIER_MAX;
+}
+
 export function tierLadder(items: CatalogItem[]): TierStep[] {
   return tierAmounts().map((amount) => {
     const best = bestAt(items, amount);
@@ -111,9 +120,15 @@ export type TierComparison = {
 
 export function compareTiers(items: CatalogItem[], budget: number): TierComparison {
   const currentBudget = budget < 150_000 ? 0 : tierFloor(budget);
-  const nextBudget = nextTierAmount(budget);
   const current = currentBudget ? bestAt(items, currentBudget) : null;
-  const next = nextBudget ? bestAt(items, nextBudget) : null;
+  let nextBudget = nextTierAmount(budget);
+  let next = nextBudget ? bestAt(items, nextBudget) : null;
+  while (nextBudget && !next) {
+    const further = nextTierAmount(nextBudget);
+    if (!further) break;
+    nextBudget = further;
+    next = bestAt(items, nextBudget);
+  }
   const gearboxRank = { avoid: 1, acceptable: 2, recommended: 3 };
   return {
     currentBudget,

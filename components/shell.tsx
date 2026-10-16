@@ -5,7 +5,7 @@ import { labels } from "@/lib/content";
 import { meta } from "@/lib/meta";
 import { displayName, type CatalogItem } from "@/lib/market";
 import { formatDay } from "@/lib/format";
-import { BookOpen, Car, House, PiggyBank, Search } from "lucide-react";
+import { BookOpen, Car, House, Monitor, Moon, PiggyBank, Search, Sun } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
@@ -55,7 +55,7 @@ export function Shell({ items, children }: { items: CatalogItem[]; children: Rea
         К содержимому
       </a>
       <header className="bar-blur sticky top-0 z-30 border-b border-line">
-        <div className="mx-auto flex h-16 max-w-5xl items-center gap-4 px-4">
+        <div className="mx-auto flex min-h-16 max-w-5xl flex-wrap items-center gap-3 px-4 py-2">
           <Link href="/" className="leading-tight no-underline">
             <span className="block font-semibold text-ink">{labels.siteName}</span>
             <span className="hidden text-xs font-normal text-muted md:block">{labels.tagline}</span>
@@ -68,15 +68,23 @@ export function Shell({ items, children }: { items: CatalogItem[]; children: Rea
             ))}
           </nav>
           <div className="ml-auto flex items-center gap-2">
-            <button type="button" className="rounded-full px-3 py-2 text-sm text-muted" onClick={() => update((current) => ({ ...current, mode: current.mode === "beginner" ? "expert" : "beginner" }))}>
-              {data.mode === "expert" ? "Знаток" : "Новичок"}
-            </button>
+            <div className="flex items-center gap-1 rounded-full bg-canvas-secondary p-1 text-xs" role="group" aria-label="Режим">
+              <span className="px-2 text-muted">Режим</span>
+              <button type="button" className={`rounded-full px-2 py-1 ${data.mode === "beginner" ? "bg-canvas font-semibold text-ink" : "text-muted"}`} aria-pressed={data.mode === "beginner"} onClick={() => update((current) => ({ ...current, mode: "beginner" }))}>
+                Новичок
+              </button>
+              <button type="button" className={`rounded-full px-2 py-1 ${data.mode === "expert" ? "bg-canvas font-semibold text-ink" : "text-muted"}`} aria-pressed={data.mode === "expert"} onClick={() => update((current) => ({ ...current, mode: "expert" }))}>
+                Знаток
+              </button>
+            </div>
             <button
               type="button"
-              className="rounded-full px-3 py-2 text-sm text-muted"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-canvas-secondary"
+              aria-label={`Тема: ${data.theme === "dark" ? "тёмная" : data.theme === "light" ? "светлая" : "как в системе"}`}
+              title={`Тема: ${data.theme === "dark" ? "тёмная" : data.theme === "light" ? "светлая" : "как в системе"}`}
               onClick={() => update((current) => ({ ...current, theme: current.theme === "system" ? "dark" : current.theme === "dark" ? "light" : "system" }))}
             >
-              {data.theme === "dark" ? "Тёмная" : data.theme === "light" ? "Светлая" : "Как в системе"}
+              {data.theme === "dark" ? <Moon size={18} strokeWidth={1.5} /> : data.theme === "light" ? <Sun size={18} strokeWidth={1.5} /> : <Monitor size={18} strokeWidth={1.5} />}
             </button>
             <button type="button" className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-canvas-secondary" aria-label="Поиск по моделям" onClick={() => setSearchOpen(true)}>
               <Search size={18} strokeWidth={1.5} />

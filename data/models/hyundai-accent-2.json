@@ -23,7 +23,8 @@
       "hp": 102,
       "fuel": "petrol",
       "timing": "belt",
-      "recommended": true
+      "recommended": true,
+      "code": "1.5 л / 102 л.с."
     }
   ],
   "gearboxes": [

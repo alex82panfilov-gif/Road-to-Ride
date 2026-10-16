@@ -2,9 +2,9 @@
 
 import { useUser } from "@/components/providers";
 import { Skeleton } from "@/components/ui/skeleton";
-import { displayName, type CatalogItem } from "@/lib/market";
+import { displayName } from "@/lib/market";
 
-export function ChecklistView({ item, points }: { item: CatalogItem; points: string[] }) {
+export function ChecklistView({ item, points }: { item: { slug: string; brand: string; model: string }; points: string[] }) {
   const { ready, data, update } = useUser();
   if (!ready) return <Skeleton className="h-64" />;
   const state = data.checklists[item.slug] ?? { checked: [], notes: {} };

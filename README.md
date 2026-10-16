@@ -18,6 +18,7 @@ npm run dev
 ```bash
 npm test
 npm run validate
+npm run agent:input -- 2026-10
 npm run build
 ```
 

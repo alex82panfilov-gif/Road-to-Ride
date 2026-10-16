@@ -49,6 +49,28 @@ export function SavingsPanel({ items }: { items: CatalogItem[] }) {
       <Card className="space-y-4">
         <h1 className="text-[2rem] leading-tight font-semibold">Копилка</h1>
         <p>Здесь начнётся история вашей первой машины.</p>
+        <p>
+          {goal ? `Цель: ${displayName(goal)}.` : "Цель не выбрана."}{" "}
+          <button type="button" className="font-medium" onClick={() => document.getElementById("savings-goal")?.focus()}>
+            Выбрать
+          </button>
+        </p>
+        <label className="block text-sm">
+          Машина-цель
+          <select
+            id="savings-goal"
+            className="mt-1 h-12 w-full rounded-2xl bg-canvas-secondary px-4"
+            value={data.goalSlug ?? ""}
+            onChange={(event) => update((current) => ({ ...current, goalSlug: event.target.value || null }))}
+          >
+            <option value="">Не выбрана</option>
+            {items.map((item) => (
+              <option key={item.slug} value={item.slug}>
+                {displayName(item)}
+              </option>
+            ))}
+          </select>
+        </label>
         <Button onClick={() => setDepositOpen(true)}>Добавить первый взнос</Button>
       </Card>
     );

@@ -22,14 +22,16 @@
       "hp": 115,
       "fuel": "petrol",
       "timing": "belt",
-      "recommended": true
+      "recommended": true,
+      "code": "1.6 л / 115 л.с."
     },
     {
       "volumeL": 2,
       "hp": 145,
       "fuel": "petrol",
       "timing": "chain",
-      "recommended": false
+      "recommended": false,
+      "code": "2 л / 145 л.с."
     }
   ],
   "gearboxes": [
