@@ -10,6 +10,118 @@
   "snapshots": [
     {
       "month": "2026-10",
+      "slug": "daewoo-matiz",
+      "region": "moscow",
+      "sampleSize": 0,
+      "p25": 150000,
+      "median": 150000,
+      "p75": 190000,
+      "medianMileageKm": 110000,
+      "medianYear": 2008,
+      "confidence": "low",
+      "sources": [
+        "https://www.autostat.ru/"
+      ],
+      "notes": "Стартовый ориентир, не подсчёт объявлений. Замените снимок по docs/AGENT_PROMPT.md."
+    },
+    {
+      "month": "2026-10",
+      "slug": "hyundai-elantra-xd",
+      "region": "moscow",
+      "sampleSize": 0,
+      "p25": 200000,
+      "median": 200000,
+      "p75": 260000,
+      "medianMileageKm": 170000,
+      "medianYear": 2006,
+      "confidence": "low",
+      "sources": [
+        "https://www.autostat.ru/"
+      ],
+      "notes": "Стартовый ориентир, не подсчёт объявлений. Замените снимок по docs/AGENT_PROMPT.md."
+    },
+    {
+      "month": "2026-10",
+      "slug": "nissan-almera-n16",
+      "region": "moscow",
+      "sampleSize": 0,
+      "p25": 190000,
+      "median": 200000,
+      "p75": 240000,
+      "medianMileageKm": 180000,
+      "medianYear": 2004,
+      "confidence": "low",
+      "sources": [
+        "https://www.autostat.ru/"
+      ],
+      "notes": "Стартовый ориентир, не подсчёт объявлений. Замените снимок по docs/AGENT_PROMPT.md."
+    },
+    {
+      "month": "2026-10",
+      "slug": "kia-cerato-1",
+      "region": "moscow",
+      "sampleSize": 0,
+      "p25": 230000,
+      "median": 250000,
+      "p75": 290000,
+      "medianMileageKm": 160000,
+      "medianYear": 2007,
+      "confidence": "low",
+      "sources": [
+        "https://www.autostat.ru/"
+      ],
+      "notes": "Стартовый ориентир, не подсчёт объявлений. Замените снимок по docs/AGENT_PROMPT.md."
+    },
+    {
+      "month": "2026-10",
+      "slug": "renault-megane-2",
+      "region": "moscow",
+      "sampleSize": 0,
+      "p25": 220000,
+      "median": 250000,
+      "p75": 280000,
+      "medianMileageKm": 150000,
+      "medianYear": 2006,
+      "confidence": "low",
+      "sources": [
+        "https://www.autostat.ru/"
+      ],
+      "notes": "Стартовый ориентир, не подсчёт объявлений. Замените снимок по docs/AGENT_PROMPT.md."
+    },
+    {
+      "month": "2026-10",
+      "slug": "ford-fusion",
+      "region": "moscow",
+      "sampleSize": 0,
+      "p25": 280000,
+      "median": 300000,
+      "p75": 350000,
+      "medianMileageKm": 140000,
+      "medianYear": 2008,
+      "confidence": "low",
+      "sources": [
+        "https://www.autostat.ru/"
+      ],
+      "notes": "Стартовый ориентир, не подсчёт объявлений. Замените снимок по docs/AGENT_PROMPT.md."
+    },
+    {
+      "month": "2026-10",
+      "slug": "opel-astra-h",
+      "region": "moscow",
+      "sampleSize": 0,
+      "p25": 300000,
+      "median": 300000,
+      "p75": 380000,
+      "medianMileageKm": 150000,
+      "medianYear": 2009,
+      "confidence": "low",
+      "sources": [
+        "https://www.autostat.ru/"
+      ],
+      "notes": "Стартовый ориентир, не подсчёт объявлений. Замените снимок по docs/AGENT_PROMPT.md."
+    },
+    {
+      "month": "2026-10",
       "slug": "hyundai-accent-2",
       "region": "moscow",
       "sampleSize": 0,

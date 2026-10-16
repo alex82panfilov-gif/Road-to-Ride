@@ -4,9 +4,10 @@ import { TierDelta } from "@/components/domain/tier-delta";
 import { Card } from "@/components/ui/card";
 import { catalog } from "@/lib/data";
 import { rub } from "@/lib/format";
-import { meta, realPrice } from "@/lib/meta";
-import { affordableAt, bestAt, compareTiers, displayName, tierLadder } from "@/lib/market";
-import { isTierAmount, tierAmounts } from "@/lib/tiers";
+import { realPrice } from "@/lib/meta";
+import { affordableAt, displayName, sweetSpotAmounts } from "@/lib/market";
+import { isTierAmount, levelForAmount, tierAmounts } from "@/lib/tiers";
+import { bestSafeAt, compareSafeTiers } from "@/lib/view/market";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -29,7 +30,11 @@ export default async function TierPage({ params }: Props) {
   const budget = Number(amount);
   if (!isTierAmount(budget)) notFound();
   const cars = affordableAt(catalog, budget);
-  const best = bestAt(catalog, budget);
+  const best = bestSafeAt(catalog, budget);
+  const steps = tierAmounts().map((amount) => {
+    const car = bestSafeAt(catalog, amount);
+    return { amount, level: levelForAmount(amount), best: car, score: car?.score ?? 0 };
+  });
   const amounts = tierAmounts();
   const index = amounts.indexOf(budget);
 
@@ -53,7 +58,7 @@ export default async function TierPage({ params }: Props) {
       ) : (
         <p>За эту сумму в каталоге ещё нет машины с автоматом.</p>
       )}
-      <TierDelta comparison={compareTiers(catalog, budget)} />
+      <TierDelta comparison={compareSafeTiers(catalog, budget)} />
       <ul className="space-y-3">
         {cars.map((item) => (
           <li key={item.slug} className="card flex flex-wrap items-center justify-between gap-3 p-4">
@@ -65,7 +70,7 @@ export default async function TierPage({ params }: Props) {
           </li>
         ))}
       </ul>
-      <ScoreChart steps={tierLadder(catalog)} marks={meta.sweetSpots} />
+      <ScoreChart steps={steps} marks={sweetSpotAmounts(catalog)} />
       <p className="flex justify-between text-sm">
         {index > 0 ? <Link href={`/tiers/${amounts[index - 1]}`}>На {rub(amounts[index - 1])}</Link> : <span />}
         {index < amounts.length - 1 ? <Link href={`/tiers/${amounts[index + 1]}`}>На {rub(amounts[index + 1])}</Link> : <span />}

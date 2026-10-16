@@ -1,0 +1,70 @@
+[
+  {
+    "id": "premium-german",
+    "title": "BMW 3 и 5, Mercedes C и E, Audi A4 и A6 старше 12 лет",
+    "priceRange": [300000, 1000000],
+    "verdict": "avoid",
+    "reason": "Цена как у Solaris, а один ремонт подвески, электроники или коробки может стоить треть машины",
+    "howToSpot": "Премиальная марка, год 2005–2013, цена ниже 1 млн",
+    "insteadSlugs": ["toyota-corolla-e150", "mazda-3-bl"]
+  },
+  {
+    "id": "vw-dsg",
+    "title": "VW Golf, Jetta, Passat, Skoda Octavia с роботом DSG",
+    "priceRange": [400000, 1000000],
+    "verdict": "avoid",
+    "reason": "Робот DQ200 и турбомоторы 1.4 TSI: мехатроник, сцепление, растяжение цепи",
+    "howToSpot": "В объявлении «автомат» плюс мотор 1.2 или 1.4 TSI — почти наверняка робот",
+    "insteadSlugs": ["skoda-octavia-a5"]
+  },
+  {
+    "id": "ford-powershift",
+    "title": "Ford Focus III и Fiesta с роботом PowerShift",
+    "priceRange": [400000, 1000000],
+    "verdict": "avoid",
+    "reason": "Рывки, вибрация, частая замена сцепления и блока управления",
+    "howToSpot": "Focus III с мотором 1.6 или 2.0 и «автоматом» — это PowerShift",
+    "insteadSlugs": ["ford-focus-2"]
+  },
+  {
+    "id": "psa-al4",
+    "title": "Peugeot 206, 207, 307, 308 и Citroen C4 с автоматом AL4",
+    "priceRange": [150000, 600000],
+    "verdict": "caution",
+    "reason": "Автомат AL4 часто перегревается и уходит в аварийный режим",
+    "howToSpot": "Peugeot или Citroen до 2014 года с 4-ступенчатым автоматом"
+  },
+  {
+    "id": "robots-cheap",
+    "title": "Toyota MMT, Opel Easytronic, Lada AMT",
+    "priceRange": [150000, 1000000],
+    "verdict": "avoid",
+    "reason": "Роботы с одним сцеплением: дёрганый разгон в пробке и дорогой ремонт",
+    "howToSpot": "Corolla E150 и Auris с «роботом», Astra H 1.6 и Corsa D с Easytronic, Lada с AMT"
+  },
+  {
+    "id": "early-cvt",
+    "title": "Nissan и Mitsubishi с вариатором без истории обслуживания",
+    "priceRange": [400000, 1000000],
+    "verdict": "caution",
+    "reason": "Вариатор Jatco перегревается в пробках. Ремонт стоит 80–150 тыс. ₽",
+    "howToSpot": "Qashqai, X-Trail, Lancer X 1.8 и 2.0, Outlander XL",
+    "insteadSlugs": ["mitsubishi-lancer-10"]
+  },
+  {
+    "id": "land-rover",
+    "title": "Land Rover Freelander 2 и Range Rover Evoque",
+    "priceRange": [600000, 1000000],
+    "verdict": "avoid",
+    "reason": "Дешёвые экземпляры почти всегда с проблемной трансмиссией, а запчасти дорогие",
+    "howToSpot": "Внедорожник премиум-марки по цене Solaris"
+  },
+  {
+    "id": "right-hand",
+    "title": "Японские машины с правым рулём",
+    "priceRange": [150000, 700000],
+    "verdict": "caution",
+    "reason": "Начинающему водителю сложнее обгонять и выезжать с парковки",
+    "howToSpot": "Toyota Vitz, Honda Fit, Mazda Demio и другие модели только для японского рынка"
+  }
+]

@@ -2,9 +2,9 @@ import fs from "node:fs";
 import path from "node:path";
 import { meta, realPrice } from "./meta";
 import { bestGearbox, findModel, type CatalogItem, type PricePoint } from "./market";
-import { pickPrice } from "./prices";
+import { isLivePrice, pickPrice } from "./prices";
 import { modelScore } from "./score";
-import { Model, SnapshotFile, type Model as CarModel, type SnapshotFile as MonthFile } from "./schema";
+import { Model, SnapshotFile, TrapsFile, type Model as CarModel, type SnapshotFile as MonthFile, type TTrap } from "./schema";
 
 const dataDir = path.join(process.cwd(), "data");
 
@@ -20,6 +20,10 @@ function readDir(subdir: string): string[] {
 }
 
 export const models: CarModel[] = readDir("models").map((name) => Model.parse(readJson(path.join(dataDir, "models", name))));
+
+export const traps: TTrap[] = TrapsFile.parse(readJson(path.join(dataDir, "traps.json")));
+
+export const modelLinks = models.map((model) => ({ slug: model.slug, brand: model.brand, model: model.model }));
 
 export const snapshotFiles: MonthFile[] = readDir("snapshots").map((name) =>
   SnapshotFile.parse(readJson(path.join(dataDir, "snapshots", name))),
@@ -47,12 +51,10 @@ export function prevMonth(month: string) {
 }
 
 export function priceHistory(slug: string): PricePoint[] {
-  return snapshotFiles
-    .filter((file) => !file.seed)
-    .flatMap((file) =>
-      file.snapshots
-        .filter((snapshot) => snapshot.slug === slug)
-        .map((snapshot) => ({
+  return snapshotFiles.flatMap((file) =>
+    file.snapshots
+      .filter((snapshot) => snapshot.slug === slug && (!file.seed || isLivePrice(snapshot)))
+      .map((snapshot) => ({
           month: snapshot.month,
           p25: snapshot.p25,
           median: snapshot.median,
@@ -100,6 +102,9 @@ export const catalog: CatalogItem[] = models.flatMap((model) => {
     isSeed: price.isSeed,
     isFallback: price.isFallback,
     bestGearbox: bestGearbox(model),
+    budgetRules: model.budgetRules,
+    mileage: model.mileage,
+    gearboxes: model.gearboxes.map((gearbox) => ({ type: gearbox.type, verdict: gearbox.verdict })),
   }];
 });
 
@@ -114,3 +119,4 @@ export function findCatalog(slug: string): CatalogItem | undefined {
 }
 
 export const dataUpdatedLabel = meta.updatedAt;
+

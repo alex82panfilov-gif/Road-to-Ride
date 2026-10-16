@@ -1,5 +1,5 @@
 import { ModelArticle } from "@/components/domain/model-article";
-import { getModel, latestPrice, models, priceHistory } from "@/lib/data";
+import { catalog, getModel, latestPrice, models, priceHistory } from "@/lib/data";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
@@ -33,5 +33,5 @@ export default async function ModelPage({ params }: Props) {
       </article>
     );
   }
-  return <ModelArticle model={model} price={price} history={priceHistory(model.slug)} />;
+  return <ModelArticle model={model} price={price} history={priceHistory(model.slug)} items={catalog} />;
 }

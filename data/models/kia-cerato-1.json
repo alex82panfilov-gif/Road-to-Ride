@@ -1,0 +1,85 @@
+{
+  "slug": "kia-cerato-1",
+  "aliases": [
+    "cerato-1"
+  ],
+  "brand": "Kia",
+  "model": "Cerato",
+  "generation": "I",
+  "autoruPath": "kia/cerato/4601670",
+  "years": [
+    2004,
+    2009
+  ],
+  "body": "sedan",
+  "fuelLPer100": 8.3,
+  "summary": "Родственник Spectra и Elantra. Запчасти дешёвые, автомат простой.",
+  "engines": [
+    {
+      "code": "1.6",
+      "volumeL": 1.6,
+      "hp": 105,
+      "fuel": "petrol",
+      "timing": "belt",
+      "recommended": true
+    }
+  ],
+  "gearboxes": [
+    {
+      "type": "AT",
+      "name": "4АКПП",
+      "verdict": "acceptable",
+      "engineCodes": [
+        "1.6"
+      ]
+    }
+  ],
+  "mileage": {
+    "goodMax": 140000,
+    "okMax": 200000,
+    "avoidFrom": 270000
+  },
+  "subScores": {
+    "reliability": 5,
+    "safety": 4,
+    "ownershipCost": 6,
+    "purchaseRisk": 4,
+    "liquidity": 4
+  },
+  "subScoreNotes": {
+    "reliability": "Обычный атмосферник и 4АКПП. Слабое место — возраст, не редкая техника.",
+    "safety": "Чуть свежее Elantra XD, но это всё ещё машина середины 2000-х.",
+    "ownershipCost": "Расходники общие с другими Kia и Hyundai тех лет.",
+    "purchaseRisk": "Проверяйте кузов и то, что в объявлении именно автомат.",
+    "liquidity": "Модель менее известна, чем Spectra, но покупатель находится."
+  },
+  "risks": [
+    {
+      "title": "Коррозия и уставшая подвеска",
+      "severity": "medium",
+      "stage": "purchase",
+      "howToCheck": "Толщиномер и стуки на лежачих полицейских",
+      "repairCostRub": [
+        10000,
+        40000
+      ],
+      "sources": [
+        "https://www.zr.ru/",
+        "https://www.drom.ru/"
+      ]
+    }
+  ],
+  "avoid": [
+    "Объявления без указания типа коробки"
+  ],
+  "listingRules": [
+    "В выборку только 1.6 с 4АКПП."
+  ],
+  "checklist": [
+    "Сверить VIN на кузове, в ПТС и на табличке",
+    "Проверить ограничения и залог",
+    "Толщиномер по аркам, порогам и крыше",
+    "Холодный запуск и переключения автомата без толчков",
+    "Проехать 10–15 минут, в том числе в медленной пробке"
+  ]
+}

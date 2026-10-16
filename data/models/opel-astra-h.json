@@ -1,0 +1,116 @@
+{
+  "slug": "opel-astra-h",
+  "aliases": [
+    "astra-h"
+  ],
+  "brand": "Opel",
+  "model": "Astra",
+  "generation": "H",
+  "years": [
+    2004,
+    2014
+  ],
+  "body": "hatchback",
+  "fuelLPer100": 8.1,
+  "summary": "С мотором 1.6 часто стоит робот Easytronic, его не брать. Классический автомат бывает у 1.8, и то с оговорками.",
+  "engines": [
+    {
+      "code": "Z18XER",
+      "volumeL": 1.8,
+      "hp": 140,
+      "fuel": "petrol",
+      "timing": "belt",
+      "recommended": true
+    },
+    {
+      "code": "Z16XER",
+      "volumeL": 1.6,
+      "hp": 115,
+      "fuel": "petrol",
+      "timing": "belt",
+      "recommended": false
+    }
+  ],
+  "gearboxes": [
+    {
+      "type": "AT",
+      "name": "4АКПП",
+      "verdict": "acceptable",
+      "engineCodes": [
+        "Z18XER"
+      ],
+      "note": "Классический автомат у 1.8. Нужна история масла."
+    },
+    {
+      "type": "AMT",
+      "name": "Робот Easytronic",
+      "verdict": "avoid",
+      "engineCodes": [
+        "Z16XER"
+      ],
+      "note": "На 1.6 «автомат» почти всегда Easytronic."
+    }
+  ],
+  "mileage": {
+    "goodMax": 130000,
+    "okMax": 190000,
+    "avoidFrom": 260000
+  },
+  "subScores": {
+    "reliability": 4,
+    "safety": 5,
+    "ownershipCost": 4,
+    "purchaseRisk": 3,
+    "liquidity": 4
+  },
+  "subScoreNotes": {
+    "reliability": "Мотор 1.8 терпимый, но коробку легко перепутать с роботом.",
+    "safety": "Astra H для своих лет собрана прилично.",
+    "ownershipCost": "Запчасти Opel после ухода марки стали дороже и реже.",
+    "purchaseRisk": "Объявление «автомат» без объёма мотора — частая ловушка.",
+    "liquidity": "Продать можно, покупатель будет проверять коробку."
+  },
+  "risks": [
+    {
+      "title": "Easytronic вместо автомата на моторе 1.6",
+      "severity": "critical",
+      "stage": "purchase",
+      "howToCheck": "Мотор 1.6 и слово «автомат» = робот. Брать только 1.8 с классической АКПП",
+      "repairCostRub": [
+        40000,
+        100000
+      ],
+      "sources": [
+        "https://www.zr.ru/",
+        "https://www.drom.ru/"
+      ]
+    }
+  ],
+  "avoid": [
+    "Astra H 1.6 с «автоматом»",
+    "1.8 без истории обслуживания коробки"
+  ],
+  "budgetRules": [
+    {
+      "from": 150000,
+      "to": 1000000,
+      "verdict": "caution",
+      "reason": "С мотором 1.6 часто стоит робот Easytronic. Даже 1.8 с автоматом стоит брать только после проверки коробки",
+      "insteadSlugs": [
+        "ford-fusion",
+        "kia-cerato-1"
+      ]
+    }
+  ],
+  "listingRules": [
+    "В выборку только 1.8 с классической 4АКПП.",
+    "Объявления с мотором 1.6 не включать: там Easytronic."
+  ],
+  "checklist": [
+    "Сверить VIN на кузове, в ПТС и на табличке",
+    "Проверить ограничения и залог",
+    "Толщиномер по аркам, порогам и крыше",
+    "Холодный запуск и переключения автомата без толчков",
+    "Проехать 10–15 минут, в том числе в медленной пробке"
+  ]
+}

@@ -1,0 +1,99 @@
+{
+  "slug": "hyundai-elantra-xd",
+  "aliases": [
+    "elantra-xd"
+  ],
+  "brand": "Hyundai",
+  "model": "Elantra",
+  "generation": "XD",
+  "autoruPath": "hyundai/elantra/3483538",
+  "years": [
+    2000,
+    2010
+  ],
+  "body": "sedan",
+  "fuelLPer100": 8.4,
+  "summary": "Простая и выносливая машина с 4-ступенчатым автоматом. Главный риск — ржавчина, не коробка.",
+  "engines": [
+    {
+      "code": "1.6",
+      "volumeL": 1.6,
+      "hp": 105,
+      "fuel": "petrol",
+      "timing": "belt",
+      "recommended": true
+    },
+    {
+      "code": "2.0",
+      "volumeL": 2,
+      "hp": 141,
+      "fuel": "petrol",
+      "timing": "belt",
+      "recommended": false
+    }
+  ],
+  "gearboxes": [
+    {
+      "type": "AT",
+      "name": "4АКПП",
+      "verdict": "recommended",
+      "engineCodes": [
+        "1.6"
+      ],
+      "years": [
+        2000,
+        2010
+      ],
+      "note": "Старый гидроавтомат. Живёт долго, если меняли масло."
+    }
+  ],
+  "mileage": {
+    "goodMax": 140000,
+    "okMax": 200000,
+    "avoidFrom": 280000
+  },
+  "subScores": {
+    "reliability": 5,
+    "safety": 3,
+    "ownershipCost": 6,
+    "purchaseRisk": 4,
+    "liquidity": 4
+  },
+  "subScoreNotes": {
+    "reliability": "Атмосферный мотор и 4АКПП прощают возраст, если кузов живой.",
+    "safety": "Машина начала 2000-х. Подушек мало, для семьи это компромисс.",
+    "ownershipCost": "Запчасти Hyundai тех лет недорогие и распространённые.",
+    "purchaseRisk": "Ржавчина арок и порогов важнее цифры пробега.",
+    "liquidity": "Седан знакомый, продать реально, но не быстро."
+  },
+  "risks": [
+    {
+      "title": "Ржавчина арок, порогов и стаканов",
+      "severity": "high",
+      "stage": "purchase",
+      "howToCheck": "Толщиномер и осмотр кромок под уплотнителями",
+      "repairCostRub": [
+        20000,
+        80000
+      ],
+      "sources": [
+        "https://www.zr.ru/",
+        "https://www.drom.ru/"
+      ]
+    }
+  ],
+  "avoid": [
+    "Кузов со сквозной коррозией порогов"
+  ],
+  "listingRules": [
+    "В выборку только 1.6 с 4АКПП.",
+    "2.0 не включать, даже если в объявлении написано «автомат»."
+  ],
+  "checklist": [
+    "Сверить VIN на кузове, в ПТС и на табличке",
+    "Проверить ограничения и залог",
+    "Толщиномер по аркам, порогам и крыше",
+    "Холодный запуск и переключения автомата без толчков",
+    "Проехать 10–15 минут, в том числе в медленной пробке"
+  ]
+}

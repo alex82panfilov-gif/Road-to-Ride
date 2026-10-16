@@ -95,7 +95,7 @@ export function Shell({ items, children }: { items: CatalogItem[]; children: Rea
       {!online ? (
         <p className="bg-canvas-secondary px-4 py-2 text-center text-sm">Нет сети. Данные от {formatDay(meta.updatedAt)}, копилка работает.</p>
       ) : null}
-      <main id="content" className="mx-auto w-full max-w-5xl flex-1 px-4 pt-8 pb-28 md:pb-16">
+      <main id="content" className="mx-auto w-full max-w-5xl flex-1 px-4 pt-4 pb-28 md:pt-8 md:pb-16">
         {children}
       </main>
       <footer className="mx-auto max-w-5xl space-y-3 px-4 pb-28 text-sm text-muted md:pb-10">

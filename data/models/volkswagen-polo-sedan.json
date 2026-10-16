@@ -12,6 +12,7 @@
   "brand": "Volkswagen",
   "model": "Polo",
   "generation": "Sedan I",
+  "autoruPath": "volkswagen/polo/20113124",
   "years": [
     2010,
     2020
@@ -25,7 +26,8 @@
       "fuel": "petrol",
       "timing": "chain",
       "recommended": false,
-      "code": "1.6 л / 105 л.с."
+      "code": "CFNA",
+      "years": [2010, 2015]
     },
     {
       "volumeL": 1.6,
@@ -33,19 +35,24 @@
       "fuel": "petrol",
       "timing": "belt",
       "recommended": true,
-      "code": "1.6 л / 110 л.с."
+      "code": "CWVA",
+      "years": [2015, 2020]
     }
   ],
   "gearboxes": [
     {
       "type": "AT",
       "name": "6АКПП Aisin 09G",
-      "verdict": "recommended"
+      "verdict": "recommended",
+      "engineCodes": ["CWVA"],
+      "years": [2015, 2020],
+      "note": "Поздний 1.6 CWVA. Ранний CFNA в медиану не входит."
     },
     {
       "type": "DCT",
       "name": "DSG DQ200",
-      "verdict": "avoid"
+      "verdict": "avoid",
+      "years": [2010, 2020]
     }
   ],
   "mileage": {
@@ -97,6 +104,14 @@
       ]
     }
   ],
+  "budgetRules": [
+    {
+      "from": 150000,
+      "to": 800000,
+      "verdict": "avoid",
+      "reason": "Дешёвые Polo с автоматом — в основном такси с пробегом 250+ тыс. км"
+    }
+  ],
   "checklist": [
     "Сверить VIN на кузове, в ПТС и на табличке",
     "Проверить ограничения на сайте Госавтоинспекции и в реестре залогов",
@@ -105,5 +120,11 @@
     "Проехать 10–15 минут: разгон, торможение, поворот руля до упора",
     "Попросить заказ-наряды по маслу в коробке и по двигателю",
     "Сфотографировать шильду мотора: CWVA предпочтительнее CFNA"
+  ],
+  "listingRules": [
+    "В выборку только 1.6 CWVA, 110 л.с., с 6АКПП Aisin 09G, годы 2015–2020.",
+    "CFNA, 105 л.с., в медиану не включать: caution, расход масла.",
+    "DSG DQ200 — avoid, в listings не писать.",
+    "Объявление со словом «автомат» без кода мотора или без отличия Aisin от DSG не включать."
   ]
 }

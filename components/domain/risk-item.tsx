@@ -34,7 +34,7 @@ export function RiskItem({ risk }: { risk: Risk }) {
         </p>
       ) : null}
       <ul className="mt-2 text-xs text-muted">
-        {risk.sources.map((source) => (
+        {[...new Set(risk.sources)].map((source) => (
           <li key={source}>
             <a href={source} target="_blank" rel="noreferrer">
               Источник

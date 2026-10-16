@@ -1,19 +1,39 @@
 "use client";
 
+import { LicenseField } from "@/components/domain/license-field";
 import { useUser } from "@/components/providers";
 import { Card } from "@/components/ui/card";
-import { annualOwnership, realPrice, transportTaxRub, type DriverProfile } from "@/lib/meta";
+import { annualOwnership, experiencePurchaseLine, purchaseQuote, transportTaxRub, type DriverProfile } from "@/lib/meta";
 import { meta } from "@/lib/meta";
-import { rub } from "@/lib/format";
+import { rub, todayIso } from "@/lib/format";
+import { inflationOf } from "@/lib/storage";
 import { displayName, type CatalogItem } from "@/lib/market";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 export function CostCalculator({ item, others }: { item: CatalogItem; others: CatalogItem[] }) {
-  const { data, update } = useUser();
+  const { data, saved, update } = useUser();
   const [kmPerMonth, setKm] = useState(meta.kmPerMonthDefault);
   const [fuelPrice, setFuel] = useState(meta.fuelPriceRub);
   const [otherSlug, setOtherSlug] = useState("");
-  const driver = data.driver;
+  const [asOf, setAsOf] = useState("");
+  const driver = useMemo(
+    () => ({ ...data.driver, onParentPolicy: data.onParentPolicy }),
+    [data.driver, data.onParentPolicy],
+  );
+  useEffect(() => {
+    setAsOf(todayIso());
+  }, []);
+  const purchase = purchaseQuote({
+    median: item.median,
+    hp: item.hp,
+    driver,
+    licenseDate: data.licenseDate,
+    onParentPolicy: data.onParentPolicy,
+    saved,
+    monthly: data.monthly,
+    inflation: inflationOf(data),
+    asOf,
+  });
   const year = useMemo(
     () => annualOwnership({ hp: item.hp, fuelLPer100: item.fuelLPer100, kmPerMonth, fuelPriceRub: fuelPrice, driver }),
     [item, kmPerMonth, fuelPrice, driver],
@@ -35,13 +55,16 @@ export function CostCalculator({ item, others }: { item: CatalogItem; others: Ca
       </header>
       <Card className="grid gap-4 sm:grid-cols-2">
         <NumberField label="Возраст" value={driver.age} onChange={(age) => setDriver({ age })} />
-        <NumberField label="Стаж, лет" value={driver.experienceYears} onChange={(experienceYears) => setDriver({ experienceYears })} />
+        <div className="sm:col-span-2">
+          <LicenseField />
+        </div>
         <NumberField label="Километров в месяц" value={kmPerMonth} onChange={setKm} />
         <NumberField label="Цена топлива, ₽/л" value={fuelPrice} onChange={setFuel} />
       </Card>
       <Card>
         <p className="text-sm text-muted">К покупке, с резервом</p>
-        <p className="num text-3xl font-semibold">{rub(realPrice(item.median, item.hp, driver))}</p>
+        <p className="num text-3xl font-semibold">{rub(purchase.total)}</p>
+        <p className="mt-2 text-sm text-muted">{experiencePurchaseLine(purchase.experienceYears)}</p>
         <ul className="mt-4 space-y-1 text-sm">
           <li>ОСАГО: {rub(year.osago)}</li>
           <li>Налог: {rub(year.tax)} ({transportTaxRub(item.hp) === year.tax ? `${item.hp} л.с.` : ""})</li>

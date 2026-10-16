@@ -1,0 +1,121 @@
+import assert from "node:assert/strict";
+import test from "node:test";
+import { monthsToGoal } from "./forecast.ts";
+import { ageExperienceCoef, experiencePurchaseLine, experienceYearsOn, kbmCoef, meta, osagoRange, purchaseQuote } from "./meta.ts";
+
+test("the OSAGO base tariff is the 7204-U corridor", () => {
+  assert.equal(meta.osago.tbMin, 1_399);
+  assert.equal(meta.osago.tbMax, 8_665);
+  assert.match(meta.osago.sourceTitle, /7204-У/);
+  assert.match(meta.osago.sourceUrl, /^https?:\/\//);
+});
+
+test("ages 18-21 use 2.27 under a year and 1.92 for the next year", () => {
+  assert.equal(ageExperienceCoef(20, 0), 2.27);
+  assert.equal(ageExperienceCoef(21, 0.9), 2.27);
+  assert.equal(ageExperienceCoef(18, 1), 1.92);
+  assert.equal(ageExperienceCoef(21, 1.9), 1.92);
+  assert.equal(ageExperienceCoef(21, 2), 1.97);
+});
+
+test("a fresh license plus twelve months is one year of experience", () => {
+  assert.equal(experienceYearsOn(null, "2026-10-16", 12), 1);
+  assert.equal(experienceYearsOn("2025-10-16", "2026-10-16", 0), 1);
+  assert.equal(experienceYearsOn("2025-10-17", "2026-10-16", 0), 11 / 12);
+});
+
+test("saving past a year prices OSAGO at 1.92 and says so", () => {
+  const driver = { age: 20, experienceYears: 0 };
+  const quote = purchaseQuote({
+    median: 150_000,
+    hp: 51,
+    driver,
+    licenseDate: null,
+    onParentPolicy: false,
+    saved: 0,
+    monthly: 20_000,
+    inflation: 0.007,
+    asOf: "2026-10-16",
+  });
+  assert.ok(quote.months !== null && quote.months >= 12);
+  assert.equal(ageExperienceCoef(quote.age, quote.experienceYears), 1.92);
+  assert.ok(quote.osago < osagoRange(51, driver).mid);
+  assert.equal(experiencePurchaseLine(quote.experienceYears), "ОСАГО посчитано на дату покупки: стаж к тому времени 1 год.");
+});
+
+test("the twelve-month experience boundary does not flip on a second pass", () => {
+  const input = {
+    median: 150_000,
+    hp: 51,
+    driver: { age: 20, experienceYears: 0 },
+    licenseDate: null,
+    onParentPolicy: false,
+    saved: 0,
+    monthly: 20_000,
+    inflation: 0.007,
+    asOf: "2026-10-16",
+  };
+  const first = purchaseQuote(input);
+  const second = purchaseQuote(input);
+  assert.equal(first.months, 12);
+  assert.equal(first.experienceYears, 1);
+  assert.equal(second.months, first.months);
+  assert.equal(second.total, first.total);
+  assert.equal(second.osago, first.osago);
+  const byMoneyAlone = monthsToGoal(0, 20_000, first.total, 0.007);
+  assert.ok(byMoneyAlone !== null && byMoneyAlone < first.months);
+});
+
+test("KBM stays at class 3 unless the parent policy is checked", () => {
+  assert.equal(meta.osago.kbmInitialClass, 3);
+  assert.equal(kbmCoef(0, false), 1.17);
+  assert.equal(kbmCoef(4, false), 1.17);
+  assert.equal(kbmCoef(0, true), 1.17);
+  assert.equal(kbmCoef(0.9, true), 1.17);
+  assert.equal(kbmCoef(1, true), 1);
+  assert.equal(kbmCoef(2, true), 0.91);
+  assert.equal(kbmCoef(30, true), 0.46);
+  assert.deepEqual(
+    meta.osago.kbmClasses.map((row) => row.coef),
+    [3.92, 2.94, 2.25, 1.76, 1.17, 1, 0.91, 0.83, 0.78, 0.74, 0.68, 0.63, 0.57, 0.52, 0.46],
+  );
+  assert.match(meta.osago.kbmSourceTitle, /7204-У/);
+  assert.match(meta.osago.kbmSourceUrl, /^https?:\/\//);
+});
+
+test("a checked parent policy lowers the quote at the one-year boundary and stays there", () => {
+  const input = {
+    median: 150_000,
+    hp: 51,
+    driver: { age: 20, experienceYears: 0 },
+    licenseDate: null,
+    saved: 0,
+    monthly: 20_000,
+    inflation: 0.007,
+    asOf: "2026-10-16",
+  };
+  const plain = purchaseQuote({ ...input, onParentPolicy: false });
+  const insured = purchaseQuote({ ...input, onParentPolicy: true });
+  const again = purchaseQuote({ ...input, onParentPolicy: true });
+  assert.ok(insured.osago < plain.osago);
+  assert.equal(again.months, insured.months);
+  assert.equal(again.total, insured.total);
+  assert.equal(again.osago, insured.osago);
+});
+
+test("buying now keeps the new-driver coefficient", () => {
+  const quote = purchaseQuote({
+    median: 150_000,
+    hp: 51,
+    driver: { age: 20, experienceYears: 0 },
+    licenseDate: null,
+    onParentPolicy: false,
+    saved: 500_000,
+    monthly: 0,
+    inflation: 0.007,
+    asOf: "2026-10-16",
+  });
+  assert.equal(quote.months, 0);
+  assert.equal(quote.experienceYears, 0);
+  assert.equal(ageExperienceCoef(quote.age, quote.experienceYears), 2.27);
+});

@@ -2,6 +2,7 @@
   "fuelLPer100": 7.6,
   "avoid": [
     "Любая комплектация с DSG DQ200",
+    "1.4 TSI",
     "1.8 TSI без истории по маслу"
   ],
   "slug": "skoda-octavia-a5",
@@ -11,6 +12,7 @@
   "brand": "Skoda",
   "model": "Octavia",
   "generation": "A5",
+  "autoruPath": "skoda/octavia/4560887",
   "years": [
     2004,
     2013
@@ -24,7 +26,8 @@
       "fuel": "petrol",
       "timing": "belt",
       "recommended": true,
-      "code": "1.6 л / 102 л.с."
+      "code": "1.6 MPI",
+      "years": [2004, 2013]
     },
     {
       "volumeL": 1.8,
@@ -32,19 +35,25 @@
       "fuel": "petrol",
       "timing": "chain",
       "recommended": false,
-      "code": "1.8 л / 152 л.с."
+      "code": "1.8 TSI",
+      "years": [2007, 2013]
     }
   ],
   "gearboxes": [
     {
       "type": "AT",
       "name": "6АКПП Aisin 09G",
-      "verdict": "recommended"
+      "verdict": "recommended",
+      "engineCodes": ["1.6 MPI"],
+      "years": [2004, 2013],
+      "note": "Спокойная пара — только 1.6 MPI. 1.8 TSI с автоматом в общую выборку не входит."
     },
     {
       "type": "DCT",
       "name": "DSG DQ200",
-      "verdict": "avoid"
+      "verdict": "avoid",
+      "years": [2004, 2013],
+      "note": "И сухой DQ200, и мокрый DQ250 в выборку не писать."
     }
   ],
   "mileage": {
@@ -104,5 +113,11 @@
     "Проехать 10–15 минут: разгон, торможение, поворот руля до упора",
     "Попросить заказ-наряды по маслу в коробке и по двигателю",
     "По коду коробки понять, что это Aisin, а не робот"
+  ],
+  "listingRules": [
+    "Разрешено: 1.6 MPI, 102 л.с., коды BGU, BSE, BSF, CCSA, CMXA, только 6АКПП Aisin 09G, годы 2004–2013.",
+    "1.8 TSI в общую медиану не включать: caution по мотору EA888, даже если объявление называет 09G.",
+    "1.4 TSI и любой DSG — avoid, в listings не писать.",
+    "Объявление со словом «автомат» без мотора или без отличия 09G от DSG не включать."
   ]
 }

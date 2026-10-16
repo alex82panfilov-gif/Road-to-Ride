@@ -157,11 +157,13 @@ export function reviewRaw(raw: string, models: Map<string, TModel>, previous: TS
       verdicts.set(snapshot.slug, "reject");
       continue;
     }
-    const prev = previous && !previous.seed ? previous.snapshots.find((item) => item.slug === snapshot.slug) : undefined;
-    validateSnapshot(issues, snapshot, model, prev, current.month, !!current.seed);
+    const count = snapshot.listings?.length ?? 0;
+    const seeded = !!current.seed && count < MIN_PUBLISH;
+    const prevSnap = previous?.snapshots.find((item) => item.slug === snapshot.slug);
+    const prev = prevSnap && (!previous?.seed || (prevSnap.listings?.length ?? 0) >= MIN_PUBLISH) ? prevSnap : undefined;
+    validateSnapshot(issues, snapshot, model, prev, current.month, seeded);
     const hasError = issues.some((issue) => issue.level === "error" && issue.slug === snapshot.slug);
-    const count = snapshot.listings?.length ?? snapshot.sampleSize;
-    verdicts.set(snapshot.slug, hasError ? "reject" : current.seed ? "seed" : count < MIN_PUBLISH ? "fallback" : "publish");
+    verdicts.set(snapshot.slug, hasError ? "reject" : seeded ? "seed" : count < MIN_PUBLISH ? "fallback" : "publish");
   }
   for (const flag of current.flags) {
     if (flag.slug !== "*" && !models.has(flag.slug)) issues.push({ level: "warn", slug: flag.slug, msg: "флаг по модели, которой нет в каталоге" });

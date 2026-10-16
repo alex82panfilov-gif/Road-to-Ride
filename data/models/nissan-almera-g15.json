@@ -3,6 +3,10 @@
   "avoid": [
     "Бывшие такси без замены масла в DP2"
   ],
+  "listingRules": [
+    "В выборку только 1.6 K4M с 4АКПП DP2, годы 2012–2018.",
+    "Если тип коробки не назван или это не гидроавтомат DP2, строку не писать."
+  ],
   "slug": "nissan-almera-g15",
   "aliases": [
     "almera-g15"
@@ -10,6 +14,7 @@
   "brand": "Nissan",
   "model": "Almera",
   "generation": "G15",
+  "autoruPath": "nissan/almera/9278965",
   "years": [
     2012,
     2018
@@ -23,14 +28,18 @@
       "fuel": "petrol",
       "timing": "belt",
       "recommended": true,
-      "code": "1.6 л / 102 л.с."
+      "code": "K4M",
+      "years": [2012, 2018]
     }
   ],
   "gearboxes": [
     {
       "type": "AT",
       "name": "4АКПП DP2",
-      "verdict": "acceptable"
+      "verdict": "acceptable",
+      "engineCodes": ["K4M"],
+      "years": [2012, 2018],
+      "note": "Четырёхступенчатый автомат Renault. Вариатора на этой Альмере нет."
     }
   ],
   "mileage": {
