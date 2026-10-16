@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { scoreText } from "@/lib/cn";
 import { labels } from "@/lib/content";
-import { monthsToGoal } from "@/lib/forecast";
 import { approxRub, rub, todayIso } from "@/lib/format";
 import { displayName, type CatalogItem } from "@/lib/market";
 import { experiencePurchaseLine, meta, purchaseQuote, type PurchaseQuote } from "@/lib/meta";
@@ -93,8 +92,6 @@ export function RoadFork({ items }: { items: CatalogItem[] }) {
   const later = nextQualityAt(items, amount, driver);
   const jumpCar = jump === null ? null : bestSafeAt(items, jump, driver);
   const laterCar = later === null ? null : bestSafeAt(items, later, driver);
-  const months = jump === null ? null : monthsToGoal(amount, data.monthly, jump, inflation);
-  const laterMonths = later === null ? null : monthsToGoal(amount, data.monthly, later, inflation);
   const nearestAim = nextWithinReach(items, amount, driver);
   const decentAim = nextDecentAt(items, amount, driver);
   const showPair = (!today || today.score < DECENT_SCORE) && nearestAim !== null && decentAim !== null && nearestAim.slug !== decentAim.slug;
@@ -116,6 +113,8 @@ export function RoadFork({ items }: { items: CatalogItem[] }) {
   const laterQuote = laterCar ? quoteOf(laterCar) : null;
   const nearestMonths = nearestQuote?.months ?? null;
   const decentMonths = decentQuote?.months ?? null;
+  const months = jumpQuote?.months ?? null;
+  const laterMonths = laterQuote?.months ?? null;
   const window = roadWindow(preview, expanded);
   const posts = [
     ...window.behind.map((post) => ({ amount: post, you: false, tier: true })),

@@ -116,12 +116,13 @@ export function purchaseQuote(input: {
   let assumed = 0;
   const seen = new Set<number>();
   let quote = priceAt(0);
-  for (let step = 0; step < 8; step += 1) {
+  for (let step = 0; step < 5; step += 1) {
     if (quote.months === null || quote.months === assumed) return quote;
     if (seen.has(quote.months)) {
       const longer = Math.max(assumed, quote.months);
       const priced = priceAt(longer);
-      return { ...priced, months: priced.months === null ? null : longer };
+      if (priced.months !== null && priced.months <= longer) return { ...priced, months: longer };
+      return priced;
     }
     seen.add(assumed);
     assumed = quote.months;

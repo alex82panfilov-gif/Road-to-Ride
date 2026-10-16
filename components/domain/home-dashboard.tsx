@@ -7,9 +7,9 @@ import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { earnedBadges } from "@/lib/badges";
 import { labels } from "@/lib/content";
-import { addMonths, monthsToGoal } from "@/lib/forecast";
+import { addMonths } from "@/lib/forecast";
 import { rub, todayIso } from "@/lib/format";
-import { purchaseQuote, realPrice } from "@/lib/meta";
+import { purchaseQuote, type DriverProfile } from "@/lib/meta";
 import { displayName, type CatalogItem } from "@/lib/market";
 import { inflationOf } from "@/lib/storage";
 import { amountForLevel, levelForAmount, tierAmounts } from "@/lib/tiers";
@@ -107,8 +107,18 @@ export function HomeDashboard({ items }: { items: CatalogItem[] }) {
           </select>
         </label>
       </Card>
-      {goal && goalPrice ? (
-        <ForecastLine saved={amount} monthly={data.monthly} target={goalPrice} inflation={inflationOf(data)} name={displayName(goal)} items={items} asOf={asOf} />
+      {goal && goalQuote ? (
+        <ForecastLine
+          saved={amount}
+          monthly={data.monthly}
+          months={goalQuote.months}
+          inflation={inflationOf(data)}
+          name={displayName(goal)}
+          items={items}
+          asOf={asOf}
+          driver={data.driver}
+          licenseDate={data.licenseDate}
+        />
       ) : null}
       {badges.length ? (
         <ul className="flex flex-wrap gap-2">
@@ -126,28 +136,41 @@ export function HomeDashboard({ items }: { items: CatalogItem[] }) {
 function ForecastLine({
   saved,
   monthly,
-  target,
+  months,
   inflation,
   name,
   items,
   asOf,
+  driver,
+  licenseDate,
 }: {
   saved: number;
   monthly: number;
-  target: number;
+  months: number | null;
   inflation: number;
   name: string;
   items: CatalogItem[];
   asOf: string | null;
+  driver: DriverProfile;
+  licenseDate: string | null;
 }) {
   if (monthly <= 0) {
     return <p className="text-sm text-muted">Укажите ежемесячный взнос в копилке — появится прогноз до {name}.</p>;
   }
-  const months = monthsToGoal(saved, monthly, target, inflation);
   if (months === null) {
     const reachable = [...tierAmounts()].reverse().find((tier) => {
       const car = bestSafeAt(items, tier);
-      return car && monthsToGoal(saved, monthly, realPrice(car.median, car.hp), inflation) !== null;
+      if (!car || !asOf) return false;
+      return purchaseQuote({
+        median: car.median,
+        hp: car.hp,
+        driver,
+        licenseDate,
+        saved,
+        monthly,
+        inflation,
+        asOf,
+      }).months !== null;
     });
     const car = reachable ? bestSafeAt(items, reachable) : null;
     return (

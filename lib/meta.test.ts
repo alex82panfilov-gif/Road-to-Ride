@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { monthsToGoal } from "./forecast.ts";
 import { ageExperienceCoef, experiencePurchaseLine, experienceYearsOn, meta, osagoRange, purchaseQuote } from "./meta.ts";
 
 test("the OSAGO base tariff is the 7204-U corridor", () => {
@@ -39,6 +40,28 @@ test("saving past a year prices OSAGO at 1.92 and says so", () => {
   assert.equal(ageExperienceCoef(quote.age, quote.experienceYears), 1.92);
   assert.ok(quote.osago < osagoRange(51, driver).mid);
   assert.equal(experiencePurchaseLine(quote.experienceYears), "ОСАГО посчитано на дату покупки: стаж к тому времени 1 год.");
+});
+
+test("the twelve-month experience boundary does not flip on a second pass", () => {
+  const input = {
+    median: 150_000,
+    hp: 51,
+    driver: { age: 20, experienceYears: 0 },
+    licenseDate: null,
+    saved: 0,
+    monthly: 20_000,
+    inflation: 0.007,
+    asOf: "2026-10-16",
+  };
+  const first = purchaseQuote(input);
+  const second = purchaseQuote(input);
+  assert.equal(first.months, 12);
+  assert.equal(first.experienceYears, 1);
+  assert.equal(second.months, first.months);
+  assert.equal(second.total, first.total);
+  assert.equal(second.osago, first.osago);
+  const byMoneyAlone = monthsToGoal(0, 20_000, first.total, 0.007);
+  assert.ok(byMoneyAlone !== null && byMoneyAlone < first.months);
 });
 
 test("buying now keeps the new-driver coefficient", () => {

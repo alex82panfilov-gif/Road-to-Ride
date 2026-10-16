@@ -2,9 +2,8 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { catalog } from "../data.ts";
 import { bestAt } from "../market.ts";
-import { monthsToGoal } from "../forecast.ts";
 import { roundToThousands } from "../format.ts";
-import { realPrice } from "../meta.ts";
+import { purchaseQuote, realPrice } from "../meta.ts";
 import { tierFloor } from "../tiers.ts";
 import {
   aimContrast,
@@ -111,8 +110,19 @@ test("at 0 the fork names Matiz and a car scored at least 4.5", () => {
   assert.notEqual(decent.slug, "daewoo-matiz");
   assert.ok(purchasePrice(decent) > purchasePrice(nearest));
   assert.equal(DECENT_SCORE, 4.5);
-  const earlier = monthsToGoal(0, 20_000, purchasePrice(nearest), 0.007);
-  const later = monthsToGoal(0, 20_000, purchasePrice(decent), 0.007);
+  const quoteMonths = (item: { median: number; hp: number }) =>
+    purchaseQuote({
+      median: item.median,
+      hp: item.hp,
+      driver: { age: 20, experienceYears: 0 },
+      licenseDate: null,
+      saved: 0,
+      monthly: 20_000,
+      inflation: 0.007,
+      asOf: "2026-10-16",
+    }).months;
+  const earlier = quoteMonths(nearest);
+  const later = quoteMonths(decent);
   assert.ok(earlier !== null && later !== null);
   assert.equal(aimContrast(earlier, nearest.score, later, decent.score), "+3 мес. — и оценка 4,6 вместо 2,9");
 });
